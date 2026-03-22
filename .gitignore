@@ -38,6 +38,7 @@ logs/
 .coverage
 htmlcov/
 .pytest_cache/
+*.db
 
 # Alembic
 alembic/versions/__pycache__/
