@@ -12,11 +12,11 @@ function renderRegister() {
 }
 
 describe("Register page", () => {
-  it("renders registration form", () => {
+  it("renders registration form with labels", () => {
     renderRegister();
-    expect(screen.getByPlaceholderText("Имя")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Email")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Пароль")).toBeInTheDocument();
+    expect(screen.getByLabelText("Имя")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Пароль/)).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Зарегистрироваться" })
     ).toBeInTheDocument();

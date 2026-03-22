@@ -17,7 +17,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(email, password, name);
-      navigate("/");
+      navigate("/dashboard");
     } catch {
       setError("Ошибка регистрации. Возможно, email уже занят.");
     } finally {
@@ -35,30 +35,42 @@ export default function Register() {
           </div>
         )}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="Имя"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Пароль"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            required
-            minLength={6}
-          />
+          <div>
+            <label htmlFor="reg-name" className="block text-sm font-medium text-gray-700 mb-1">Имя</label>
+            <input
+              id="reg-name"
+              type="text"
+              placeholder="Имя"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              id="reg-email"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700 mb-1">Пароль (мин. 6 символов)</label>
+            <input
+              id="reg-password"
+              type="password"
+              placeholder="Пароль"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              required
+              minLength={6}
+            />
+          </div>
           <button
             type="submit"
             disabled={loading}

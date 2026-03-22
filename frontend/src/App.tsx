@@ -2,18 +2,30 @@ import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
+import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
-import Register from "@/pages/Register";
+import NotFound from "@/pages/NotFound";
 import Pricing from "@/pages/Pricing";
+import Register from "@/pages/Register";
 import Subscription from "@/pages/Subscription";
 import Transcription from "@/pages/Transcription";
 import Upload from "@/pages/Upload";
+import AudioToText from "@/pages/seo/AudioToText";
+import VideoToText from "@/pages/seo/VideoToText";
+import NeuralTranscription from "@/pages/seo/NeuralTranscription";
+import VoiceMessages from "@/pages/seo/VoiceMessages";
 import { useAuthStore } from "@/store/authStore";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
+}
+
+function HomePage() {
+  const { isAuthenticated } = useAuthStore();
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  return <Landing />;
 }
 
 export default function App() {
@@ -27,8 +39,17 @@ export default function App() {
 
   return (
     <Routes>
+      {/* Public pages */}
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/audio-v-tekst" element={<AudioToText />} />
+      <Route path="/video-v-tekst" element={<VideoToText />} />
+      <Route path="/nejroset-transkribaciya" element={<NeuralTranscription />} />
+      <Route path="/rasshifrovka-golosovyh" element={<VoiceMessages />} />
+
+      {/* Protected pages */}
       <Route
         element={
           <ProtectedRoute>
@@ -36,12 +57,14 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/transcription/:id" element={<Transcription />} />
-        <Route path="/pricing" element={<Pricing />} />
         <Route path="/subscription" element={<Subscription />} />
       </Route>
+
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

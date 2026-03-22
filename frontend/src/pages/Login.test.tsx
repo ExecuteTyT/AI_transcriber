@@ -12,10 +12,10 @@ function renderLogin() {
 }
 
 describe("Login page", () => {
-  it("renders login form", () => {
+  it("renders login form with labels", () => {
     renderLogin();
-    expect(screen.getByPlaceholderText("Email")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Пароль")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toBeInTheDocument();
+    expect(screen.getByLabelText("Пароль")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Войти" })).toBeInTheDocument();
   });
 
