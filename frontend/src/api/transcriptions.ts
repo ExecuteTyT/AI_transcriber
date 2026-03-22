@@ -83,6 +83,6 @@ export const transcriptionApi = {
   getActionItems: (id: string) =>
     api.get<AiAnalysis>(`/transcriptions/${id}/action-items`),
 
-  exportFile: (id: string, format: "txt" | "srt") =>
+  exportFile: (id: string, format: "txt" | "srt" | "docx") =>
     api.get(`/transcriptions/${id}/export/${format}`, { responseType: "blob" }),
 };

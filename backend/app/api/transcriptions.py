@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -215,7 +215,7 @@ async def export_transcription(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Экспорт транскрипции в формате TXT или SRT."""
+    """Экспорт транскрипции в формате TXT, SRT или DOCX."""
     result = await db.execute(
         select(Transcription).where(
             Transcription.id == transcription_id,
@@ -232,8 +232,8 @@ async def export_transcription(
             detail="Транскрипция ещё не завершена",
         )
 
-    from app.services.export import export_txt, export_srt
-    from fastapi.responses import PlainTextResponse
+    from app.services.export import export_docx, export_srt, export_txt
+    from fastapi.responses import PlainTextResponse, Response
 
     if format == "txt":
         content = export_txt(transcription)
@@ -247,8 +247,15 @@ async def export_transcription(
             content, media_type="text/plain",
             headers={"Content-Disposition": f'attachment; filename="{transcription.title}.srt"'},
         )
+    elif format == "docx":
+        content_bytes = export_docx(transcription)
+        return Response(
+            content=content_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f'attachment; filename="{transcription.title}.docx"'},
+        )
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Неподдерживаемый формат: {format}. Допустимые: txt, srt",
+            detail=f"Неподдерживаемый формат: {format}. Допустимые: txt, srt, docx",
         )

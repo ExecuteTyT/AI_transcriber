@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,9 +25,13 @@ from app.services.auth import (
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+def _get_limiter():
+    from app.main import limiter
+    return limiter
+
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
+async def register(request: Request, data: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """Регистрация нового пользователя."""
     result = await db.execute(select(User).where(User.email == data.email))
     if result.scalar_one_or_none() is not None:
@@ -52,7 +56,7 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
+async def login(request: Request, data: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Вход в систему."""
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()

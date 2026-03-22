@@ -7,7 +7,7 @@ from app.services.auth import (
     hash_password,
     verify_password,
 )
-from app.services.export import _format_srt_time, export_srt, export_txt
+from app.services.export import _format_srt_time, export_docx, export_srt, export_txt
 from app.services.transcription import TranscriptionProvider
 
 
@@ -99,6 +99,45 @@ def test_export_srt_empty_segments():
         full_text = ""
         segments = []
     assert export_srt(FakeTranscription()) == ""
+
+
+def test_export_docx():
+    """Экспорт в DOCX возвращает bytes."""
+    from datetime import datetime
+
+    class FakeTranscription:
+        title = "Test"
+        full_text = "Привет мир"
+        segments = [
+            {"start": 0, "end": 5, "text": "Привет", "speaker": "Speaker 1"},
+            {"start": 5, "end": 10, "text": "Мир", "speaker": "Speaker 2"},
+        ]
+        language = "ru"
+        duration_sec = 10
+        created_at = datetime(2026, 1, 1)
+
+    result = export_docx(FakeTranscription())
+    assert isinstance(result, bytes)
+    assert len(result) > 0
+    # DOCX files start with PK (ZIP format)
+    assert result[:2] == b"PK"
+
+
+def test_export_docx_no_segments():
+    """DOCX экспорт с текстом, но без сегментов."""
+    from datetime import datetime
+
+    class FakeTranscription:
+        title = "Only text"
+        full_text = "Только текст без сегментов"
+        segments = None
+        language = None
+        duration_sec = None
+        created_at = datetime(2026, 1, 1)
+
+    result = export_docx(FakeTranscription())
+    assert isinstance(result, bytes)
+    assert result[:2] == b"PK"
 
 
 def test_split_text():
