@@ -10,7 +10,6 @@ from app.database import get_db
 from app.main import app
 from app.models import Base
 
-# SQLite async для тестов (без PostgreSQL)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
@@ -49,3 +48,10 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
+
+@pytest_asyncio.fixture
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
+    """Прямая сессия БД для создания тестовых данных."""
+    async with TestSessionLocal() as session:
+        yield session

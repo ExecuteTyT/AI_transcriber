@@ -97,3 +97,49 @@ async def test_me_authorized(client: AsyncClient):
     assert data["name"] == "Вася"
     assert data["plan"] == "free"
     assert data["minutes_limit"] == 15
+
+
+@pytest.mark.asyncio
+async def test_logout(client: AsyncClient):
+    """Выход с валидным токеном → 200."""
+    reg = await client.post(
+        "/api/auth/register",
+        json={"email": "logout@example.com", "password": "pass123"},
+    )
+    token = reg.json()["access_token"]
+    response = await client.post(
+        "/api/auth/logout",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["message"] == "Выход выполнен"
+
+
+@pytest.mark.asyncio
+async def test_refresh_invalid_token(client: AsyncClient):
+    """Refresh с невалидным токеном → 401."""
+    response = await client.post(
+        "/api/auth/refresh",
+        json={"refresh_token": "invalid-token"},
+    )
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_register_invalid_email(client: AsyncClient):
+    """Регистрация с невалидным email → 422."""
+    response = await client.post(
+        "/api/auth/register",
+        json={"email": "not-an-email", "password": "pass123"},
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_login_nonexistent_user(client: AsyncClient):
+    """Вход несуществующего пользователя → 401."""
+    response = await client.post(
+        "/api/auth/login",
+        json={"email": "nobody@example.com", "password": "pass123"},
+    )
+    assert response.status_code == 401

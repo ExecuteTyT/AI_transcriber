@@ -83,9 +83,21 @@ async def _call_openai(prompt: str) -> tuple[str, int]:
 
 def _split_text(text: str, max_chars: int) -> list[str]:
     """Разбиение текста на чанки по границам предложений."""
+    if max_chars <= 0:
+        return [text] if text else []
+
     chunks = []
     current = ""
     for sentence in text.replace(". ", ".\n").split("\n"):
+        # Если одно предложение длиннее лимита — принудительно разрезаем
+        if len(sentence) > max_chars:
+            if current.strip():
+                chunks.append(current.strip())
+                current = ""
+            for i in range(0, len(sentence), max_chars):
+                chunks.append(sentence[i : i + max_chars].strip())
+            continue
+
         if len(current) + len(sentence) > max_chars and current:
             chunks.append(current.strip())
             current = ""

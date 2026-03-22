@@ -1,6 +1,7 @@
+import os
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -63,15 +64,16 @@ async def upload_file(
             detail="S3-хранилище не настроено",
         )
 
-    file_key = s3_service.generate_file_key(file.filename or "audio")
+    safe_filename = os.path.basename(file.filename) if file.filename else "audio"
+    file_key = s3_service.generate_file_key(safe_filename)
     s3_service.upload_file(file_data, file_key, file.content_type or "application/octet-stream")
 
     # Создание записи в БД
     transcription = Transcription(
         user_id=user.id,
-        title=file.filename or "Без названия",
+        title=safe_filename or "Без названия",
         file_key=file_key,
-        original_filename=file.filename or "",
+        original_filename=safe_filename,
         content_type=file.content_type or "",
         status="queued",
     )
@@ -83,7 +85,7 @@ async def upload_file(
     try:
         from app.tasks.transcribe import process_transcription
         process_transcription.delay(str(transcription.id))
-    except Exception:
+    except (ImportError, ConnectionError, OSError):
         pass  # Celery может быть недоступен в dev-окружении
 
     return TranscriptionUploadResponse(
@@ -137,8 +139,8 @@ async def get_transcription_status(
 
 @router.get("", response_model=PaginatedTranscriptions)
 async def list_transcriptions(
-    limit: int = 20,
-    offset: int = 0,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -188,7 +190,7 @@ async def delete_transcription(
     if s3_service and transcription.file_key:
         try:
             s3_service.delete_file(transcription.file_key)
-        except Exception:
+        except (OSError, Exception):
             pass  # Файл мог быть уже удалён
 
     await db.delete(transcription)

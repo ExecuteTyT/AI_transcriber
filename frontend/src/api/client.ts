@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 
 const api = axios.create({
   baseURL: "/api",
@@ -6,7 +6,7 @@ const api = axios.create({
 });
 
 // Request interceptor: добавляем JWT access token
-api.interceptors.request.use((config) => {
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem("access_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -17,10 +17,17 @@ api.interceptors.request.use((config) => {
 // Response interceptor: auto-refresh при 401
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  async (error: AxiosError) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !(originalRequest as InternalAxiosRequestConfig & { _retry?: boolean })
+        ._retry
+    ) {
+      (
+        originalRequest as InternalAxiosRequestConfig & { _retry?: boolean }
+      )._retry = true;
       const refreshToken = localStorage.getItem("refresh_token");
       if (refreshToken) {
         try {
