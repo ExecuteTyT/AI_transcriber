@@ -1,8 +1,12 @@
 import logging
 import sys
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from app.api.ai_analysis import router as ai_analysis_router
 from app.api.auth import router as auth_router
@@ -21,6 +25,15 @@ logging.basicConfig(
     stream=sys.stdout,
 )
 
+# Rate limiter
+import os
+_env = os.environ.get("ENVIRONMENT", settings.ENVIRONMENT)
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["100/minute"],
+    enabled=_env not in ("testing", "test"),
+)
+
 app = FastAPI(
     title="AI Voice API",
     description="Сервис умной транскрибации аудио и видео",
@@ -28,6 +41,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

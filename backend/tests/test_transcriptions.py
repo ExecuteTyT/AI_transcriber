@@ -158,8 +158,13 @@ async def test_crud_with_db_record(client: AsyncClient, db_session):
     assert "00:00:00,000" in resp.text
     assert "Привет мир" in resp.text
 
-    # Export invalid format
+    # Export DOCX
     resp = await client.get(f"/api/transcriptions/{t_id}/export/docx", headers=_auth_headers(token))
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+    # Export invalid format
+    resp = await client.get(f"/api/transcriptions/{t_id}/export/pdf", headers=_auth_headers(token))
     assert resp.status_code == 400
 
     # DELETE

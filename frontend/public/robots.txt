@@ -5,6 +5,8 @@ Allow: /video-v-tekst
 Allow: /nejroset-transkribaciya
 Allow: /rasshifrovka-golosovyh
 Allow: /pricing
+Allow: /blog
+Allow: /blog/
 Allow: /login
 Allow: /register
 Disallow: /api/
@@ -13,4 +15,4 @@ Disallow: /upload
 Disallow: /transcription/
 Disallow: /subscription
 
-Sitemap: https://aivoice.ru/sitemap.xml
+Sitemap: https://voitra.ru/sitemap.xml

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const features = [
   {
@@ -68,15 +69,23 @@ const faqs = [
 export default function Landing() {
   return (
     <div className="min-h-screen bg-white overflow-hidden">
+      <Helmet>
+        <title>Voitra — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
+        <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 15 мин/мес. От 290 ₽/мес." />
+        <link rel="canonical" href="https://voitra.ru/" />
+        <meta property="og:title" content="Voitra — Транскрибация аудио и видео в текст онлайн" />
+        <meta property="og:description" content="Превращайте аудио и видео в текст, саммари и ключевые тезисы с помощью ИИ. Разметка спикеров, таймкоды, экспорт. Бесплатно 15 мин/мес." />
+        <meta property="og:url" content="https://voitra.ru/" />
+      </Helmet>
       {/* ─── Header ─── */}
       <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200/50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text">AI Voice</Link>
+          <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#features" className="hover:text-gray-900 transition">Возможности</a>
             <a href="#use-cases" className="hover:text-gray-900 transition">Кому</a>
             <a href="#pricing" className="hover:text-gray-900 transition">Тарифы</a>
-            <a href="#faq" className="hover:text-gray-900 transition">FAQ</a>
+            <Link to="/blog" className="hover:text-gray-900 transition">Блог</Link>
           </nav>
           <div className="flex items-center gap-3">
             <Link to="/login" className="btn-ghost text-sm">Войти</Link>
@@ -133,7 +142,7 @@ export default function Landing() {
               <div className="w-3 h-3 rounded-full bg-amber-400" />
               <div className="w-3 h-3 rounded-full bg-green-400" />
               <div className="flex-1 flex justify-center">
-                <div className="px-6 py-1 bg-white rounded-lg text-xs text-gray-400 border border-gray-200">aivoice.ru</div>
+                <div className="px-6 py-1 bg-white rounded-lg text-xs text-gray-400 border border-gray-200">voitra.ru</div>
               </div>
             </div>
             {/* Content preview */}
@@ -227,7 +236,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Аудитория</p>
-            <h2 className="section-heading">Кому подходит AI Voice</h2>
+            <h2 className="section-heading">Кому подходит Voitra</h2>
           </div>
           <div className="grid md:grid-cols-4 gap-5">
             {useCases.map((uc) => (
@@ -355,7 +364,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <span className="font-bold gradient-text text-lg">AI Voice</span>
+              <span className="font-bold gradient-text text-lg">Voitra</span>
               <span className="text-sm text-gray-400">&copy; 2026</span>
             </div>
             <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">
@@ -363,6 +372,7 @@ export default function Landing() {
               <Link to="/video-v-tekst" className="hover:text-gray-900 transition">Видео в текст</Link>
               <Link to="/nejroset-transkribaciya" className="hover:text-gray-900 transition">Нейросеть</Link>
               <Link to="/rasshifrovka-golosovyh" className="hover:text-gray-900 transition">Голосовые</Link>
+              <Link to="/blog" className="hover:text-gray-900 transition">Блог</Link>
               <Link to="/pricing" className="hover:text-gray-900 transition">Тарифы</Link>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 
@@ -39,6 +40,15 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    to: "/profile",
+    label: "Профиль",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+    ),
+  },
 ];
 
 const planNames: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
@@ -47,6 +57,7 @@ export default function Layout() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -55,81 +66,124 @@ export default function Layout() {
 
   const usagePercent = user ? Math.min(100, Math.round((user.minutes_used / user.minutes_limit) * 100)) : 0;
 
+  const sidebarContent = (
+    <>
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Основная навигация">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.to;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isActive
+                  ? "bg-primary-50 text-primary-700 shadow-sm"
+                  : "text-gray-600 hover:bg-surface-100 hover:text-gray-900"
+              }`}
+              aria-current={isActive ? "page" : undefined}
+            >
+              <span className={isActive ? "text-primary-600" : "text-gray-400"}>
+                {item.icon}
+              </span>
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* User panel */}
+      {user && (
+        <div className="p-4 m-3 rounded-2xl bg-surface-50 border border-gray-100">
+          {/* Usage */}
+          <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
+            <span>{user.minutes_used} / {user.minutes_limit} мин</span>
+            <span className="badge bg-primary-50 text-primary-700 !text-[10px] !px-2 !py-0.5">
+              {planNames[user.plan] || user.plan}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4" role="progressbar" aria-valuenow={usagePercent} aria-valuemin={0} aria-valuemax={100} aria-label="Использование лимита">
+            <div
+              className={`h-1.5 rounded-full transition-all duration-500 ${
+                usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-primary-500"
+              }`}
+              style={{ width: `${usagePercent}%` }}
+            />
+          </div>
+
+          {/* User info */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+              {(user.name || user.email || "U")[0].toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{user.name || "Пользователь"}</p>
+              <p className="text-xs text-gray-400 truncate">{user.email}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="mt-3 w-full text-sm text-gray-500 hover:text-red-500 hover:bg-red-50 py-2 rounded-xl transition-all duration-200"
+          >
+            Выйти
+          </button>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="flex min-h-screen bg-surface-50">
-      {/* Sidebar */}
-      <aside className="w-[260px] bg-white border-r border-gray-100 flex flex-col">
+      {/* Mobile header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 h-14 flex items-center justify-between px-4">
+        <Link to="/" className="text-lg font-bold gradient-text">Voitra</Link>
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 rounded-lg hover:bg-surface-100 transition"
+          aria-label={mobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
+        >
+          {mobileMenuOpen ? (
+            <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <aside
+        className={`md:hidden fixed top-14 left-0 bottom-0 z-40 w-[280px] bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-[260px] bg-white border-r border-gray-100 flex-col flex-shrink-0">
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-gray-100">
-          <Link to="/" className="text-xl font-bold gradient-text">AI Voice</Link>
+          <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
         </div>
-
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Основная навигация">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.to;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? "bg-primary-50 text-primary-700 shadow-sm"
-                    : "text-gray-600 hover:bg-surface-100 hover:text-gray-900"
-                }`}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <span className={isActive ? "text-primary-600" : "text-gray-400"}>
-                  {item.icon}
-                </span>
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* User panel */}
-        {user && (
-          <div className="p-4 m-3 rounded-2xl bg-surface-50 border border-gray-100">
-            {/* Usage */}
-            <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
-              <span>{user.minutes_used} / {user.minutes_limit} мин</span>
-              <span className="badge bg-primary-50 text-primary-700 !text-[10px] !px-2 !py-0.5">
-                {planNames[user.plan] || user.plan}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4">
-              <div
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-primary-500"
-                }`}
-                style={{ width: `${usagePercent}%` }}
-              />
-            </div>
-
-            {/* User info */}
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                {(user.name || user.email)[0].toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{user.name || "Пользователь"}</p>
-                <p className="text-xs text-gray-400 truncate">{user.email}</p>
-              </div>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="mt-3 w-full text-sm text-gray-500 hover:text-red-500 hover:bg-red-50 py-2 rounded-xl transition-all duration-200"
-            >
-              Выйти
-            </button>
-          </div>
-        )}
+        {sidebarContent}
       </aside>
 
       {/* Main */}
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 pt-14 md:pt-0 p-4 md:p-8 overflow-auto">
         <div className="max-w-5xl mx-auto animate-fade-in">
           <Outlet />
         </div>

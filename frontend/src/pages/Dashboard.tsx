@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { transcriptionApi, type TranscriptionListItem } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
@@ -22,15 +22,19 @@ export default function Dashboard() {
   const [items, setItems] = useState<TranscriptionListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const loadTranscriptions = async () => {
     setLoading(true);
+    setError("");
     try {
       const { data } = await transcriptionApi.list();
       setItems(data.items);
       setTotal(data.total);
     } catch {
-      // ignore
+      setError("Не удалось загрузить список транскрипций");
     } finally {
       setLoading(false);
     }
@@ -40,10 +44,18 @@ export default function Dashboard() {
     loadTranscriptions();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Удалить транскрипцию?")) return;
-    await transcriptionApi.delete(id);
-    loadTranscriptions();
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`Удалить "${title}"?`)) return;
+    setDeletingId(id);
+    try {
+      await transcriptionApi.delete(id);
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      setTotal((prev) => prev - 1);
+    } catch {
+      setError("Не удалось удалить транскрипцию");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const formatDuration = (sec: number | null) => {
@@ -53,10 +65,20 @@ export default function Dashboard() {
     return `${m}:${String(s).padStart(2, "0")}`;
   };
 
+  const filteredItems = useMemo(() => {
+    if (!search.trim()) return items;
+    const q = search.toLowerCase();
+    return items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        item.original_filename.toLowerCase().includes(q)
+    );
+  }, [items, search]);
+
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Мои транскрипции</h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -73,7 +95,7 @@ export default function Dashboard() {
 
       {/* Usage card */}
       {user && (
-        <div className="card p-5 mb-8">
+        <div className="card p-5 mb-6">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium text-gray-700">Использование</span>
             <span className="text-sm text-gray-500">
@@ -89,6 +111,33 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Search */}
+      {items.length > 0 && (
+        <div className="relative mb-6">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Поиск по названию..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="input-field !pl-10"
+            aria-label="Поиск транскрипций"
+          />
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="bg-red-50 text-red-600 px-5 py-4 rounded-xl text-sm border border-red-100 mb-6 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={loadTranscriptions} className="text-red-700 hover:underline font-medium ml-4">
+            Повторить
+          </button>
+        </div>
+      )}
+
       {/* List */}
       {loading ? (
         <div className="space-y-3">
@@ -99,7 +148,7 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
-      ) : items.length === 0 ? (
+      ) : filteredItems.length === 0 && items.length === 0 ? (
         <div className="card p-16 text-center">
           <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary-50 flex items-center justify-center">
             <svg className="w-8 h-8 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -115,9 +164,11 @@ export default function Dashboard() {
             Загрузить файл
           </Link>
         </div>
+      ) : filteredItems.length === 0 ? (
+        <p className="text-center text-gray-400 py-12">Ничего не найдено по запросу "{search}"</p>
       ) : (
         <div className="space-y-3">
-          {items.map((item, idx) => (
+          {filteredItems.map((item, idx) => (
             <div
               key={item.id}
               className="card-hover p-5 flex items-center gap-4 animate-fade-in"
@@ -134,7 +185,7 @@ export default function Dashboard() {
               <Link to={`/transcription/${item.id}`} className="flex-1 min-w-0">
                 <h3 className="font-medium text-gray-900 truncate">{item.title}</h3>
                 <div className="text-xs text-gray-400 mt-1 flex items-center gap-3">
-                  <span>{new Date(item.created_at).toLocaleDateString("ru")}</span>
+                  <span>{new Date(item.created_at).toLocaleDateString("ru-RU")}</span>
                   <span>{formatDuration(item.duration_sec)}</span>
                   {item.language && <span className="uppercase">{item.language}</span>}
                 </div>
@@ -146,13 +197,21 @@ export default function Dashboard() {
                   {STATUS_LABELS[item.status] || item.status}
                 </span>
                 <button
-                  onClick={() => handleDelete(item.id)}
-                  className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
-                  title="Удалить"
+                  onClick={() => handleDelete(item.id, item.title)}
+                  disabled={deletingId === item.id}
+                  className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label={`Удалить ${item.title}`}
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
+                  {deletingId === item.id ? (
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>

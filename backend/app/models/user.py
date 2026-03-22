@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String
+from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -15,6 +15,13 @@ class User(Base, UUIDMixin, TimestampMixin):
     plan: Mapped[str] = mapped_column(String(20), default="free")  # free/start/pro
     minutes_used: Mapped[int] = mapped_column(Integer, default=0)
     minutes_limit: Mapped[int] = mapped_column(Integer, default=15)
+
+    # Email verification
+    is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Password reset token (хранится хеш, не сам токен)
+    password_reset_token_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    password_reset_expires_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     transcriptions = relationship("Transcription", back_populates="user", lazy="selectin")
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")

@@ -34,7 +34,7 @@ export default function Login() {
       <div className="relative w-full max-w-md mx-4 animate-fade-up">
         {/* Logo */}
         <Link to="/" className="flex justify-center mb-8">
-          <span className="text-2xl font-bold gradient-text">AI Voice</span>
+          <span className="text-2xl font-bold gradient-text">Voitra</span>
         </Link>
 
         <div className="card p-8 shadow-elevated">
@@ -73,12 +73,18 @@ export default function Login() {
                 required
               />
             </div>
-            <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 disabled:opacity-50">
+            <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 disabled:opacity-50 disabled:cursor-not-allowed">
               {loading ? "Вход..." : "Войти"}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+          <div className="mt-4 text-center">
+            <Link to="/forgot-password" className="text-sm text-gray-500 hover:text-primary-600 transition">
+              Забыли пароль?
+            </Link>
+          </div>
+
+          <div className="mt-4 pt-6 border-t border-gray-100 text-center">
             <p className="text-sm text-gray-500">
               Нет аккаунта?{" "}
               <Link to="/register" className="text-primary-600 font-medium hover:text-primary-700 transition">

@@ -1,11 +1,14 @@
 {
-  "name": "aivoice-frontend",
+  "name": "voitra-frontend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-server && npx tsx scripts/prerender.ts",
+    "build:client": "tsc -b && vite build",
+    "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist-server",
+    "prerender": "npx tsx scripts/prerender.ts",
     "preview": "vite preview",
     "test": "vitest"
   },
@@ -14,6 +17,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.3.5",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.1.1",
     "zustand": "^5.0.3"
   },
@@ -27,6 +31,7 @@
     "jsdom": "^25.0.1",
     "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.3",
     "vite": "^6.0.7",
     "vitest": "^2.1.8"

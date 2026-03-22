@@ -1,7 +1,8 @@
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import extract, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -11,8 +12,47 @@ from app.models.transcription import Transcription
 from app.models.user import User
 from app.schemas.ai_analysis import AiAnalysisResponse
 from app.services.ai_analysis import generate_analysis
+from app.services.plans import get_plan
 
 router = APIRouter(prefix="/api/transcriptions", tags=["ai-analysis"])
+
+
+async def _check_analysis_limits(
+    user: User,
+    analysis_type: str,
+    db: AsyncSession,
+) -> None:
+    """Проверка лимитов AI-анализа по тарифу."""
+    plan = get_plan(user.plan)
+
+    # Action items только для pro
+    if analysis_type == "action_items" and not plan.action_items:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Action items доступны только на тарифе Про",
+        )
+
+    # Лимит саммари для free: 3/мес (распространяется на summary и key_points)
+    if plan.ai_summaries != -1 and analysis_type in ("summary", "key_points"):
+        now = datetime.now(timezone.utc)
+        count_result = await db.execute(
+            select(func.count())
+            .select_from(AiAnalysis)
+            .join(Transcription, AiAnalysis.transcription_id == Transcription.id)
+            .where(
+                Transcription.user_id == user.id,
+                AiAnalysis.type.in_(["summary", "key_points"]),
+                extract("month", AiAnalysis.created_at) == now.month,
+                extract("year", AiAnalysis.created_at) == now.year,
+            )
+        )
+        used = count_result.scalar() or 0
+        if used >= plan.ai_summaries:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Лимит AI-анализа исчерпан ({used}/{plan.ai_summaries} в месяц). "
+                "Перейдите на расширенный тариф.",
+            )
 
 
 async def _get_or_create_analysis(
@@ -49,6 +89,9 @@ async def _get_or_create_analysis(
     cached = result.scalar_one_or_none()
     if cached:
         return cached
+
+    # Проверяем лимиты тарифа (только если нет кэша)
+    await _check_analysis_limits(user, analysis_type, db)
 
     # Генерируем анализ
     content, tokens = await generate_analysis(transcription.full_text, analysis_type)

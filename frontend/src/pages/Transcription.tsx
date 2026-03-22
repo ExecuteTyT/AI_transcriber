@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   transcriptionApi,
   type Transcription as TranscriptionType,
@@ -15,7 +15,12 @@ const SPEAKER_COLORS = [
   "bg-teal-50 text-teal-700 border-teal-200",
 ];
 
-type Tab = "transcript" | "summary" | "key_points";
+const SPEAKER_DOT_COLORS = [
+  "bg-blue-500", "bg-violet-500", "bg-amber-500",
+  "bg-emerald-500", "bg-pink-500", "bg-teal-500",
+];
+
+type Tab = "transcript" | "summary" | "key_points" | "action_items";
 
 export default function Transcription() {
   const { id } = useParams<{ id: string }>();
@@ -27,36 +32,74 @@ export default function Transcription() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
+  // Speaker UI state
+  const [speakerNames, setSpeakerNames] = useState<Record<string, string>>({});
+  const [activeSpeakers, setActiveSpeakers] = useState<Set<string> | null>(null);
+  const [editingSpeaker, setEditingSpeaker] = useState<string | null>(null);
+
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollCountRef = useRef(0);
+  const MAX_POLLS = 600; // 30 min max (600 * 3s)
+
   useEffect(() => {
     if (!id) return;
-    let polling: ReturnType<typeof setInterval> | null = null;
+    pollCountRef.current = 0;
     const load = async () => {
-      const { data } = await transcriptionApi.getById(id);
-      setTranscription(data);
-      setLoading(false);
-      if (data.status === "queued" || data.status === "processing") {
-        polling = setInterval(async () => {
-          const { data: updated } = await transcriptionApi.getById(id);
-          setTranscription(updated);
-          if (updated.status === "completed" || updated.status === "failed") {
-            if (polling) clearInterval(polling);
-          }
-        }, 3000);
+      try {
+        const { data } = await transcriptionApi.getById(id);
+        setTranscription(data);
+        setLoading(false);
+        if (data.status === "queued" || data.status === "processing") {
+          pollingRef.current = setInterval(async () => {
+            pollCountRef.current++;
+            if (pollCountRef.current > MAX_POLLS) {
+              if (pollingRef.current) clearInterval(pollingRef.current);
+              return;
+            }
+            try {
+              const { data: updated } = await transcriptionApi.getById(id);
+              setTranscription(updated);
+              if (updated.status === "completed" || updated.status === "failed") {
+                if (pollingRef.current) clearInterval(pollingRef.current);
+              }
+            } catch { /* polling error — retry next interval */ }
+          }, 3000);
+        }
+      } catch {
+        setLoading(false);
       }
     };
     load();
-    return () => { if (polling) clearInterval(polling); };
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [id]);
 
+  // AI analysis loading
   useEffect(() => {
     if (!id || tab === "transcript") { setAnalysis(null); return; }
     setAnalysisLoading(true);
-    const fetchAnalysis = tab === "summary" ? transcriptionApi.getSummary : transcriptionApi.getKeyPoints;
+    const fetchers: Record<string, (id: string) => ReturnType<typeof transcriptionApi.getSummary>> = {
+      summary: transcriptionApi.getSummary,
+      key_points: transcriptionApi.getKeyPoints,
+      action_items: transcriptionApi.getActionItems,
+    };
+    const fetchAnalysis = fetchers[tab];
+    if (!fetchAnalysis) return;
     fetchAnalysis(id)
       .then(({ data }) => setAnalysis(data))
       .catch(() => setAnalysis(null))
       .finally(() => setAnalysisLoading(false));
   }, [id, tab]);
+
+  // Extract unique speakers
+  const uniqueSpeakers = useMemo(() => {
+    const speakers: string[] = [];
+    for (const seg of transcription?.segments || []) {
+      if (seg.speaker && !speakers.includes(seg.speaker)) {
+        speakers.push(seg.speaker);
+      }
+    }
+    return speakers;
+  }, [transcription?.segments]);
 
   const formatTime = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -64,14 +107,36 @@ export default function Transcription() {
     return `${m}:${String(s).padStart(2, "0")}`;
   };
 
-  const speakerColorMap: Record<string, string> = {};
-  let colorIndex = 0;
   const getSpeakerColor = (speaker: string) => {
-    if (!speakerColorMap[speaker]) {
-      speakerColorMap[speaker] = SPEAKER_COLORS[colorIndex % SPEAKER_COLORS.length];
-      colorIndex++;
-    }
-    return speakerColorMap[speaker];
+    const idx = uniqueSpeakers.indexOf(speaker);
+    return SPEAKER_COLORS[idx >= 0 ? idx % SPEAKER_COLORS.length : 0];
+  };
+
+  const getSpeakerDot = (speaker: string) => {
+    const idx = uniqueSpeakers.indexOf(speaker);
+    return SPEAKER_DOT_COLORS[idx >= 0 ? idx % SPEAKER_DOT_COLORS.length : 0];
+  };
+
+  const getDisplayName = (speaker: string) => speakerNames[speaker] || speaker;
+
+  const toggleSpeaker = (speaker: string) => {
+    setActiveSpeakers((prev) => {
+      if (prev === null) {
+        const newSet = new Set(uniqueSpeakers);
+        newSet.delete(speaker);
+        return newSet;
+      }
+      const next = new Set(prev);
+      if (next.has(speaker)) next.delete(speaker);
+      else next.add(speaker);
+      if (next.size === uniqueSpeakers.length) return null;
+      return next;
+    });
+  };
+
+  const handleRenameSpeaker = (original: string, newName: string) => {
+    setSpeakerNames((prev) => ({ ...prev, [original]: newName || original }));
+    setEditingSpeaker(null);
   };
 
   const handleCopy = () => {
@@ -82,7 +147,7 @@ export default function Transcription() {
     }
   };
 
-  const handleExport = async (format: "txt" | "srt") => {
+  const handleExport = async (format: "txt" | "srt" | "docx") => {
     if (!id) return;
     const { data } = await transcriptionApi.exportFile(id, format);
     const url = URL.createObjectURL(data as Blob);
@@ -109,9 +174,23 @@ export default function Transcription() {
     );
   }
 
-  if (!transcription) return <p className="text-red-500">Не найдено</p>;
+  if (!transcription) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="text-center card p-10">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-surface-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Транскрипция не найдена</h2>
+          <p className="text-sm text-gray-500 mb-6">Возможно, она была удалена или ссылка неверна.</p>
+          <Link to="/dashboard" className="btn-primary inline-block !py-2.5 !px-8">К списку транскрипций</Link>
+        </div>
+      </div>
+    );
+  }
 
-  // Processing / Queued
   if (transcription.status === "queued" || transcription.status === "processing") {
     return (
       <div className="flex items-center justify-center py-24">
@@ -145,15 +224,22 @@ export default function Transcription() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold mb-2 text-red-600">Ошибка обработки</h2>
-          <p className="text-sm text-gray-500">{transcription.error_message}</p>
+          <p className="text-sm text-gray-500 mb-6">{transcription.error_message || "Произошла неизвестная ошибка"}</p>
+          <div className="flex items-center justify-center gap-3">
+            <Link to="/upload" className="btn-primary !py-2.5 !px-6">Загрузить заново</Link>
+            <Link to="/dashboard" className="btn-secondary !py-2.5 !px-6">К списку</Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  const filteredSegments = transcription.segments?.filter((seg) =>
-    search ? seg.text.toLowerCase().includes(search.toLowerCase()) : true
-  ) || [];
+  // Filter by search + active speakers
+  const filteredSegments = (transcription.segments || []).filter((seg) => {
+    if (search && !seg.text.toLowerCase().includes(search.toLowerCase())) return false;
+    if (activeSpeakers !== null && seg.speaker && !activeSpeakers.has(seg.speaker)) return false;
+    return true;
+  });
 
   return (
     <div className="animate-fade-in">
@@ -178,7 +264,7 @@ export default function Transcription() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={handleCopy} className="btn-secondary !py-2 !px-4 text-sm flex items-center gap-2">
             {copied ? (
               <><svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg> Скопировано</>
@@ -188,19 +274,23 @@ export default function Transcription() {
           </button>
           <button onClick={() => handleExport("txt")} className="btn-secondary !py-2 !px-4 text-sm">TXT</button>
           <button onClick={() => handleExport("srt")} className="btn-secondary !py-2 !px-4 text-sm">SRT</button>
+          <button onClick={() => handleExport("docx")} className="btn-secondary !py-2 !px-4 text-sm">DOCX</button>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-surface-100 rounded-xl w-fit mb-6">
-        {([["transcript", "Транскрипт"], ["summary", "Саммари"], ["key_points", "Тезисы"]] as const).map(([key, label]) => (
+        {([
+          ["transcript", "Транскрипт"],
+          ["summary", "Саммари"],
+          ["key_points", "Тезисы"],
+          ["action_items", "Action items"],
+        ] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              tab === key
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+              tab === key ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
             }`}
           >
             {label}
@@ -208,9 +298,56 @@ export default function Transcription() {
         ))}
       </div>
 
-      {/* Content */}
+      {/* Transcript tab */}
       {tab === "transcript" && (
         <>
+          {/* Speaker filter chips */}
+          {uniqueSpeakers.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="text-xs text-gray-400 mr-1">Спикеры:</span>
+              {uniqueSpeakers.map((speaker) => {
+                const isActive = activeSpeakers === null || activeSpeakers.has(speaker);
+                return (
+                  <div key={speaker} className="flex items-center gap-1">
+                    <button
+                      onClick={() => toggleSpeaker(speaker)}
+                      className={`badge border transition-all duration-200 cursor-pointer ${
+                        isActive
+                          ? getSpeakerColor(speaker)
+                          : "bg-gray-100 text-gray-400 border-gray-200 opacity-50"
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full mr-1.5 ${isActive ? getSpeakerDot(speaker) : "bg-gray-300"}`} />
+                      {editingSpeaker === speaker ? (
+                        <input
+                          autoFocus
+                          defaultValue={getDisplayName(speaker)}
+                          className="bg-transparent border-none outline-none w-20 text-xs"
+                          onBlur={(e) => handleRenameSpeaker(speaker, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleRenameSpeaker(speaker, e.currentTarget.value);
+                            if (e.key === "Escape") setEditingSpeaker(null);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span onDoubleClick={() => setEditingSpeaker(speaker)}>
+                          {getDisplayName(speaker)}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+              {activeSpeakers !== null && (
+                <button onClick={() => setActiveSpeakers(null)} className="text-xs text-primary-600 hover:underline ml-1">
+                  Показать всех
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Search */}
           <div className="relative mb-4">
             <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -223,25 +360,32 @@ export default function Transcription() {
               className="input-field !pl-10"
             />
           </div>
-          <div className="card p-6 max-h-[70vh] overflow-y-auto space-y-3">
-            {filteredSegments.map((seg, i) => (
-              <div key={i} className="flex items-start gap-3 text-sm group hover:bg-surface-50 -mx-2 px-2 py-1.5 rounded-lg transition">
-                <span className="text-gray-400 font-mono text-xs w-12 flex-shrink-0 pt-0.5">
-                  {formatTime(seg.start)}
-                </span>
-                {seg.speaker && (
-                  <span className={`badge border !text-[10px] flex-shrink-0 ${getSpeakerColor(seg.speaker)}`}>
-                    {seg.speaker}
+
+          {/* Segments */}
+          <div className="card p-6 max-h-[70vh] overflow-y-auto space-y-1">
+            {filteredSegments.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-8">Нет совпадений</p>
+            ) : (
+              filteredSegments.map((seg, i) => (
+                <div key={i} className="flex items-start gap-3 text-sm group hover:bg-surface-50 -mx-2 px-2 py-1.5 rounded-lg transition">
+                  <span className="text-gray-400 font-mono text-xs w-12 flex-shrink-0 pt-0.5">
+                    {formatTime(seg.start)}
                   </span>
-                )}
-                <span className="text-gray-700 leading-relaxed">{seg.text}</span>
-              </div>
-            ))}
+                  {seg.speaker && (
+                    <span className={`badge border !text-[10px] flex-shrink-0 ${getSpeakerColor(seg.speaker)}`}>
+                      {getDisplayName(seg.speaker)}
+                    </span>
+                  )}
+                  <span className="text-gray-700 leading-relaxed">{seg.text}</span>
+                </div>
+              ))
+            )}
           </div>
         </>
       )}
 
-      {(tab === "summary" || tab === "key_points") && (
+      {/* AI analysis tabs */}
+      {(tab === "summary" || tab === "key_points" || tab === "action_items") && (
         <div className="card p-8">
           {analysisLoading ? (
             <div className="flex items-center gap-3 text-gray-500">

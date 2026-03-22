@@ -1,5 +1,9 @@
 import asyncio
+import os
 from collections.abc import AsyncGenerator
+
+# Disable rate limiting in tests — must be set before importing app
+os.environ["ENVIRONMENT"] = "testing"
 
 import pytest
 import pytest_asyncio
