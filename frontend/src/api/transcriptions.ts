@@ -50,13 +50,21 @@ export interface AiAnalysis {
 }
 
 export const transcriptionApi = {
-  upload: (file: File) => {
+  upload: (file: File, onProgress?: (percent: number) => void) => {
     const formData = new FormData();
     formData.append("file", file);
     return api.post<{ id: string; status: string; message: string }>(
       "/transcriptions/upload",
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: onProgress
+          ? (e) => {
+              const percent = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
+              onProgress(percent);
+            }
+          : undefined,
+      }
     );
   },
 

@@ -1,32 +1,51 @@
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { transcriptionApi } from "@/api/transcriptions";
+import { useAuthStore } from "@/store/authStore";
 
 const ACCEPTED_TYPES = {
   "audio/*": [".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".webm"],
   "video/*": [".mp4", ".webm", ".mov"],
 };
 
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
+
 export default function Upload() {
+  const { user } = useAuthStore();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
+  const [fileName, setFileName] = useState("");
   const navigate = useNavigate();
 
   const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
+    async (acceptedFiles: File[], fileRejections: any[]) => {
+      // Handle rejections from react-dropzone (size, type)
+      if (fileRejections.length > 0) {
+        const rejection = fileRejections[0];
+        if (rejection.errors?.some((e: any) => e.code === "file-too-large")) {
+          setError("Файл слишком большой. Максимум 500 МБ.");
+        } else if (rejection.errors?.some((e: any) => e.code === "file-invalid-type")) {
+          setError("Неподдерживаемый формат файла.");
+        } else {
+          setError("Файл не принят.");
+        }
+        return;
+      }
+
       const file = acceptedFiles[0];
       if (!file) return;
 
       setError("");
       setUploading(true);
       setProgress(0);
+      setFileName(file.name);
 
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const { data } = await transcriptionApi.upload(file);
+        const { data } = await transcriptionApi.upload(file, (percent) => {
+          setProgress(percent);
+        });
         navigate(`/transcription/${data.id}`);
       } catch (err: unknown) {
         const message =
@@ -35,6 +54,8 @@ export default function Upload() {
         setError(message);
       } finally {
         setUploading(false);
+        setProgress(0);
+        setFileName("");
       }
     },
     [navigate]
@@ -43,8 +64,9 @@ export default function Upload() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: ACCEPTED_TYPES,
-    maxSize: 500 * 1024 * 1024,
+    maxSize: MAX_FILE_SIZE,
     multiple: false,
+    disabled: uploading,
   });
 
   return (
@@ -70,9 +92,11 @@ export default function Upload() {
               </svg>
             </div>
             <p className="text-gray-600 font-medium">Загрузка файла...</p>
+            {fileName && <p className="text-xs text-gray-400 truncate max-w-xs mx-auto">{fileName}</p>}
             <div className="w-48 mx-auto bg-gray-200 rounded-full h-2">
-              <div className="bg-primary-500 h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
+              <div className="bg-primary-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
+            <p className="text-xs text-gray-400">{progress}%</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -98,6 +122,16 @@ export default function Upload() {
           </div>
         )}
       </div>
+
+      {/* Minutes remaining info */}
+      {user && (
+        <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+          <span>Осталось: {Math.max(0, user.minutes_limit - user.minutes_used)} мин из {user.minutes_limit}</span>
+          {user.minutes_used >= user.minutes_limit && (
+            <Link to="/subscription" className="text-primary-600 hover:underline font-medium">Увеличить лимит</Link>
+          )}
+        </div>
+      )}
 
       {error && (
         <div className="mt-6 bg-red-50 text-red-600 px-5 py-4 rounded-xl text-sm border border-red-100 flex items-center gap-3">

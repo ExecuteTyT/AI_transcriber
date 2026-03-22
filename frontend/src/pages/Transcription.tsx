@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   transcriptionApi,
   type Transcription as TranscriptionType,
@@ -37,25 +37,40 @@ export default function Transcription() {
   const [activeSpeakers, setActiveSpeakers] = useState<Set<string> | null>(null);
   const [editingSpeaker, setEditingSpeaker] = useState<string | null>(null);
 
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollCountRef = useRef(0);
+  const MAX_POLLS = 600; // 30 min max (600 * 3s)
+
   useEffect(() => {
     if (!id) return;
-    let polling: ReturnType<typeof setInterval> | null = null;
+    pollCountRef.current = 0;
     const load = async () => {
-      const { data } = await transcriptionApi.getById(id);
-      setTranscription(data);
-      setLoading(false);
-      if (data.status === "queued" || data.status === "processing") {
-        polling = setInterval(async () => {
-          const { data: updated } = await transcriptionApi.getById(id);
-          setTranscription(updated);
-          if (updated.status === "completed" || updated.status === "failed") {
-            if (polling) clearInterval(polling);
-          }
-        }, 3000);
+      try {
+        const { data } = await transcriptionApi.getById(id);
+        setTranscription(data);
+        setLoading(false);
+        if (data.status === "queued" || data.status === "processing") {
+          pollingRef.current = setInterval(async () => {
+            pollCountRef.current++;
+            if (pollCountRef.current > MAX_POLLS) {
+              if (pollingRef.current) clearInterval(pollingRef.current);
+              return;
+            }
+            try {
+              const { data: updated } = await transcriptionApi.getById(id);
+              setTranscription(updated);
+              if (updated.status === "completed" || updated.status === "failed") {
+                if (pollingRef.current) clearInterval(pollingRef.current);
+              }
+            } catch { /* polling error — retry next interval */ }
+          }, 3000);
+        }
+      } catch {
+        setLoading(false);
       }
     };
     load();
-    return () => { if (polling) clearInterval(polling); };
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [id]);
 
   // AI analysis loading
@@ -159,7 +174,22 @@ export default function Transcription() {
     );
   }
 
-  if (!transcription) return <p className="text-red-500">Не найдено</p>;
+  if (!transcription) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="text-center card p-10">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-surface-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Транскрипция не найдена</h2>
+          <p className="text-sm text-gray-500 mb-6">Возможно, она была удалена или ссылка неверна.</p>
+          <Link to="/dashboard" className="btn-primary inline-block !py-2.5 !px-8">К списку транскрипций</Link>
+        </div>
+      </div>
+    );
+  }
 
   if (transcription.status === "queued" || transcription.status === "processing") {
     return (
@@ -194,7 +224,11 @@ export default function Transcription() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold mb-2 text-red-600">Ошибка обработки</h2>
-          <p className="text-sm text-gray-500">{transcription.error_message}</p>
+          <p className="text-sm text-gray-500 mb-6">{transcription.error_message || "Произошла неизвестная ошибка"}</p>
+          <div className="flex items-center justify-center gap-3">
+            <Link to="/upload" className="btn-primary !py-2.5 !px-6">Загрузить заново</Link>
+            <Link to="/dashboard" className="btn-secondary !py-2.5 !px-6">К списку</Link>
+          </div>
         </div>
       </div>
     );

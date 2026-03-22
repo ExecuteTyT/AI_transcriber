@@ -4,12 +4,17 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.config import settings
 from app.database import get_db
+
+# Отдельный лимитер для auth (строже чем глобальный)
+_auth_limiter = Limiter(key_func=get_remote_address, enabled=settings.ENVIRONMENT not in ("testing", "test"))
 from app.models.user import User
 from app.schemas.auth import (
     ChangePasswordRequest,
@@ -35,17 +40,13 @@ from app.services.email import send_password_reset_email, send_welcome_email
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
-def _get_limiter():
-    from app.main import limiter
-    return limiter
-
-
 def _hash_token(token: str) -> str:
     """SHA-256 хеш токена для безопасного хранения в БД."""
     return hashlib.sha256(token.encode()).hexdigest()
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+@_auth_limiter.limit("5/minute")
 async def register(request: Request, data: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """Регистрация нового пользователя."""
     result = await db.execute(select(User).where(User.email == data.email))
@@ -77,6 +78,7 @@ async def register(request: Request, data: RegisterRequest, db: AsyncSession = D
 
 
 @router.post("/login", response_model=TokenResponse)
+@_auth_limiter.limit("10/minute")
 async def login(request: Request, data: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Вход в систему."""
     result = await db.execute(select(User).where(User.email == data.email))
@@ -181,6 +183,7 @@ async def change_password(
 
 
 @router.post("/request-password-reset", response_model=MessageResponse)
+@_auth_limiter.limit("3/minute")
 async def request_password_reset(
     data: RequestPasswordResetRequest,
     db: AsyncSession = Depends(get_db),
@@ -205,6 +208,7 @@ async def request_password_reset(
 
 
 @router.post("/reset-password", response_model=MessageResponse)
+@_auth_limiter.limit("5/minute")
 async def reset_password(
     data: ResetPasswordRequest,
     db: AsyncSession = Depends(get_db),
