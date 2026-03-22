@@ -28,6 +28,18 @@ export default function Layout() {
           >
             Загрузить файл
           </Link>
+          <Link
+            to="/pricing"
+            className="px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
+          >
+            Тарифы
+          </Link>
+          <Link
+            to="/subscription"
+            className="px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
+          >
+            Подписка
+          </Link>
         </nav>
         {user && (
           <div className="border-t border-gray-200 pt-4 mt-4">

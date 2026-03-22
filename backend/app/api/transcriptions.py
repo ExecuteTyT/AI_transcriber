@@ -17,6 +17,7 @@ from app.schemas.transcription import (
     TranscriptionStatusResponse,
     TranscriptionUploadResponse,
 )
+from app.services.plans import get_plan
 from app.services.storage import s3_service
 
 router = APIRouter(prefix="/api/transcriptions", tags=["transcriptions"])
@@ -41,6 +42,15 @@ async def upload_file(
     db: AsyncSession = Depends(get_db),
 ):
     """Загрузка аудио/видео файла для транскрибации."""
+    # Проверка лимитов
+    plan = get_plan(user.plan)
+    if user.minutes_used >= user.minutes_limit:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Лимит минут исчерпан ({user.minutes_used}/{user.minutes_limit}). "
+            "Перейдите на более высокий тариф.",
+        )
+
     # Валидация типа файла
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(

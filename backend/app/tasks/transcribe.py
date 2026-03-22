@@ -1,4 +1,5 @@
 import logging
+import math
 import subprocess
 import tempfile
 import uuid
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import settings
 from app.models.transcription import Transcription
+from app.models.user import User
 from app.services.storage import s3_service
 from app.tasks.celery_app import celery_app
 
@@ -81,6 +83,12 @@ def process_transcription(self, transcription_id: str):
             transcription.duration_sec = result.duration_sec
             transcription.status = "completed"
             transcription.completed_at = datetime.now(timezone.utc)
+
+            # Обновляем использованные минуты пользователя
+            user = db.get(User, transcription.user_id)
+            if user and result.duration_sec:
+                user.minutes_used += math.ceil(result.duration_sec / 60)
+
             db.commit()
 
             logger.info("Transcription %s completed", transcription_id)

@@ -4,6 +4,8 @@ import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import Pricing from "@/pages/Pricing";
+import Subscription from "@/pages/Subscription";
 import Transcription from "@/pages/Transcription";
 import Upload from "@/pages/Upload";
 import { useAuthStore } from "@/store/authStore";
@@ -37,6 +39,8 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/transcription/:id" element={<Transcription />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/subscription" element={<Subscription />} />
       </Route>
     </Routes>
   );
