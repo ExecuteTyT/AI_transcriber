@@ -1,0 +1,20 @@
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.base import Base, TimestampMixin, UUIDMixin
+
+
+class User(Base, UUIDMixin, TimestampMixin):
+    """Пользователь платформы."""
+
+    __tablename__ = "users"
+
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+    name: Mapped[str] = mapped_column(String(255), default="")
+    plan: Mapped[str] = mapped_column(String(20), default="free")  # free/start/pro
+    minutes_used: Mapped[int] = mapped_column(Integer, default=0)
+    minutes_limit: Mapped[int] = mapped_column(Integer, default=15)
+
+    transcriptions = relationship("Transcription", back_populates="user", lazy="selectin")
+    subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")
