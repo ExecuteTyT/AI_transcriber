@@ -1,7 +1,53 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # AI Voice — Сервис умной транскрибации аудио и видео
 
 ## О проекте
 AI Voice — платформа, которая превращает аудио и видео не просто в текст, а в структурированные инсайты: саммари, ключевые тезисы, action items, RAG-чат по транскрипту. Целевой рынок — Россия (фаза 1-2), затем глобальный (фаза 3).
+
+## Команды разработки
+
+### Запуск окружения
+```bash
+cp .env.example .env          # первый раз: создать .env
+docker compose up -d           # поднять все сервисы (db, redis, api, celery, frontend)
+docker compose up -d db redis  # только инфраструктуру (для локальной разработки без Docker)
+```
+
+### Backend
+```bash
+# Запуск API-сервера (из backend/)
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Тесты
+pytest                                          # все тесты
+pytest tests/test_auth.py                       # один файл
+pytest tests/test_auth.py::test_login -v        # один тест
+
+# Миграции БД (из backend/)
+alembic upgrade head                            # применить все миграции
+alembic revision --autogenerate -m "описание"   # создать миграцию
+
+# Celery воркер
+celery -A app.tasks.celery_app worker --loglevel=info --concurrency=2
+```
+
+### Frontend
+```bash
+# Запуск dev-сервера (из frontend/)
+npm run dev
+
+# Тесты
+npx vitest                    # все тесты
+npx vitest run src/foo.test.ts  # один файл
+```
+
+### Полезные URL (при запущенном docker compose)
+- API: http://localhost:8000
+- OpenAPI docs: http://localhost:8000/docs
+- Frontend: http://localhost:3000
 
 ## Технологический стек
 
