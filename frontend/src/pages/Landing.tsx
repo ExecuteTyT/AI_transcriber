@@ -76,7 +76,7 @@ export default function Landing() {
             <a href="#features" className="hover:text-gray-900 transition">Возможности</a>
             <a href="#use-cases" className="hover:text-gray-900 transition">Кому</a>
             <a href="#pricing" className="hover:text-gray-900 transition">Тарифы</a>
-            <a href="#faq" className="hover:text-gray-900 transition">FAQ</a>
+            <Link to="/blog" className="hover:text-gray-900 transition">Блог</Link>
           </nav>
           <div className="flex items-center gap-3">
             <Link to="/login" className="btn-ghost text-sm">Войти</Link>
@@ -363,6 +363,7 @@ export default function Landing() {
               <Link to="/video-v-tekst" className="hover:text-gray-900 transition">Видео в текст</Link>
               <Link to="/nejroset-transkribaciya" className="hover:text-gray-900 transition">Нейросеть</Link>
               <Link to="/rasshifrovka-golosovyh" className="hover:text-gray-900 transition">Голосовые</Link>
+              <Link to="/blog" className="hover:text-gray-900 transition">Блог</Link>
               <Link to="/pricing" className="hover:text-gray-900 transition">Тарифы</Link>
             </div>
           </div>

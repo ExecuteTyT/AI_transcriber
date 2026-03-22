@@ -31,8 +31,38 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/register</loc>
+    <loc>https://aivoice.ru/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aivoice.ru/blog/top-servisov-transkribacii</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://aivoice.ru/blog/kak-rasshifrovat-audio-besplatno</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://aivoice.ru/blog/rasshifrovka-zoom-soveshchaniya</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://aivoice.ru/blog/subtitry-dlya-youtube</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://aivoice.ru/blog/nejroset-dlya-transkribacii</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://aivoice.ru/register</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

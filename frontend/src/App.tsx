@@ -14,6 +14,8 @@ import AudioToText from "@/pages/seo/AudioToText";
 import VideoToText from "@/pages/seo/VideoToText";
 import NeuralTranscription from "@/pages/seo/NeuralTranscription";
 import VoiceMessages from "@/pages/seo/VoiceMessages";
+import BlogIndex from "@/pages/blog/BlogIndex";
+import BlogArticle from "@/pages/blog/BlogArticle";
 import { useAuthStore } from "@/store/authStore";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -48,6 +50,8 @@ export default function App() {
       <Route path="/video-v-tekst" element={<VideoToText />} />
       <Route path="/nejroset-transkribaciya" element={<NeuralTranscription />} />
       <Route path="/rasshifrovka-golosovyh" element={<VoiceMessages />} />
+      <Route path="/blog" element={<BlogIndex />} />
+      <Route path="/blog/:slug" element={<BlogArticle />} />
 
       {/* Protected pages */}
       <Route

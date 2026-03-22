@@ -5,6 +5,8 @@ Allow: /video-v-tekst
 Allow: /nejroset-transkribaciya
 Allow: /rasshifrovka-golosovyh
 Allow: /pricing
+Allow: /blog
+Allow: /blog/
 Allow: /login
 Allow: /register
 Disallow: /api/
