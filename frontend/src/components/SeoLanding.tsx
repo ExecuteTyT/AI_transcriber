@@ -37,7 +37,7 @@ export default function SeoLanding({
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>{metaTitle || h1 + " | AI Voice"}</title>
+        <title>{metaTitle || h1 + " | Voitra"}</title>
         <meta name="description" content={metaDescription || description} />
         {canonical && <link rel="canonical" href={canonical} />}
         <meta property="og:title" content={metaTitle || h1} />
@@ -48,7 +48,7 @@ export default function SeoLanding({
       <header className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="text-xl font-bold text-primary-600">
-            AI Voice
+            Voitra
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900">Войти</Link>
@@ -108,7 +108,7 @@ export default function SeoLanding({
 
       {/* Benefits */}
       <section className="max-w-4xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-center mb-10">Преимущества AI Voice</h2>
+        <h2 className="text-2xl font-bold text-center mb-10">Преимущества Voitra</h2>
         <div className="grid md:grid-cols-2 gap-4">
           {benefits.map((b) => (
             <div key={b} className="flex items-start gap-3 p-4 rounded-xl border border-gray-200">
@@ -177,7 +177,7 @@ export default function SeoLanding({
       {/* Footer */}
       <footer className="border-t border-gray-200 py-8">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400">
-          <div>AI Voice &copy; 2026</div>
+          <div>Voitra &copy; 2026</div>
           <div className="flex gap-6">
             <Link to="/audio-v-tekst" className="hover:text-gray-600">Аудио в текст</Link>
             <Link to="/video-v-tekst" className="hover:text-gray-600">Видео в текст</Link>

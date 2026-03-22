@@ -83,7 +83,7 @@ async function prerender() {
         // Обновляем canonical и добавляем link-теги
         page = page.replace(
           /<link rel="canonical"[^>]*>/,
-          linkStr.includes('rel="canonical"') ? linkStr.match(/<link[^>]*rel="canonical"[^>]*>/)?.[0] || "" : '<link rel="canonical" href="https://aivoice.ru/" />'
+          linkStr.includes('rel="canonical"') ? linkStr.match(/<link[^>]*rel="canonical"[^>]*>/)?.[0] || "" : '<link rel="canonical" href="https://voitra.ru/" />'
         );
       }
     }
@@ -122,7 +122,7 @@ function getBlogSlugs(): string[] {
 }
 
 function generateSitemap(routes: string[]) {
-  const baseUrl = "https://aivoice.ru";
+  const baseUrl = "https://voitra.ru";
   const today = new Date().toISOString().split("T")[0];
 
   const urls = routes

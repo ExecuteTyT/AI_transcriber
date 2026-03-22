@@ -33,7 +33,7 @@ export default function Register() {
 
       <div className="relative w-full max-w-md mx-4 animate-fade-up">
         <Link to="/" className="flex justify-center mb-8">
-          <span className="text-2xl font-bold gradient-text">AI Voice</span>
+          <span className="text-2xl font-bold gradient-text">Voitra</span>
         </Link>
 
         <div className="card p-8 shadow-elevated">

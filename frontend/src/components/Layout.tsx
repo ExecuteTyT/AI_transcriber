@@ -138,7 +138,7 @@ export default function Layout() {
     <div className="flex min-h-screen bg-surface-50">
       {/* Mobile header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 h-14 flex items-center justify-between px-4">
-        <Link to="/" className="text-lg font-bold gradient-text">AI Voice</Link>
+        <Link to="/" className="text-lg font-bold gradient-text">Voitra</Link>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-2 rounded-lg hover:bg-surface-100 transition"
@@ -177,7 +177,7 @@ export default function Layout() {
       <aside className="hidden md:flex w-[260px] bg-white border-r border-gray-100 flex-col flex-shrink-0">
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-gray-100">
-          <Link to="/" className="text-xl font-bold gradient-text">AI Voice</Link>
+          <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
         </div>
         {sidebarContent}
       </aside>

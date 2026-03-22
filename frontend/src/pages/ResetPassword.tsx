@@ -43,7 +43,7 @@ export default function ResetPassword() {
     <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="text-2xl font-bold gradient-text">AI Voice</Link>
+          <Link to="/" className="text-2xl font-bold gradient-text">Voitra</Link>
         </div>
 
         <div className="card p-8">

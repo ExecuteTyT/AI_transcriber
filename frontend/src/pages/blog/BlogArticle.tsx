@@ -86,7 +86,7 @@ export default function BlogArticle() {
       {/* Header */}
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text">AI Voice</Link>
+          <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
           <div className="flex items-center gap-3">
             <Link to="/blog" className="btn-ghost text-sm">Блог</Link>
             <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5">Попробовать</Link>
@@ -108,10 +108,10 @@ export default function BlogArticle() {
       <Helmet>
         <title>{article.metaTitle}</title>
         <meta name="description" content={article.metaDescription} />
-        <link rel="canonical" href={`https://aivoice.ru/blog/${article.slug}`} />
+        <link rel="canonical" href={`https://voitra.ru/blog/${article.slug}`} />
         <meta property="og:title" content={article.metaTitle} />
         <meta property="og:description" content={article.metaDescription} />
-        <meta property="og:url" content={`https://aivoice.ru/blog/${article.slug}`} />
+        <meta property="og:url" content={`https://voitra.ru/blog/${article.slug}`} />
         <meta property="og:type" content="article" />
       </Helmet>
 
@@ -135,7 +135,7 @@ export default function BlogArticle() {
 
         {/* CTA */}
         <div className="mt-16 card p-8 text-center bg-gradient-to-br from-primary-50 to-accent-50 border-primary-100">
-          <h3 className="text-xl font-bold mb-2">Попробуйте AI Voice бесплатно</h3>
+          <h3 className="text-xl font-bold mb-2">Попробуйте Voitra бесплатно</h3>
           <p className="text-gray-500 text-sm mb-6">15 минут транскрибации, AI-саммари и разметка спикеров — без карты.</p>
           <Link to="/register" className="btn-primary inline-block">Начать бесплатно</Link>
         </div>
@@ -166,8 +166,8 @@ export default function BlogArticle() {
             headline: article.title,
             description: article.metaDescription,
             datePublished: article.date,
-            author: { "@type": "Organization", name: "AI Voice" },
-            publisher: { "@type": "Organization", name: "AI Voice" },
+            author: { "@type": "Organization", name: "Voitra" },
+            publisher: { "@type": "Organization", name: "Voitra" },
           }),
         }}
       />

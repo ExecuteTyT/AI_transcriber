@@ -1,67 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://aivoice.ru/</loc>
+    <loc>https://voitra.ru/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/audio-v-tekst</loc>
+    <loc>https://voitra.ru/audio-v-tekst</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/video-v-tekst</loc>
+    <loc>https://voitra.ru/video-v-tekst</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/nejroset-transkribaciya</loc>
+    <loc>https://voitra.ru/nejroset-transkribaciya</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/rasshifrovka-golosovyh</loc>
+    <loc>https://voitra.ru/rasshifrovka-golosovyh</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/pricing</loc>
+    <loc>https://voitra.ru/pricing</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/blog</loc>
+    <loc>https://voitra.ru/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/blog/top-servisov-transkribacii</loc>
+    <loc>https://voitra.ru/blog/top-servisov-transkribacii</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/blog/kak-rasshifrovat-audio-besplatno</loc>
+    <loc>https://voitra.ru/blog/kak-rasshifrovat-audio-besplatno</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/blog/rasshifrovka-zoom-soveshchaniya</loc>
+    <loc>https://voitra.ru/blog/rasshifrovka-zoom-soveshchaniya</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/blog/subtitry-dlya-youtube</loc>
+    <loc>https://voitra.ru/blog/subtitry-dlya-youtube</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/blog/nejroset-dlya-transkribacii</loc>
+    <loc>https://voitra.ru/blog/nejroset-dlya-transkribacii</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://aivoice.ru/register</loc>
+    <loc>https://voitra.ru/register</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

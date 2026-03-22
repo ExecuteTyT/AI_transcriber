@@ -15,4 +15,4 @@ Disallow: /upload
 Disallow: /transcription/
 Disallow: /subscription
 
-Sitemap: https://aivoice.ru/sitemap.xml
+Sitemap: https://voitra.ru/sitemap.xml

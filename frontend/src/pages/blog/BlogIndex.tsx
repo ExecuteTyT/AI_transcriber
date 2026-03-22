@@ -6,14 +6,14 @@ export default function BlogIndex() {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>Блог AI Voice — статьи о транскрибации, нейросетях и продуктивности</title>
+        <title>Блог Voitra — статьи о транскрибации, нейросетях и продуктивности</title>
         <meta name="description" content="Полезные статьи и гайды: как транскрибировать аудио, сравнение сервисов и нейросетей, расшифровка Zoom-совещаний, субтитры для YouTube." />
-        <link rel="canonical" href="https://aivoice.ru/blog" />
+        <link rel="canonical" href="https://voitra.ru/blog" />
       </Helmet>
       {/* Header */}
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text">AI Voice</Link>
+          <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
           <div className="flex items-center gap-3">
             <Link to="/login" className="btn-ghost text-sm">Войти</Link>
             <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5">Попробовать</Link>
@@ -26,7 +26,7 @@ export default function BlogIndex() {
           <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Блог</p>
           <h1 className="section-heading mb-4">Статьи и гайды</h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            Транскрибация, нейросети, продуктивность — полезные материалы от команды AI Voice
+            Транскрибация, нейросети, продуктивность — полезные материалы от команды Voitra
           </p>
         </div>
 
@@ -56,7 +56,7 @@ export default function BlogIndex() {
       {/* Footer */}
       <footer className="border-t border-gray-100 py-8">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between text-sm text-gray-400">
-          <span className="font-bold gradient-text">AI Voice</span>
+          <span className="font-bold gradient-text">Voitra</span>
           <div className="flex gap-6">
             <Link to="/" className="hover:text-gray-600 transition">Главная</Link>
             <Link to="/pricing" className="hover:text-gray-600 transition">Тарифы</Link>
