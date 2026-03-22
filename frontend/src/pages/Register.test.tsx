@@ -17,9 +17,7 @@ describe("Register page", () => {
     expect(screen.getByLabelText("Имя")).toBeInTheDocument();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(screen.getByLabelText(/Пароль/)).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Зарегистрироваться" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Создать аккаунт" })).toBeInTheDocument();
   });
 
   it("renders login link", () => {

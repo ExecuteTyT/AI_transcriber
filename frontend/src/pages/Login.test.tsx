@@ -26,6 +26,6 @@ describe("Login page", () => {
 
   it("has correct title", () => {
     renderLogin();
-    expect(screen.getByText("Вход в AI Voice")).toBeInTheDocument();
+    expect(screen.getByText("С возвращением")).toBeInTheDocument();
   });
 });

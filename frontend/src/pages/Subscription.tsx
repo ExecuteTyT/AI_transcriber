@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { paymentsApi, type SubscriptionInfo } from "@/api/payments";
 
+const planNames: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
+
 export default function Subscription() {
   const navigate = useNavigate();
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
@@ -10,8 +12,7 @@ export default function Subscription() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    paymentsApi
-      .getSubscription()
+    paymentsApi.getSubscription()
       .then(setSub)
       .catch(() => setError("Не удалось загрузить подписку"))
       .finally(() => setLoading(false));
@@ -19,7 +20,6 @@ export default function Subscription() {
 
   const handleCancel = async () => {
     if (!confirm("Вы уверены, что хотите отменить подписку?")) return;
-
     setCancelling(true);
     try {
       await paymentsApi.cancel();
@@ -34,93 +34,78 @@ export default function Subscription() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Загрузка...</div>
+      <div className="max-w-lg mx-auto animate-pulse space-y-4">
+        <div className="h-8 bg-surface-100 rounded-xl w-1/3" />
+        <div className="card p-8 space-y-4">
+          <div className="h-6 bg-surface-100 rounded-xl w-1/2" />
+          <div className="h-3 bg-surface-100 rounded-full w-full" />
+          <div className="h-10 bg-surface-100 rounded-xl w-full" />
+        </div>
       </div>
     );
   }
 
   if (!sub) {
     return (
-      <div className="max-w-lg mx-auto py-12 px-4">
-        <div className="bg-red-50 text-red-600 p-4 rounded">{error || "Нет данных"}</div>
+      <div className="max-w-lg mx-auto">
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100">{error || "Нет данных"}</div>
       </div>
     );
   }
 
-  const usagePercent = sub.minutes_limit > 0
-    ? Math.min(100, Math.round((sub.minutes_used / sub.minutes_limit) * 100))
-    : 0;
-
-  const planNames: Record<string, string> = {
-    free: "Free",
-    start: "Старт",
-    pro: "Про",
-  };
+  const usagePercent = sub.minutes_limit > 0 ? Math.min(100, Math.round((sub.minutes_used / sub.minutes_limit) * 100)) : 0;
 
   return (
-    <div className="max-w-lg mx-auto py-12 px-4">
-      <h1 className="text-2xl font-bold mb-6">Моя подписка</h1>
+    <div className="max-w-lg mx-auto">
+      <h1 className="text-2xl font-bold tracking-tight mb-2">Подписка</h1>
+      <p className="text-sm text-gray-500 mb-8">Управляйте вашим тарифом и лимитами</p>
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded mb-4">{error}</div>
+        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm border border-red-100">{error}</div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-        {/* Текущий план */}
-        <div>
-          <div className="text-sm text-gray-500 mb-1">Текущий тариф</div>
-          <div className="text-xl font-bold">
-            {planNames[sub.plan] || sub.plan}
+      <div className="card p-7 space-y-6">
+        {/* Current plan */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-gray-500 mb-1">Текущий тариф</p>
+            <p className="text-2xl font-bold">{planNames[sub.plan] || sub.plan}</p>
           </div>
-          {sub.status === "active" && sub.current_period_end && (
-            <div className="text-sm text-gray-500 mt-1">
-              Действует до{" "}
-              {new Date(sub.current_period_end).toLocaleDateString("ru")}
-            </div>
+          {sub.status === "active" && (
+            <span className="badge bg-emerald-50 text-emerald-700 border border-emerald-200">Активна</span>
           )}
         </div>
 
-        {/* Использование минут */}
+        {sub.status === "active" && sub.current_period_end && (
+          <p className="text-sm text-gray-500">
+            Действует до {new Date(sub.current_period_end).toLocaleDateString("ru")}
+          </p>
+        )}
+
+        {/* Usage */}
         <div>
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-500">Использовано минут</span>
-            <span className="font-medium">
-              {sub.minutes_used} / {sub.minutes_limit}
-            </span>
+            <span className="text-gray-500">Использовано</span>
+            <span className="font-medium text-gray-700">{sub.minutes_used} / {sub.minutes_limit} мин</span>
           </div>
-          <div className="w-full bg-gray-100 rounded-full h-3">
+          <div className="w-full bg-surface-100 rounded-full h-3">
             <div
-              className={`h-3 rounded-full transition-all ${
-                usagePercent >= 90
-                  ? "bg-red-500"
-                  : usagePercent >= 70
-                    ? "bg-yellow-500"
-                    : "bg-primary-500"
+              className={`h-3 rounded-full transition-all duration-700 ${
+                usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-gradient-to-r from-primary-500 to-accent-500"
               }`}
               style={{ width: `${usagePercent}%` }}
             />
           </div>
-          <div className="text-xs text-gray-400 mt-1">
-            {usagePercent}% использовано
-          </div>
+          <p className="text-xs text-gray-400 mt-1.5">{usagePercent}% использовано</p>
         </div>
 
-        {/* Действия */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => navigate("/pricing")}
-            className="flex-1 py-2.5 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition"
-          >
+        {/* Actions */}
+        <div className="flex gap-3 pt-2">
+          <button onClick={() => navigate("/pricing")} className="btn-primary flex-1 text-sm">
             {sub.plan === "free" ? "Улучшить план" : "Сменить план"}
           </button>
-
           {sub.status === "active" && sub.plan !== "free" && (
-            <button
-              onClick={handleCancel}
-              disabled={cancelling}
-              className="px-4 py-2.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"
-            >
+            <button onClick={handleCancel} disabled={cancelling} className="btn-secondary text-sm !px-5">
               {cancelling ? "Отмена..." : "Отменить"}
             </button>
           )}

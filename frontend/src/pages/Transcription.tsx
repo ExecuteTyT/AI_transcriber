@@ -7,69 +7,51 @@ import {
 } from "@/api/transcriptions";
 
 const SPEAKER_COLORS = [
-  "bg-blue-100 text-blue-700",
-  "bg-green-100 text-green-700",
-  "bg-purple-100 text-purple-700",
-  "bg-orange-100 text-orange-700",
-  "bg-pink-100 text-pink-700",
-  "bg-teal-100 text-teal-700",
+  "bg-blue-50 text-blue-700 border-blue-200",
+  "bg-violet-50 text-violet-700 border-violet-200",
+  "bg-amber-50 text-amber-700 border-amber-200",
+  "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "bg-pink-50 text-pink-700 border-pink-200",
+  "bg-teal-50 text-teal-700 border-teal-200",
 ];
 
 type Tab = "transcript" | "summary" | "key_points";
 
 export default function Transcription() {
   const { id } = useParams<{ id: string }>();
-  const [transcription, setTranscription] = useState<TranscriptionType | null>(
-    null
-  );
+  const [transcription, setTranscription] = useState<TranscriptionType | null>(null);
   const [tab, setTab] = useState<Tab>("transcript");
   const [analysis, setAnalysis] = useState<AiAnalysis | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
-  // Загрузка данных + поллинг статуса
   useEffect(() => {
     if (!id) return;
     let polling: ReturnType<typeof setInterval> | null = null;
-
     const load = async () => {
       const { data } = await transcriptionApi.getById(id);
       setTranscription(data);
       setLoading(false);
-
       if (data.status === "queued" || data.status === "processing") {
         polling = setInterval(async () => {
           const { data: updated } = await transcriptionApi.getById(id);
           setTranscription(updated);
-          if (
-            updated.status === "completed" ||
-            updated.status === "failed"
-          ) {
+          if (updated.status === "completed" || updated.status === "failed") {
             if (polling) clearInterval(polling);
           }
         }, 3000);
       }
     };
     load();
-
-    return () => {
-      if (polling) clearInterval(polling);
-    };
+    return () => { if (polling) clearInterval(polling); };
   }, [id]);
 
-  // Загрузка AI-анализа при переключении вкладки
   useEffect(() => {
-    if (!id || tab === "transcript") {
-      setAnalysis(null);
-      return;
-    }
+    if (!id || tab === "transcript") { setAnalysis(null); return; }
     setAnalysisLoading(true);
-    const fetchAnalysis =
-      tab === "summary"
-        ? transcriptionApi.getSummary
-        : transcriptionApi.getKeyPoints;
-
+    const fetchAnalysis = tab === "summary" ? transcriptionApi.getSummary : transcriptionApi.getKeyPoints;
     fetchAnalysis(id)
       .then(({ data }) => setAnalysis(data))
       .catch(() => setAnalysis(null))
@@ -86,8 +68,7 @@ export default function Transcription() {
   let colorIndex = 0;
   const getSpeakerColor = (speaker: string) => {
     if (!speakerColorMap[speaker]) {
-      speakerColorMap[speaker] =
-        SPEAKER_COLORS[colorIndex % SPEAKER_COLORS.length];
+      speakerColorMap[speaker] = SPEAKER_COLORS[colorIndex % SPEAKER_COLORS.length];
       colorIndex++;
     }
     return speakerColorMap[speaker];
@@ -96,6 +77,8 @@ export default function Transcription() {
   const handleCopy = () => {
     if (transcription?.full_text) {
       navigator.clipboard.writeText(transcription.full_text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -110,101 +93,114 @@ export default function Transcription() {
     URL.revokeObjectURL(url);
   };
 
-  if (loading) return <p className="text-gray-500">Загрузка...</p>;
+  if (loading) {
+    return (
+      <div className="space-y-4 animate-pulse">
+        <div className="h-8 bg-surface-100 rounded-xl w-1/3" />
+        <div className="h-4 bg-surface-100 rounded-xl w-1/4" />
+        <div className="card p-8 mt-6">
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-4 bg-surface-100 rounded-full" style={{ width: `${60 + i * 10}%` }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!transcription) return <p className="text-red-500">Не найдено</p>;
 
-  // Статус-экран
-  if (
-    transcription.status === "queued" ||
-    transcription.status === "processing"
-  ) {
+  // Processing / Queued
+  if (transcription.status === "queued" || transcription.status === "processing") {
     return (
-      <div className="text-center py-16">
-        <div className="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4" />
-        <h2 className="text-xl font-medium mb-2">
-          {transcription.status === "queued" ? "В очереди" : "Обработка..."}
-        </h2>
-        <p className="text-gray-500">{transcription.original_filename}</p>
+      <div className="flex items-center justify-center py-24">
+        <div className="text-center">
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full bg-primary-100 animate-ping opacity-30" />
+            <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+              <svg className="w-8 h-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            </div>
+          </div>
+          <h2 className="text-xl font-semibold mb-2">
+            {transcription.status === "queued" ? "В очереди" : "Обрабатываем..."}
+          </h2>
+          <p className="text-gray-500 text-sm">{transcription.original_filename}</p>
+          <p className="text-xs text-gray-400 mt-2">Обычно это занимает 1-3 минуты</p>
+        </div>
       </div>
     );
   }
 
   if (transcription.status === "failed") {
     return (
-      <div className="text-center py-16">
-        <p className="text-red-500 text-xl mb-2">Ошибка обработки</p>
-        <p className="text-gray-500">{transcription.error_message}</p>
+      <div className="flex items-center justify-center py-24">
+        <div className="text-center card p-10">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-50 flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold mb-2 text-red-600">Ошибка обработки</h2>
+          <p className="text-sm text-gray-500">{transcription.error_message}</p>
+        </div>
       </div>
     );
   }
 
-  const filteredSegments =
-    transcription.segments?.filter((seg) =>
-      search
-        ? seg.text.toLowerCase().includes(search.toLowerCase())
-        : true
-    ) || [];
+  const filteredSegments = transcription.segments?.filter((seg) =>
+    search ? seg.text.toLowerCase().includes(search.toLowerCase()) : true
+  ) || [];
 
   return (
-    <div>
+    <div className="animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{transcription.title}</h1>
-          <div className="text-sm text-gray-500 mt-1 flex gap-3">
+          <h1 className="text-2xl font-bold tracking-tight">{transcription.title}</h1>
+          <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
             {transcription.language && (
-              <span>Язык: {transcription.language.toUpperCase()}</span>
+              <span className="badge bg-surface-100 text-gray-600">{transcription.language.toUpperCase()}</span>
             )}
             {transcription.duration_sec && (
-              <span>
-                Длительность: {formatTime(transcription.duration_sec)}
+              <span className="flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {formatTime(transcription.duration_sec)}
               </span>
             )}
             {transcription.full_text && (
-              <span>
-                Слов: {transcription.full_text.split(/\s+/).length}
-              </span>
+              <span>{transcription.full_text.split(/\s+/).length} слов</span>
             )}
           </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={handleCopy}
-            className="border border-gray-300 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50"
-          >
-            Копировать
+        <div className="flex items-center gap-2">
+          <button onClick={handleCopy} className="btn-secondary !py-2 !px-4 text-sm flex items-center gap-2">
+            {copied ? (
+              <><svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg> Скопировано</>
+            ) : (
+              <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg> Копировать</>
+            )}
           </button>
-          <button
-            onClick={() => handleExport("txt")}
-            className="border border-gray-300 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50"
-          >
-            TXT
-          </button>
-          <button
-            onClick={() => handleExport("srt")}
-            className="border border-gray-300 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50"
-          >
-            SRT
-          </button>
+          <button onClick={() => handleExport("txt")} className="btn-secondary !py-2 !px-4 text-sm">TXT</button>
+          <button onClick={() => handleExport("srt")} className="btn-secondary !py-2 !px-4 text-sm">SRT</button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-gray-200 mb-4">
-        {(
-          [
-            ["transcript", "Транскрипт"],
-            ["summary", "Саммари"],
-            ["key_points", "Тезисы"],
-          ] as const
-        ).map(([key, label]) => (
+      <div className="flex gap-1 p-1 bg-surface-100 rounded-xl w-fit mb-6">
+        {([["transcript", "Транскрипт"], ["summary", "Саммари"], ["key_points", "Тезисы"]] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`pb-2 px-1 text-sm font-medium border-b-2 transition ${
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               tab === key
-                ? "border-primary-500 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
             {label}
@@ -212,30 +208,33 @@ export default function Transcription() {
         ))}
       </div>
 
-      {/* Tab content */}
+      {/* Content */}
       {tab === "transcript" && (
         <>
-          <input
-            type="text"
-            placeholder="Поиск по тексту..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-          <div className="bg-white rounded-xl border border-gray-200 p-4 max-h-[70vh] overflow-y-auto">
+          <div className="relative mb-4">
+            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Поиск по тексту..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="input-field !pl-10"
+            />
+          </div>
+          <div className="card p-6 max-h-[70vh] overflow-y-auto space-y-3">
             {filteredSegments.map((seg, i) => (
-              <div key={i} className="flex gap-3 mb-3 text-sm">
-                <span className="text-gray-400 font-mono w-12 flex-shrink-0">
+              <div key={i} className="flex items-start gap-3 text-sm group hover:bg-surface-50 -mx-2 px-2 py-1.5 rounded-lg transition">
+                <span className="text-gray-400 font-mono text-xs w-12 flex-shrink-0 pt-0.5">
                   {formatTime(seg.start)}
                 </span>
                 {seg.speaker && (
-                  <span
-                    className={`px-2 py-0.5 rounded text-xs flex-shrink-0 ${getSpeakerColor(seg.speaker)}`}
-                  >
+                  <span className={`badge border !text-[10px] flex-shrink-0 ${getSpeakerColor(seg.speaker)}`}>
                     {seg.speaker}
                   </span>
                 )}
-                <span className="text-gray-800">{seg.text}</span>
+                <span className="text-gray-700 leading-relaxed">{seg.text}</span>
               </div>
             ))}
           </div>
@@ -243,11 +242,17 @@ export default function Transcription() {
       )}
 
       {(tab === "summary" || tab === "key_points") && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="card p-8">
           {analysisLoading ? (
-            <p className="text-gray-500">Генерация анализа...</p>
+            <div className="flex items-center gap-3 text-gray-500">
+              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Генерация анализа...
+            </div>
           ) : analysis ? (
-            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+            <div className="prose prose-sm max-w-none whitespace-pre-wrap text-gray-700 leading-relaxed">
               {analysis.content}
             </div>
           ) : (
