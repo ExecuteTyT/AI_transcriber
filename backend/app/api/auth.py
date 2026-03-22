@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import secrets
 import uuid
 from datetime import datetime, timezone
@@ -12,10 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user
 from app.config import settings
 from app.database import get_db
+from app.models.user import User
+
+logger = logging.getLogger(__name__)
 
 # Отдельный лимитер для auth (строже чем глобальный)
 _auth_limiter = Limiter(key_func=get_remote_address, enabled=settings.ENVIRONMENT not in ("testing", "test"))
-from app.models.user import User
 from app.schemas.auth import (
     ChangePasswordRequest,
     LoginRequest,
@@ -65,11 +68,11 @@ async def register(request: Request, data: RegisterRequest, db: AsyncSession = D
     await db.commit()
     await db.refresh(user)
 
-    # Приветственное письмо (неблокирующее)
+    # Приветственное письмо (неблокирующее, async)
     try:
-        send_welcome_email(user.email, user.name)
+        await send_welcome_email(user.email, user.name)
     except Exception:
-        pass
+        logger.warning("Не удалось отправить welcome email: %s", user.email)
 
     return TokenResponse(
         access_token=create_access_token(str(user.id)),
@@ -147,6 +150,17 @@ async def update_profile(
         user.name = data.name
 
     if data.email is not None and data.email != user.email:
+        # Смена email требует подтверждения паролем
+        if not data.current_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Для смены email необходимо указать текущий пароль",
+            )
+        if not verify_password(data.current_password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Неверный пароль",
+            )
         existing = await db.execute(select(User).where(User.email == data.email))
         if existing.scalar_one_or_none() is not None:
             raise HTTPException(
@@ -185,6 +199,7 @@ async def change_password(
 @router.post("/request-password-reset", response_model=MessageResponse)
 @_auth_limiter.limit("3/minute")
 async def request_password_reset(
+    request: Request,
     data: RequestPasswordResetRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -202,7 +217,7 @@ async def request_password_reset(
         )
         await db.commit()
 
-        send_password_reset_email(user.email, token)
+        await send_password_reset_email(user.email, token)
 
     return MessageResponse(message="Если аккаунт существует, мы отправили ссылку для сброса пароля")
 
@@ -210,6 +225,7 @@ async def request_password_reset(
 @router.post("/reset-password", response_model=MessageResponse)
 @_auth_limiter.limit("5/minute")
 async def reset_password(
+    request: Request,
     data: ResetPasswordRequest,
     db: AsyncSession = Depends(get_db),
 ):

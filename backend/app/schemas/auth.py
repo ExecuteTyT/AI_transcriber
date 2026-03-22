@@ -61,6 +61,7 @@ class UpdateProfileRequest(BaseModel):
 
     name: str | None = Field(None, min_length=1, max_length=255)
     email: EmailStr | None = None
+    current_password: str | None = Field(None, description="Обязателен при смене email")
 
 
 class ChangePasswordRequest(BaseModel):

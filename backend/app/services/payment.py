@@ -70,7 +70,17 @@ async def activate_subscription(
     yookassa_id: str,
     db: AsyncSession,
 ) -> Subscription:
-    """Активация подписки после успешной оплаты."""
+    """Активация подписки после успешной оплаты (идемпотентно)."""
+    # Идемпотентность: проверяем, не обработан ли уже этот платёж
+    if yookassa_id:
+        existing = await db.execute(
+            select(Subscription).where(Subscription.yookassa_id == yookassa_id)
+        )
+        existing_sub = existing.scalar_one_or_none()
+        if existing_sub:
+            logger.info("Дубль webhook, подписка уже существует: yookassa_id=%s", yookassa_id)
+            return existing_sub
+
     plan_config = get_plan(plan)
     now = datetime.now(timezone.utc)
 
@@ -105,7 +115,15 @@ async def activate_subscription(
     await db.commit()
     await db.refresh(subscription)
 
-    logger.info("Subscription activated: user=%s plan=%s", user_id, plan)
+    # Email-уведомление об активации
+    if user:
+        try:
+            from app.services.email import send_subscription_email
+            await send_subscription_email(user.email, plan)
+        except Exception:
+            logger.warning("Не удалось отправить email подписки: user=%s", user_id)
+
+    logger.info("Subscription activated: user=%s plan=%s yookassa_id=%s", user_id, plan, yookassa_id)
     return subscription
 
 

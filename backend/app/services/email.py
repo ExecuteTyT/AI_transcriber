@@ -1,9 +1,11 @@
-"""Сервис отправки email через SMTP."""
+"""Сервис отправки email через SMTP (async-safe)."""
 
+import asyncio
 import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from functools import partial
 
 from app.config import settings
 
@@ -21,8 +23,8 @@ def _build_message(to_email: str, subject: str, html_body: str, text_body: str) 
     return msg
 
 
-def send_email(to_email: str, subject: str, html_body: str, text_body: str) -> bool:
-    """Отправляет email через SMTP. Возвращает True при успехе."""
+def _send_email_sync(to_email: str, subject: str, html_body: str, text_body: str) -> bool:
+    """Синхронная отправка email через SMTP."""
     if not settings.SMTP_HOST:
         logger.warning("SMTP не настроен — email не отправлен (to=%s, subject=%s)", to_email, subject)
         return False
@@ -42,9 +44,17 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str) -> b
         return False
 
 
+async def send_email(to_email: str, subject: str, html_body: str, text_body: str) -> bool:
+    """Асинхронная отправка email (не блокирует event loop)."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        None, partial(_send_email_sync, to_email, subject, html_body, text_body)
+    )
+
+
 # --- Шаблоны писем ---
 
-def send_password_reset_email(to_email: str, reset_token: str) -> bool:
+async def send_password_reset_email(to_email: str, reset_token: str) -> bool:
     """Письмо со ссылкой для сброса пароля."""
     reset_url = f"{settings.APP_URL}/reset-password?token={reset_token}&email={to_email}"
     subject = "Сброс пароля — AI Voice"
@@ -69,10 +79,10 @@ def send_password_reset_email(to_email: str, reset_token: str) -> bool:
     </div>
     """
     text = f"Сброс пароля AI Voice\n\nПерейдите по ссылке: {reset_url}\n\nСсылка действительна {settings.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES} минут."
-    return send_email(to_email, subject, html, text)
+    return await send_email(to_email, subject, html, text)
 
 
-def send_welcome_email(to_email: str, name: str) -> bool:
+async def send_welcome_email(to_email: str, name: str) -> bool:
     """Приветственное письмо после регистрации."""
     subject = "Добро пожаловать в AI Voice!"
     html = f"""
@@ -98,10 +108,10 @@ def send_welcome_email(to_email: str, name: str) -> bool:
     </div>
     """
     text = f"Добро пожаловать в AI Voice{', ' + name if name else ''}!\n\n15 мин бесплатной транскрибации в месяц.\n\nЗагрузите файл: {settings.APP_URL}/upload"
-    return send_email(to_email, subject, html, text)
+    return await send_email(to_email, subject, html, text)
 
 
-def send_subscription_email(to_email: str, plan: str) -> bool:
+async def send_subscription_email(to_email: str, plan: str) -> bool:
     """Уведомление об активации подписки."""
     plan_names = {"start": "Старт (290 ₽/мес)", "pro": "Про (590 ₽/мес)"}
     plan_name = plan_names.get(plan, plan)
@@ -123,4 +133,4 @@ def send_subscription_email(to_email: str, plan: str) -> bool:
     </div>
     """
     text = f"Подписка {plan_name} активирована!\n\nПерейти в кабинет: {settings.APP_URL}/dashboard"
-    return send_email(to_email, subject, html, text)
+    return await send_email(to_email, subject, html, text)
