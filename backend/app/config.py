@@ -1,0 +1,46 @@
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    """Настройки приложения из .env файла."""
+
+    # Database
+    DATABASE_URL: str = "postgresql+asyncpg://aivoice:aivoice@localhost:5432/aivoice"
+
+    # Redis
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    # JWT
+    JWT_SECRET_KEY: str = "change-me-in-production"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    JWT_ALGORITHM: str = "HS256"
+
+    # Voxtral (Mistral AI)
+    MISTRAL_API_KEY: str = ""
+    TRANSCRIPTION_PROVIDER: str = "voxtral"
+
+    # OpenAI
+    OPENAI_API_KEY: str = ""
+
+    # S3 (Selectel)
+    S3_ENDPOINT_URL: str = "https://s3.storage.selcloud.ru"
+    S3_ACCESS_KEY: str = ""
+    S3_SECRET_KEY: str = ""
+    S3_BUCKET_NAME: str = "aivoice-files"
+    S3_REGION: str = "ru-1"
+
+    # YooKassa
+    YOOKASSA_SHOP_ID: str = ""
+    YOOKASSA_SECRET_KEY: str = ""
+    YOOKASSA_WEBHOOK_SECRET: str = ""
+
+    # App
+    APP_URL: str = "http://localhost:3000"
+    API_URL: str = "http://localhost:8000"
+    ENVIRONMENT: str = "development"
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+
+
+settings = Settings()
