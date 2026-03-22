@@ -73,7 +73,7 @@ export default function Login() {
                 required
               />
             </div>
-            <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 disabled:opacity-50">
+            <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 disabled:opacity-50 disabled:cursor-not-allowed">
               {loading ? "Вход..." : "Войти"}
             </button>
           </form>

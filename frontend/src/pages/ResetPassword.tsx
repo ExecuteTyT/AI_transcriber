@@ -13,6 +13,8 @@ export default function ResetPassword() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
+  const isInvalidLink = !token || !email;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -23,10 +25,6 @@ export default function ResetPassword() {
     }
     if (password.length < 8) {
       setError("Минимум 8 символов");
-      return;
-    }
-    if (!token || !email) {
-      setError("Недействительная ссылка для сброса");
       return;
     }
 
@@ -49,7 +47,18 @@ export default function ResetPassword() {
         </div>
 
         <div className="card p-8">
-          {done ? (
+          {isInvalidLink ? (
+            <div className="text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <h1 className="text-xl font-bold mb-2">Недействительная ссылка</h1>
+              <p className="text-sm text-gray-500 mb-6">Ссылка для сброса пароля повреждена или устарела. Запросите новую.</p>
+              <Link to="/forgot-password" className="btn-primary inline-block !py-2.5 !px-8">Запросить сброс</Link>
+            </div>
+          ) : done ? (
             <div className="text-center">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -65,34 +74,43 @@ export default function ResetPassword() {
               <h1 className="text-xl font-bold mb-2">Новый пароль</h1>
               <p className="text-sm text-gray-500 mb-6">Введите новый пароль для вашего аккаунта.</p>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="pwd" className="block text-sm font-medium text-gray-700 mb-1">Новый пароль</label>
+                  <label htmlFor="pwd" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Новый пароль <span className="text-gray-400 font-normal">(мин. 8 символов)</span>
+                  </label>
                   <input
                     id="pwd"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none transition"
-                    placeholder="Минимум 8 символов"
+                    className="input-field"
+                    placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
                     required
+                    minLength={8}
                   />
                 </div>
                 <div>
-                  <label htmlFor="confirm" className="block text-sm font-medium text-gray-700 mb-1">Подтвердите пароль</label>
+                  <label htmlFor="confirm" className="block text-sm font-medium text-gray-700 mb-1.5">Подтвердите пароль</label>
                   <input
                     id="confirm"
                     type="password"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none transition"
+                    className="input-field"
+                    placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
                     required
+                    minLength={8}
                   />
                 </div>
 
-                {error && <p className="text-sm text-red-600">{error}</p>}
+                {error && (
+                  <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-100">
+                    {error}
+                  </div>
+                )}
 
-                <button type="submit" disabled={loading} className="btn-primary w-full !py-3">
+                <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 disabled:opacity-50 disabled:cursor-not-allowed">
                   {loading ? "Сохранение..." : "Установить пароль"}
                 </button>
               </form>

@@ -73,7 +73,7 @@ export default function Register() {
             </div>
             <div>
               <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Пароль <span className="text-gray-400 font-normal">(мин. 6 символов)</span>
+                Пароль <span className="text-gray-400 font-normal">(мин. 8 символов)</span>
               </label>
               <input
                 id="reg-password"
@@ -83,10 +83,10 @@ export default function Register() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-field"
                 required
-                minLength={6}
+                minLength={8}
               />
             </div>
-            <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 disabled:opacity-50">
+            <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 disabled:opacity-50 disabled:cursor-not-allowed">
               {loading ? "Регистрация..." : "Создать аккаунт"}
             </button>
           </form>
