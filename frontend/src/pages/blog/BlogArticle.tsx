@@ -1,19 +1,10 @@
-import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { getArticleBySlug, articles } from "./articles";
 
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
   const article = slug ? getArticleBySlug(slug) : undefined;
-
-  useEffect(() => {
-    if (article) {
-      document.title = article.metaTitle;
-      // Update meta description dynamically
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) metaDesc.setAttribute("content", article.metaDescription);
-    }
-  }, [article]);
 
   if (!article) {
     return (
@@ -113,6 +104,16 @@ export default function BlogArticle() {
           <li className="text-gray-600 truncate max-w-[200px]">{article.title}</li>
         </ol>
       </nav>
+
+      <Helmet>
+        <title>{article.metaTitle}</title>
+        <meta name="description" content={article.metaDescription} />
+        <link rel="canonical" href={`https://aivoice.ru/blog/${article.slug}`} />
+        <meta property="og:title" content={article.metaTitle} />
+        <meta property="og:description" content={article.metaDescription} />
+        <meta property="og:url" content={`https://aivoice.ru/blog/${article.slug}`} />
+        <meta property="og:type" content="article" />
+      </Helmet>
 
       {/* Article */}
       <article className="max-w-3xl mx-auto px-6 pb-20">

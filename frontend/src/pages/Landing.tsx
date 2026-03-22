@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const features = [
   {
@@ -68,6 +69,14 @@ const faqs = [
 export default function Landing() {
   return (
     <div className="min-h-screen bg-white overflow-hidden">
+      <Helmet>
+        <title>AI Voice — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
+        <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 15 мин/мес. От 290 ₽/мес." />
+        <link rel="canonical" href="https://aivoice.ru/" />
+        <meta property="og:title" content="AI Voice — Транскрибация аудио и видео в текст онлайн" />
+        <meta property="og:description" content="Превращайте аудио и видео в текст, саммари и ключевые тезисы с помощью ИИ. Разметка спикеров, таймкоды, экспорт. Бесплатно 15 мин/мес." />
+        <meta property="og:url" content="https://aivoice.ru/" />
+      </Helmet>
       {/* ─── Header ─── */}
       <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200/50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">

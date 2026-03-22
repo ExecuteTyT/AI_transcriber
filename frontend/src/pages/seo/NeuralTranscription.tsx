@@ -1,16 +1,14 @@
-import { useEffect } from "react";
 import SeoLanding from "@/components/SeoLanding";
 
 export default function NeuralTranscription() {
-  useEffect(() => {
-    document.title = "Нейросеть для транскрибации аудио в текст онлайн | AI Voice";
-  }, []);
-
   return (
     <SeoLanding
       title="Попробуйте нейросеть для транскрибации"
       subtitle="Нейросеть транскрибация"
       h1="Нейросеть для транскрибации — расшифровка аудио и видео в текст"
+      metaTitle="Нейросеть для транскрибации аудио в текст онлайн | AI Voice"
+      metaDescription="AI Voice использует нейросеть Voxtral V2 для расшифровки речи в текст с точностью 98%. Пунктуация, спикеры, AI-анализ."
+      canonical="https://aivoice.ru/nejroset-transkribaciya"
       description="AI Voice использует нейросеть Voxtral для расшифровки речи в текст с точностью 98%. Автоматическая пунктуация, разметка спикеров, AI-анализ записи."
       cta="Попробовать нейросеть бесплатно"
       breadcrumb={[

@@ -13,6 +13,12 @@ export interface User {
   plan: string;
   minutes_used: number;
   minutes_limit: number;
+  is_email_verified: boolean;
+  created_at: string | null;
+}
+
+export interface MessageResponse {
+  message: string;
 }
 
 export const authApi = {
@@ -23,4 +29,23 @@ export const authApi = {
     api.post<TokenResponse>("/auth/login", { email, password }),
 
   getMe: () => api.get<User>("/auth/me"),
+
+  updateProfile: (data: { name?: string; email?: string }) =>
+    api.patch<User>("/auth/profile", data),
+
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.post<MessageResponse>("/auth/change-password", {
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
+
+  requestPasswordReset: (email: string) =>
+    api.post<MessageResponse>("/auth/request-password-reset", { email }),
+
+  resetPassword: (token: string, email: string, newPassword: string) =>
+    api.post<MessageResponse>("/auth/reset-password", {
+      token,
+      email,
+      new_password: newPassword,
+    }),
 };

@@ -1,6 +1,7 @@
 import uuid
+from datetime import datetime
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class RegisterRequest(BaseModel):
@@ -41,6 +42,8 @@ class UserResponse(BaseModel):
     plan: str
     minutes_used: int
     minutes_limit: int
+    is_email_verified: bool = False
+    created_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
@@ -49,3 +52,35 @@ class MessageResponse(BaseModel):
     """Ответ с сообщением."""
 
     message: str
+
+
+# --- Profile ---
+
+class UpdateProfileRequest(BaseModel):
+    """Обновление профиля."""
+
+    name: str | None = Field(None, min_length=1, max_length=255)
+    email: EmailStr | None = None
+
+
+class ChangePasswordRequest(BaseModel):
+    """Смена пароля (авторизованный пользователь)."""
+
+    current_password: str
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
+# --- Password reset ---
+
+class RequestPasswordResetRequest(BaseModel):
+    """Запрос на сброс пароля."""
+
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Сброс пароля по токену."""
+
+    token: str
+    email: EmailStr
+    new_password: str = Field(..., min_length=8, max_length=128)

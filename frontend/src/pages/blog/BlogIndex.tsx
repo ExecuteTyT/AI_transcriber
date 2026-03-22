@@ -1,14 +1,15 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { articles } from "./articles";
 
 export default function BlogIndex() {
-  useEffect(() => {
-    document.title = "Блог AI Voice — статьи о транскрибации, нейросетях и продуктивности";
-  }, []);
-
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>Блог AI Voice — статьи о транскрибации, нейросетях и продуктивности</title>
+        <meta name="description" content="Полезные статьи и гайды: как транскрибировать аудио, сравнение сервисов и нейросетей, расшифровка Zoom-совещаний, субтитры для YouTube." />
+        <link rel="canonical" href="https://aivoice.ru/blog" />
+      </Helmet>
       {/* Header */}
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">

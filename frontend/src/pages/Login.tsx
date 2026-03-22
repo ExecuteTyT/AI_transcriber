@@ -78,7 +78,13 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+          <div className="mt-4 text-center">
+            <Link to="/forgot-password" className="text-sm text-gray-500 hover:text-primary-600 transition">
+              Забыли пароль?
+            </Link>
+          </div>
+
+          <div className="mt-4 pt-6 border-t border-gray-100 text-center">
             <p className="text-sm text-gray-500">
               Нет аккаунта?{" "}
               <Link to="/register" className="text-primary-600 font-medium hover:text-primary-700 transition">

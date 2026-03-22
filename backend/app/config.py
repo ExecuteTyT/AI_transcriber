@@ -35,6 +35,18 @@ class Settings(BaseSettings):
     YOOKASSA_SECRET_KEY: str = ""
     YOOKASSA_WEBHOOK_SECRET: str = ""
 
+    # SMTP (email)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "noreply@aivoice.ru"
+    SMTP_FROM_NAME: str = "AI Voice"
+    SMTP_USE_TLS: bool = True
+
+    # Token expiry
+    PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 60
+
     # App
     APP_URL: str = "http://localhost:3000"
     API_URL: str = "http://localhost:8000"

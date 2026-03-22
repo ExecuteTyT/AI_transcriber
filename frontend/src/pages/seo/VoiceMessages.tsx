@@ -1,16 +1,14 @@
-import { useEffect } from "react";
 import SeoLanding from "@/components/SeoLanding";
 
 export default function VoiceMessages() {
-  useEffect(() => {
-    document.title = "Расшифровка голосовых сообщений в текст онлайн | AI Voice";
-  }, []);
-
   return (
     <SeoLanding
       title="Расшифруйте голосовые сообщения в текст"
       subtitle="Расшифровка голосовых"
       h1="Расшифровка голосовых сообщений в текст онлайн"
+      metaTitle="Расшифровка голосовых сообщений в текст онлайн | AI Voice"
+      metaDescription="Переведите голосовые из Telegram, WhatsApp в текст с нейросетью. Точность 98%, пунктуация, разметка спикеров."
+      canonical="https://aivoice.ru/rasshifrovka-golosovyh"
       description="Переведите голосовые сообщения из Telegram, WhatsApp или диктофона в текст с помощью нейросети. Точность 98%, пунктуация, разметка спикеров."
       cta="Расшифровать голосовое бесплатно"
       breadcrumb={[

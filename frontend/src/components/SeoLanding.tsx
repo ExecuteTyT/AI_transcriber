@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 interface FAQ {
   q: string;
@@ -10,6 +11,9 @@ interface SeoLandingProps {
   subtitle: string;
   h1: string;
   description: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  canonical?: string;
   steps: { title: string; desc: string }[];
   benefits: string[];
   faqs: FAQ[];
@@ -21,6 +25,9 @@ export default function SeoLanding({
   title,
   h1,
   description,
+  metaTitle,
+  metaDescription,
+  canonical,
   steps,
   benefits,
   faqs,
@@ -29,6 +36,14 @@ export default function SeoLanding({
 }: SeoLandingProps) {
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>{metaTitle || h1 + " | AI Voice"}</title>
+        <meta name="description" content={metaDescription || description} />
+        {canonical && <link rel="canonical" href={canonical} />}
+        <meta property="og:title" content={metaTitle || h1} />
+        <meta property="og:description" content={metaDescription || description} />
+        {canonical && <meta property="og:url" content={canonical} />}
+      </Helmet>
       {/* Header */}
       <header className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">

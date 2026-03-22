@@ -1,16 +1,14 @@
-import { useEffect } from "react";
 import SeoLanding from "@/components/SeoLanding";
 
 export default function VideoToText() {
-  useEffect(() => {
-    document.title = "Перевод видео в текст онлайн — расшифровка и субтитры | AI Voice";
-  }, []);
-
   return (
     <SeoLanding
       title="Переведите видео в текст с субтитрами"
       subtitle="Видео в текст"
       h1="Перевод видео в текст онлайн — расшифровка и субтитры"
+      metaTitle="Перевод видео в текст онлайн — расшифровка и субтитры | AI Voice"
+      metaDescription="Загрузите MP4, WebM или MOV — AI Voice расшифрует речь, создаст текст с таймкодами и субтитры SRT. Бесплатно 15 мин/мес."
+      canonical="https://aivoice.ru/video-v-tekst"
       description="Загрузите MP4, WebM или MOV — AI Voice извлечёт аудиодорожку, расшифрует речь и создаст текст с таймкодами. Готовые субтитры в формате SRT."
       cta="Расшифровать видео бесплатно"
       breadcrumb={[

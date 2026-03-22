@@ -1,16 +1,14 @@
-import { useEffect } from "react";
 import SeoLanding from "@/components/SeoLanding";
 
 export default function AudioToText() {
-  useEffect(() => {
-    document.title = "Транскрибация аудио в текст онлайн — нейросеть AI Voice";
-  }, []);
-
   return (
     <SeoLanding
       title="Попробуйте транскрибацию аудио в текст прямо сейчас"
       subtitle="Транскрибация аудио в текст"
       h1="Транскрибация аудио в текст онлайн с помощью нейросети"
+      metaTitle="Транскрибация аудио в текст онлайн — нейросеть AI Voice"
+      metaDescription="Загрузите MP3, WAV, FLAC, OGG или M4A — нейросеть AI Voice переведёт речь в текст с точностью 98%. Бесплатно 15 мин/мес."
+      canonical="https://aivoice.ru/audio-v-tekst"
       description="Загрузите MP3, WAV, FLAC, OGG или M4A — нейросеть AI Voice переведёт речь в текст с точностью 98%, расставит знаки препинания, разметит спикеров и создаст AI-саммари."
       cta="Транскрибировать аудио бесплатно"
       breadcrumb={[
