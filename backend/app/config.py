@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     # OpenAI
     OPENAI_API_KEY: str = ""
 
+    # Embeddings
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSION: int = 1536
+
     # S3 (Selectel)
     S3_ENDPOINT_URL: str = "https://s3.storage.selcloud.ru"
     S3_ACCESS_KEY: str = ""

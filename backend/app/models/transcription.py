@@ -33,3 +33,5 @@ class Transcription(Base, UUIDMixin, TimestampMixin):
 
     user = relationship("User", back_populates="transcriptions")
     ai_analyses = relationship("AiAnalysis", back_populates="transcription", lazy="selectin")
+    embeddings = relationship("Embedding", back_populates="transcription", lazy="noload")
+    chat_messages = relationship("ChatMessage", back_populates="transcription", lazy="noload")
