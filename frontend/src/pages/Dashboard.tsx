@@ -159,8 +159,8 @@ export default function Dashboard() {
               <div key={i} className="w-1.5 bg-primary-400 rounded-full animate-wave-bar" style={{ animationDelay: `${i * 0.15}s`, height: "100%" }} />
             ))}
           </div>
-          <h3 className="text-lg font-semibold mb-2">Пока пусто</h3>
-          <p className="text-gray-500 mb-6">Загрузите аудио или видео для транскрибации</p>
+          <h3 className="text-lg font-semibold mb-2">Здесь будут ваши записи</h3>
+          <p className="text-gray-500 mb-6">Загрузите первый файл и увидите результат за 2 минуты</p>
           <Link to="/upload" className="btn-primary inline-flex items-center gap-2">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

@@ -33,7 +33,7 @@ export default function Login() {
         <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-accent-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
 
         <div className="relative z-10">
-          <Link to="/" className="text-2xl font-bold text-white">Voitra</Link>
+          <Link to="/" className="text-2xl font-bold text-white"><svg className="w-5 h-5 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none"><rect x="2" y="10" width="3" height="4" rx="1" fill="currentColor" opacity="0.5"/><rect x="7" y="6" width="3" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="12" y="3" width="3" height="18" rx="1" fill="currentColor"/><rect x="17" y="7" width="3" height="10" rx="1" fill="currentColor" opacity="0.6"/></svg>Voitra</Link>
         </div>
 
         {/* Wave bars */}
@@ -61,7 +61,7 @@ export default function Login() {
               </div>
             ))}
           </div>
-          <p className="text-primary-200/60 text-sm">Превращаем речь в структурированный текст</p>
+          <p className="text-primary-200/60 text-sm">4 часа расшифровки → 2 минуты с Voitra</p>
         </div>
       </div>
 
@@ -70,12 +70,12 @@ export default function Login() {
         <div className="w-full max-w-md animate-fade-up">
           {/* Mobile logo */}
           <Link to="/" className="flex justify-center mb-8 md:hidden">
-            <span className="text-2xl font-bold gradient-text">Voitra</span>
+            <span className="text-2xl font-bold gradient-text"><svg className="w-5 h-5 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none"><rect x="2" y="10" width="3" height="4" rx="1" fill="currentColor" opacity="0.5"/><rect x="7" y="6" width="3" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="12" y="3" width="3" height="18" rx="1" fill="currentColor"/><rect x="17" y="7" width="3" height="10" rx="1" fill="currentColor" opacity="0.6"/></svg>Voitra</span>
           </Link>
 
           <div className="card p-8 shadow-elevated">
             <h1 className="text-2xl font-bold mb-1 text-center">С возвращением</h1>
-            <p className="text-sm text-gray-500 text-center mb-8">Войдите в свой аккаунт</p>
+            <p className="text-sm text-gray-500 text-center mb-8">Рады видеть вас снова</p>
 
             {error && (
               <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm border border-red-100">

@@ -34,7 +34,7 @@ export default function Register() {
         <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-primary-500/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
 
         <div className="relative z-10">
-          <Link to="/" className="text-2xl font-bold text-white">Voitra</Link>
+          <Link to="/" className="text-2xl font-bold text-white"><svg className="w-5 h-5 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none"><rect x="2" y="10" width="3" height="4" rx="1" fill="currentColor" opacity="0.5"/><rect x="7" y="6" width="3" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="12" y="3" width="3" height="18" rx="1" fill="currentColor"/><rect x="17" y="7" width="3" height="10" rx="1" fill="currentColor" opacity="0.6"/></svg>Voitra</Link>
         </div>
 
         {/* Wave bars */}
@@ -62,7 +62,7 @@ export default function Register() {
               </div>
             ))}
           </div>
-          <p className="text-primary-200/60 text-sm">Транскрибация с AI-анализом — просто загрузите файл</p>
+          <p className="text-primary-200/60 text-sm">Присоединяйтесь — регистрация за 30 секунд</p>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ export default function Register() {
         <div className="w-full max-w-md animate-fade-up">
           {/* Mobile logo */}
           <Link to="/" className="flex justify-center mb-8 md:hidden">
-            <span className="text-2xl font-bold gradient-text">Voitra</span>
+            <span className="text-2xl font-bold gradient-text"><svg className="w-5 h-5 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none"><rect x="2" y="10" width="3" height="4" rx="1" fill="currentColor" opacity="0.5"/><rect x="7" y="6" width="3" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="12" y="3" width="3" height="18" rx="1" fill="currentColor"/><rect x="17" y="7" width="3" height="10" rx="1" fill="currentColor" opacity="0.6"/></svg>Voitra</span>
           </Link>
 
           <div className="card p-8 shadow-elevated">
@@ -137,6 +137,21 @@ export default function Register() {
                 {loading ? "Регистрация..." : "Создать аккаунт"}
               </button>
             </form>
+
+            <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-gray-100">
+              <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                <svg className="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                Без карты
+              </span>
+              <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                <svg className="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                15 мин бесплатно
+              </span>
+              <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                <svg className="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                Мгновенный доступ
+              </span>
+            </div>
 
             <div className="mt-6 pt-6 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-500">
