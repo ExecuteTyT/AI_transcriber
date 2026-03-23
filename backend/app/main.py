@@ -10,6 +10,7 @@ from slowapi.util import get_remote_address
 
 from app.api.ai_analysis import router as ai_analysis_router
 from app.api.auth import router as auth_router
+from app.api.chat import router as chat_router
 from app.api.payments import router as payments_router
 from app.api.transcriptions import router as transcriptions_router
 from app.config import settings
@@ -57,6 +58,7 @@ app.include_router(auth_router)
 app.include_router(transcriptions_router)
 app.include_router(ai_analysis_router)
 app.include_router(payments_router)
+app.include_router(chat_router)
 
 
 @app.get("/api/health", tags=["system"])
