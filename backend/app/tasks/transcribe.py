@@ -1,5 +1,6 @@
 import logging
 import math
+import os
 import subprocess
 import tempfile
 import uuid
@@ -58,6 +59,8 @@ def process_transcription(self, transcription_id: str):
         transcription.status = "processing"
         db.commit()
 
+        tmp_path = None
+        audio_path = None
         try:
             # 1. Скачиваем файл из S3
             file_data = s3_service.download_file(transcription.file_key)
@@ -99,6 +102,14 @@ def process_transcription(self, transcription_id: str):
             db.commit()
             logger.exception("Transcription %s failed: %s", transcription_id, e)
             raise
+        finally:
+            # Cleanup temp files
+            for path in (tmp_path, audio_path):
+                if path and os.path.exists(path):
+                    try:
+                        os.remove(path)
+                    except OSError:
+                        pass
 
 
 def _get_suffix(content_type: str) -> str:

@@ -8,7 +8,7 @@ class RegisterRequest(BaseModel):
     """Запрос на регистрацию."""
 
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=8, max_length=128)
     name: str = ""
 
 

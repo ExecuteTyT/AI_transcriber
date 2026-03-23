@@ -29,7 +29,7 @@ describe("authStore", () => {
     localStorage.setItem("refresh_token", "test-refresh");
 
     const { useAuthStore } = await import("./authStore");
-    useAuthStore.getState().logout();
+    await useAuthStore.getState().logout();
 
     expect(localStorage.getItem("access_token")).toBeNull();
     expect(localStorage.getItem("refresh_token")).toBeNull();

@@ -30,6 +30,8 @@ export const authApi = {
 
   getMe: () => api.get<User>("/auth/me"),
 
+  logout: () => api.post<MessageResponse>("/auth/logout"),
+
   updateProfile: (data: { name?: string; email?: string }) =>
     api.patch<User>("/auth/profile", data),
 

@@ -160,6 +160,9 @@ async def cancel_subscription(
 def verify_webhook_signature(body: bytes, signature: str) -> bool:
     """Проверка подписи вебхука ЮKassa."""
     if not settings.YOOKASSA_WEBHOOK_SECRET:
+        logger.error("YOOKASSA_WEBHOOK_SECRET not configured — rejecting webhook")
+        return False
+    if not signature:
         return False
     expected = hmac.new(
         settings.YOOKASSA_WEBHOOK_SECRET.encode(),

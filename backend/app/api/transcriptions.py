@@ -1,3 +1,4 @@
+import logging
 import os
 import uuid
 
@@ -95,8 +96,12 @@ async def upload_file(
     try:
         from app.tasks.transcribe import process_transcription
         process_transcription.delay(str(transcription.id))
-    except (ImportError, ConnectionError, OSError):
-        pass  # Celery может быть недоступен в dev-окружении
+    except (ImportError, ConnectionError, OSError) as exc:
+        logger = logging.getLogger(__name__)
+        logger.error("Celery unavailable, marking transcription %s as failed: %s", transcription.id, exc)
+        transcription.status = "failed"
+        transcription.error_message = "Сервис обработки временно недоступен. Попробуйте позже."
+        await db.commit()
 
     return TranscriptionUploadResponse(
         id=transcription.id,

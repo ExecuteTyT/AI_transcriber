@@ -72,9 +72,10 @@ async def yookassa_webhook(
     """Вебхук от ЮKassa для обработки платежей."""
     body = await request.body()
 
-    # Проверка подписи (если настроена)
+    # Проверка подписи вебхука (обязательная)
     signature = request.headers.get("X-Webhook-Signature", "")
-    if signature and not verify_webhook_signature(body, signature):
+    if not verify_webhook_signature(body, signature):
+        logger.warning("Webhook rejected: invalid or missing signature")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Невалидная подпись вебхука",
