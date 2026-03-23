@@ -182,15 +182,15 @@
 - [x] Кнопка оплаты → ЮKасса
 - [x] Страница «Моя подписка»
 
-### 3.4 SEO-лендинги [24ч] — ⬜
+### 3.4 SEO-лендинги [24ч] — ✅
 **Зависимости:** 2.1
 
-- [ ] Вёрстка /audio-v-tekst (статический HTML)
-- [ ] Вёрстка /video-v-tekst
-- [ ] Вёрстка /nejroset-transkribaciia
-- [ ] Вёрстка /rasshifrovka-golosovyh
-- [ ] Meta-теги, Open Graph, Schema.org
-- [ ] Подключение Яндекс.Метрики
+- [x] Вёрстка /audio-v-tekst (React + SeoLanding компонент)
+- [x] Вёрстка /video-v-tekst
+- [x] Вёрстка /nejroset-transkribaciya
+- [x] Вёрстка /rasshifrovka-golosovyh
+- [x] Meta-теги, Open Graph, Schema.org (FAQPage)
+- [ ] Подключение Яндекс.Метрики — ожидает домен
 
 ### 3.5 Деплой на Selectel [10ч] — ⏳
 **Зависимости:** 3.4
@@ -234,9 +234,9 @@
 - [x] SlowAPI limiter (100 req/min global)
 - [x] Отключается в тестовом окружении
 
-### 4.5 Блог: 3-5 SEO-статей [12ч] — ⬜
-- [ ] Habr статья
-- [ ] 3-5 статей на сайте
+### 4.5 Блог: 3-5 SEO-статей [12ч] — ✅
+- [ ] Habr статья — ожидает запуск продакшена
+- [x] 5 статей на сайте (articles.ts + BlogIndex + BlogArticle)
 
 ### 4.6 Action Items UI — ✅ (бонус)
 - [x] Вкладка "Action items" на странице транскрипции
@@ -244,15 +244,29 @@
 
 ## Спринт 5: RAG + Telegram (Нед. 9-10) — ~62ч
 
-### 5.1 pgvector + embeddings [16ч] — ⬜
-### 5.2 RAG-чат [20ч] — ⬜
-### 5.3 Action items [10ч] — ⬜
+### 5.1 pgvector + embeddings [16ч] — ✅
+- [x] Модель Embedding (pgvector Vector(1536))
+- [x] Chunking по сегментам с overlap
+- [x] OpenAI text-embedding-3-small batch API
+- [x] Cosine similarity search (pgvector)
+- [x] Lazy-генерация при первом вопросе в чат
+
+### 5.2 RAG-чат [20ч] — ✅
+- [x] Модель ChatMessage (role, content, references JSONB)
+- [x] POST /api/transcriptions/{id}/chat
+- [x] GET /api/transcriptions/{id}/chat (история)
+- [x] RAG pipeline: embed question → top-5 chunks → GPT-4o-mini
+- [x] Лимиты по тарифу (Free=0, Start=5, Pro=∞)
+- [x] UI: таб «Чат», message bubbles, typing indicator, references с таймкодами
+
+### 5.3 Action items [10ч] — ✅ (реализовано в 4.6)
+
 ### 5.4 Telegram-бот [16ч] — ⬜
 
 ## Спринт 6: Масштабирование (Нед. 11-12) — ~48ч
 
 ### 6.1 Voxtral Realtime self-hosted [20ч] — ⬜
-### 6.2 CI/CD [10ч] — ⬜
+### 6.2 CI/CD [10ч] — ⏳
 ### 6.3 Мониторинг v2 [10ч] — ⬜
 ### 6.4 Оптимизация БД [8ч] — ⬜
 
