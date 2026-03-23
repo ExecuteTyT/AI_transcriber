@@ -49,6 +49,26 @@ export interface AiAnalysis {
   tokens_used: number;
 }
 
+export interface ChatReference {
+  chunk_text: string;
+  start_time: number | null;
+  end_time: number | null;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  references: ChatReference[] | null;
+  tokens_used: number;
+  created_at: string;
+}
+
+export interface ChatHistoryResponse {
+  messages: ChatMessage[];
+  remaining_questions: number;
+}
+
 export const transcriptionApi = {
   upload: (file: File, onProgress?: (percent: number) => void) => {
     const formData = new FormData();
@@ -93,4 +113,10 @@ export const transcriptionApi = {
 
   exportFile: (id: string, format: "txt" | "srt" | "docx") =>
     api.get(`/transcriptions/${id}/export/${format}`, { responseType: "blob" }),
+
+  sendChatMessage: (id: string, message: string) =>
+    api.post<ChatMessage>(`/transcriptions/${id}/chat`, { message }),
+
+  getChatHistory: (id: string) =>
+    api.get<ChatHistoryResponse>(`/transcriptions/${id}/chat`),
 };
