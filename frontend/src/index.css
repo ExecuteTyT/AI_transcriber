@@ -125,68 +125,70 @@
   }
 }
 
-/* ─── Sound→Text Particle Animations ─── */
-.particle-float {
-  width: 32px;
-  height: 32px;
-  animation: particleFloat linear infinite;
+/* ─── Sound→Text Stream Animations ─── */
+
+/* Stream flow: horizontal drift with sine-wave vertical oscillation */
+.stream-flow {
+  animation: streamFlow linear infinite;
   will-change: transform, opacity;
 }
 
-@keyframes particleFloat {
+@keyframes streamFlow {
   0% {
-    transform: translate(0, 0) scale(0.5);
+    transform: translateX(calc(-100% * var(--direction))) translateY(0);
     opacity: 0;
   }
-  10% {
+  5% {
     opacity: 1;
-    transform: translate(calc(var(--dx) * 0.1), calc(var(--dy) * 0.1)) scale(0.8);
   }
-  45% {
-    transform: translate(calc(var(--dx) * 0.45), calc(var(--dy) * 0.45)) scale(1);
+  25% {
+    transform: translateX(calc(25vw * var(--direction))) translateY(calc(var(--amplitude) * -1));
   }
-  55% {
-    transform: translate(calc(var(--dx) * 0.55), calc(var(--dy) * 0.55)) scale(1);
+  50% {
+    transform: translateX(calc(50vw * var(--direction))) translateY(0);
   }
-  90% {
+  75% {
+    transform: translateX(calc(75vw * var(--direction))) translateY(var(--amplitude));
+  }
+  95% {
     opacity: 1;
-    transform: translate(calc(var(--dx) * 0.9), calc(var(--dy) * 0.9)) scale(0.8);
   }
   100% {
-    transform: translate(var(--dx), var(--dy)) scale(0.5);
+    transform: translateX(calc(110vw * var(--direction))) translateY(0);
     opacity: 0;
   }
 }
 
-/* Wave char: visible 0-50%, fades out 40-55% */
-.particle-wave {
-  animation: particleWave linear infinite;
+/* Wave string: visible first half, fades at midpoint */
+.stream-wave {
+  animation: streamWaveFade linear infinite;
   animation-duration: inherit;
   animation-delay: inherit;
 }
-@keyframes particleWave {
-  0%, 40% { opacity: 1; }
-  55%, 100% { opacity: 0; }
+@keyframes streamWaveFade {
+  0%, 35% { opacity: inherit; filter: blur(0px); }
+  50% { opacity: 0; filter: blur(2px); }
+  51%, 100% { opacity: 0; }
 }
 
-/* Text char: hidden 0-45%, fades in 45-55% */
-.particle-text {
-  animation: particleTextReveal linear infinite;
+/* Text string: hidden first half, appears at midpoint */
+.stream-text {
+  animation: streamTextReveal linear infinite;
   animation-duration: inherit;
   animation-delay: inherit;
 }
-@keyframes particleTextReveal {
-  0%, 40% { opacity: 0; transform: scale(0.7); }
-  55% { opacity: 1; transform: scale(1.1); }
-  60%, 90% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(0.8); }
+@keyframes streamTextReveal {
+  0%, 40% { opacity: 0; filter: blur(3px); }
+  55% { opacity: inherit; filter: blur(0px); }
+  90% { opacity: inherit; }
+  100% { opacity: 0; }
 }
 
 /* Disable on reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .particle-float,
-  .particle-wave,
-  .particle-text {
+  .stream-flow,
+  .stream-wave,
+  .stream-text {
     animation: none !important;
     opacity: 0 !important;
   }

@@ -1,23 +1,28 @@
 import { useMemo } from "react";
 
-const WAVE_CHARS = ["~", "≈", "∿", "〜", "~", "≈"];
-const TEXT_CHARS = ["А", "Т", "е", "к", "с", "т", "AI", "→"];
+/**
+ * Волновые потоки: цепочки символов ~≈∿ плывут по экрану синусоидой
+ * и на середине пути трансформируются в текст "Текст" / "AI" / "речь"
+ */
 
-interface Particle {
+const WAVE_STRINGS = ["~≈∿~≈∿~", "≈~∿≈~∿≈", "∿≈~∿≈~", "~∿≈~∿≈~∿", "≈∿~≈∿~"];
+const TEXT_STRINGS = ["Текст", "AI речь", "саммари", "спикеры", "тезисы", "запись", "экспорт"];
+
+interface Stream {
   id: number;
-  wave: string;
-  text: string;
-  x: number;
-  y: number;
+  waveStr: string;
+  textStr: string;
+  startX: number;
+  startY: number;
   duration: number;
   delay: number;
-  size: number;
-  direction: number; // 0-360 degrees
+  fontSize: number;
+  amplitude: number; // sine wave amplitude
+  reverse: boolean; // direction: left→right or right→left
 }
 
-function generateParticles(count: number, seed: number): Particle[] {
-  const particles: Particle[] = [];
-  // Simple seeded random for SSR consistency
+function generateStreams(count: number, seed: number): Stream[] {
+  const streams: Stream[] = [];
   let s = seed;
   const rand = () => {
     s = (s * 16807 + 0) % 2147483647;
@@ -25,80 +30,85 @@ function generateParticles(count: number, seed: number): Particle[] {
   };
 
   for (let i = 0; i < count; i++) {
-    particles.push({
+    const reverse = rand() > 0.5;
+    streams.push({
       id: i,
-      wave: WAVE_CHARS[Math.floor(rand() * WAVE_CHARS.length)],
-      text: TEXT_CHARS[Math.floor(rand() * TEXT_CHARS.length)],
-      x: rand() * 100,
-      y: rand() * 100,
-      duration: 8 + rand() * 12, // 8-20s
-      delay: rand() * -20, // stagger start
-      size: 14 + rand() * 10, // 14-24px
-      direction: rand() * 360,
+      waveStr: WAVE_STRINGS[Math.floor(rand() * WAVE_STRINGS.length)],
+      textStr: TEXT_STRINGS[Math.floor(rand() * TEXT_STRINGS.length)],
+      startX: reverse ? 100 + rand() * 10 : -(10 + rand() * 10),
+      startY: 5 + rand() * 90,
+      duration: 14 + rand() * 16, // 14-30s for a full pass
+      delay: rand() * -30,
+      fontSize: 16 + rand() * 12, // 16-28px
+      amplitude: 20 + rand() * 40, // 20-60px sine amplitude
+      reverse,
     });
   }
-  return particles;
+  return streams;
 }
 
 interface Props {
-  /** Number of particles (default: 12) */
   count?: number;
-  /** "dark" for hero sections, "light" for white sections */
   variant?: "dark" | "light";
-  /** Additional class for container */
   className?: string;
 }
 
 export default function SoundToTextParticles({
-  count = 12,
+  count = 8,
   variant = "light",
   className = "",
 }: Props) {
-  const particles = useMemo(() => generateParticles(count, 42), [count]);
+  const streams = useMemo(() => generateStreams(count, 42), [count]);
 
   const isDark = variant === "dark";
-  const waveColor = isDark ? "text-primary-400/20" : "text-primary-400/10";
-  const textColor = isDark ? "text-accent-400/25" : "text-accent-500/10";
+  const waveOpacity = isDark ? "0.15" : "0.07";
+  const textOpacity = isDark ? "0.2" : "0.08";
+  const waveColor = isDark ? "#818cf8" : "#6366f1";
+  const textColor = isDark ? "#fb923c" : "#f97316";
 
   return (
     <div
       className={`absolute inset-0 overflow-hidden pointer-events-none ${className}`}
       aria-hidden="true"
     >
-      {particles.map((p) => {
-        const dx = Math.cos((p.direction * Math.PI) / 180) * 80;
-        const dy = Math.sin((p.direction * Math.PI) / 180) * 60;
-
-        return (
-          <div
-            key={p.id}
-            className="absolute particle-float"
+      {streams.map((st) => (
+        <div
+          key={st.id}
+          className="absolute whitespace-nowrap stream-flow"
+          style={{
+            top: `${st.startY}%`,
+            left: st.reverse ? "auto" : "0",
+            right: st.reverse ? "0" : "auto",
+            animationDuration: `${st.duration}s`,
+            animationDelay: `${st.delay}s`,
+            ["--amplitude" as string]: `${st.amplitude}px`,
+            ["--direction" as string]: st.reverse ? "-1" : "1",
+          }}
+        >
+          {/* Wave string — visible first half */}
+          <span
+            className="absolute inset-0 stream-wave font-mono font-bold tracking-[0.3em] select-none"
             style={{
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              animationDuration: `${p.duration}s`,
-              animationDelay: `${p.delay}s`,
-              ["--dx" as string]: `${dx}px`,
-              ["--dy" as string]: `${dy}px`,
+              fontSize: `${st.fontSize}px`,
+              color: waveColor,
+              opacity: waveOpacity,
             }}
           >
-            {/* Wave char — visible first half */}
-            <span
-              className={`absolute inset-0 flex items-center justify-center font-mono font-bold select-none particle-wave ${waveColor}`}
-              style={{ fontSize: `${p.size}px` }}
-            >
-              {p.wave}
-            </span>
-            {/* Text char — visible second half */}
-            <span
-              className={`absolute inset-0 flex items-center justify-center font-bold select-none particle-text ${textColor}`}
-              style={{ fontSize: `${p.size * 0.85}px` }}
-            >
-              {p.text}
-            </span>
-          </div>
-        );
-      })}
+            {st.waveStr}
+          </span>
+          {/* Text string — visible second half */}
+          <span
+            className="stream-text font-semibold tracking-wide select-none"
+            style={{
+              fontSize: `${st.fontSize * 0.9}px`,
+              color: textColor,
+              opacity: textOpacity,
+            }}
+          >
+            {st.textStr}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
