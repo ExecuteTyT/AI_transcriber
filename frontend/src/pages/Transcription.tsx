@@ -4,6 +4,7 @@ import {
   transcriptionApi,
   type Transcription as TranscriptionType,
   type AiAnalysis,
+  type ChatMessage as ChatMessageType,
 } from "@/api/transcriptions";
 
 const SPEAKER_COLORS = [
@@ -25,7 +26,7 @@ const SPEAKER_BORDER_COLORS = [
   "border-l-emerald-400", "border-l-pink-400", "border-l-teal-400",
 ];
 
-type Tab = "transcript" | "summary" | "key_points" | "action_items";
+type Tab = "transcript" | "summary" | "key_points" | "action_items" | "chat";
 
 export default function Transcription() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +37,14 @@ export default function Transcription() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+
+  // Chat state
+  const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatRemaining, setChatRemaining] = useState<number>(-1);
+  const [chatError, setChatError] = useState("");
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Speaker UI state
   const [speakerNames, setSpeakerNames] = useState<Record<string, string>>({});
@@ -94,6 +103,20 @@ export default function Transcription() {
       .catch(() => setAnalysis(null))
       .finally(() => setAnalysisLoading(false));
   }, [id, tab]);
+
+  // Chat history loading
+  useEffect(() => {
+    if (!id || tab !== "chat") return;
+    transcriptionApi.getChatHistory(id).then(({ data }) => {
+      setChatMessages(data.messages);
+      setChatRemaining(data.remaining_questions);
+    }).catch(() => {});
+  }, [id, tab]);
+
+  // Chat auto-scroll
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages, chatLoading]);
 
   // Extract unique speakers
   const uniqueSpeakers = useMemo(() => {
@@ -157,6 +180,39 @@ export default function Transcription() {
   const handleRenameSpeaker = (original: string, newName: string) => {
     setSpeakerNames((prev) => ({ ...prev, [original]: newName || original }));
     setEditingSpeaker(null);
+  };
+
+  const handleSendChat = async () => {
+    if (!id || !chatInput.trim() || chatLoading) return;
+    const message = chatInput.trim();
+    setChatInput("");
+    setChatError("");
+
+    const tempUserMsg: ChatMessageType = {
+      id: "temp",
+      role: "user",
+      content: message,
+      references: null,
+      tokens_used: 0,
+      created_at: new Date().toISOString(),
+    };
+    setChatMessages((prev) => [...prev, tempUserMsg]);
+    setChatLoading(true);
+
+    try {
+      const { data } = await transcriptionApi.sendChatMessage(id, message);
+      setChatMessages((prev) => [
+        ...prev.filter((m) => m.id !== "temp"),
+        { ...tempUserMsg, id: crypto.randomUUID() },
+        data,
+      ]);
+      if (chatRemaining > 0) setChatRemaining((r) => r - 1);
+    } catch (err: any) {
+      setChatMessages((prev) => prev.filter((m) => m.id !== "temp"));
+      setChatError(err.response?.data?.detail || "Ошибка отправки сообщения");
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   const handleCopy = () => {
@@ -305,6 +361,7 @@ export default function Transcription() {
           ["summary", "Саммари"],
           ["key_points", "Тезисы"],
           ["action_items", "Action items"],
+          ["chat", "Чат"],
         ] as const).map(([key, label]) => (
           <button
             key={key}
@@ -422,6 +479,95 @@ export default function Transcription() {
           ) : (
             <p className="text-gray-500">Не удалось загрузить анализ</p>
           )}
+        </div>
+      )}
+
+      {/* Chat tab */}
+      {tab === "chat" && (
+        <div className="card flex flex-col" style={{ height: "70vh" }}>
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {chatMessages.length === 0 && !chatLoading && (
+              <div className="text-center text-gray-400 py-12">
+                <p className="text-lg mb-2">Задайте вопрос по транскрипции</p>
+                <p className="text-sm">Например: &laquo;О чём говорили в первые 10 минут?&raquo;</p>
+              </div>
+            )}
+            {chatMessages.map((msg) => (
+              <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                  msg.role === "user"
+                    ? "bg-primary-600 text-white"
+                    : "bg-surface-100 text-gray-800"
+                }`}>
+                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  {msg.references && msg.references.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-200/30 space-y-1">
+                      {msg.references.map((ref, i) => (
+                        <p key={i} className="text-xs opacity-70">
+                          {ref.start_time != null && (
+                            <span className="font-mono">[{Math.floor(ref.start_time / 60)}:{String(Math.floor(ref.start_time % 60)).padStart(2, "0")}]</span>
+                          )}{" "}
+                          {ref.chunk_text.slice(0, 100)}...
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {chatLoading && (
+              <div className="flex justify-start">
+                <div className="bg-surface-100 rounded-2xl px-4 py-3">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="border-t border-gray-100 p-4">
+            {chatError && (
+              <p className="text-sm text-red-500 mb-2">{chatError}</p>
+            )}
+            {chatRemaining === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-2">
+                Лимит вопросов исчерпан.{" "}
+                <Link to="/pricing" className="text-primary-600 hover:underline">Перейти на Про</Link>
+              </p>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendChat()}
+                  placeholder="Задайте вопрос по записи..."
+                  className="input-field flex-1"
+                  disabled={chatLoading}
+                />
+                <button
+                  onClick={handleSendChat}
+                  disabled={chatLoading || !chatInput.trim()}
+                  className="btn-primary !px-4 disabled:opacity-50"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {chatRemaining > 0 && (
+              <p className="text-xs text-gray-400 mt-1 text-center">
+                Осталось вопросов: {chatRemaining}
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>
