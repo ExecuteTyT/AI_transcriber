@@ -122,9 +122,9 @@ export default function Landing() {
       </Helmet>
 
       {/* ─── Header ─── */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200/50">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text"><svg className="w-5 h-5 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none"><rect x="2" y="10" width="3" height="4" rx="1" fill="currentColor" opacity="0.5"/><rect x="7" y="6" width="3" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="12" y="3" width="3" height="18" rx="1" fill="currentColor"/><rect x="17" y="7" width="3" height="10" rx="1" fill="currentColor" opacity="0.6"/></svg>Voitra</Link>
+      <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200/40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
+          <Link to="/" className="text-xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#features" className="hover:text-gray-900 transition">Возможности</a>
             <a href="#use-cases" className="hover:text-gray-900 transition">Кому</a>
@@ -216,7 +216,7 @@ export default function Landing() {
 
         {/* Mockup preview */}
         <div className="relative max-w-4xl mx-auto mt-16 px-6 animate-fade-up" style={{ animationDelay: "0.3s" }}>
-          <div className="rounded-2xl glass-dark overflow-hidden">
+          <div className="rounded-2xl glass-dark overflow-hidden shadow-elevated-lg">
             {/* Window chrome */}
             <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
               <div className="w-3 h-3 rounded-full bg-red-400/80" />
@@ -255,7 +255,7 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((s, i) => (
             <div key={s.label} className={`text-center ${i < stats.length - 1 ? "md:border-r md:border-primary-800" : ""}`}>
-              <div className="text-3xl md:text-4xl font-black text-white">{s.value}</div>
+              <div className="text-4xl md:text-5xl font-black text-white">{s.value}</div>
               <div className="text-sm text-primary-300 mt-1">{s.label}</div>
             </div>
           ))}
@@ -263,7 +263,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Bento-grid Features ─── */}
-      <section id="features" className="py-24 bg-white">
+      <section id="features" className="py-24 bg-gradient-to-b from-white to-surface-50">
         <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -275,7 +275,7 @@ export default function Landing() {
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {features.map((f, i) => (
-              <div key={f.title} className={`bento-card group relative overflow-hidden ${i === 0 ? "md:row-span-2" : ""}`}>
+              <div key={f.title} className={`bento-card group relative overflow-hidden backdrop-blur-sm ${i === 0 ? "md:row-span-2 bg-gradient-to-br from-primary-50/40 to-white" : ""}`}>
                 {/* Unique visual element per card */}
                 {i === 0 && (
                   <div className="absolute top-4 right-4 flex items-end gap-0.5 h-8 opacity-30">
@@ -334,7 +334,7 @@ export default function Landing() {
               { step: "03", title: "Получите", desc: "Текст, таймкоды, AI-саммари, тезисы, action items. Экспорт в TXT и SRT." },
             ].map((item) => (
               <div key={item.step} className="relative text-center md:text-left">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-sm mx-auto md:mx-0 mb-4 relative z-10">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 shadow-lg shadow-primary-500/30 flex items-center justify-center text-white font-bold text-sm mx-auto md:mx-0 mb-4 relative z-10">
                   {item.step}
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
@@ -347,7 +347,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Use cases ─── */}
-      <section id="use-cases" className="py-24 bg-white">
+      <section id="use-cases" className="py-24 bg-gradient-to-b from-surface-50 to-white">
         <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -380,7 +380,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-6">
             {testimonials.map((t) => (
               <div key={t.name} className="gradient-border">
-                <div className="bg-white rounded-2xl p-6 h-full flex flex-col">
+                <div className="bg-white rounded-3xl p-7 h-full flex flex-col shadow-sm">
                   <svg className="w-8 h-8 text-primary-200 mb-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
                   </svg>
@@ -403,7 +403,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Pricing ─── */}
-      <section id="pricing" className="py-24 bg-white">
+      <section id="pricing" className="py-24 bg-gradient-to-b from-white to-surface-50">
         <FadeInOnScroll>
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -413,7 +413,7 @@ export default function Landing() {
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {/* Free */}
-            <div className="card p-8">
+            <div className="card p-8 bg-white/90">
               <h3 className="font-bold text-lg">Free</h3>
               <p className="text-xs text-gray-400 mt-1">Для знакомства</p>
               <div className="mt-4 mb-6">
@@ -451,7 +451,7 @@ export default function Landing() {
               </div>
             </div>
             {/* Pro */}
-            <div className="card p-8">
+            <div className="card p-8 bg-white/90">
               <h3 className="font-bold text-lg">Про</h3>
               <p className="text-xs text-gray-400 mt-1">Для команд и продакшена</p>
               <div className="mt-4 mb-6">
@@ -472,7 +472,7 @@ export default function Landing() {
       </section>
 
       {/* ─── FAQ ─── */}
-      <section id="faq" className="py-24 bg-white">
+      <section id="faq" className="py-24 bg-surface-50">
         <FadeInOnScroll>
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -481,7 +481,7 @@ export default function Landing() {
           </div>
           <div className="space-y-3">
             {faqs.map((faq) => (
-              <details key={faq.q} className="card group p-5 cursor-pointer">
+              <details key={faq.q} className="card group p-6 cursor-pointer">
                 <summary className="font-medium text-gray-900 list-none flex items-center justify-between">
                   {faq.q}
                   <svg className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform duration-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -522,7 +522,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <span className="font-bold gradient-text text-lg"><svg className="w-5 h-5 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none"><rect x="2" y="10" width="3" height="4" rx="1" fill="currentColor" opacity="0.5"/><rect x="7" y="6" width="3" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="12" y="3" width="3" height="18" rx="1" fill="currentColor"/><rect x="17" y="7" width="3" height="10" rx="1" fill="currentColor" opacity="0.6"/></svg>Voitra</span>
+              <span className="font-bold gradient-text text-lg"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</span>
               <span className="text-sm text-gray-400">&copy; 2026</span>
             </div>
             <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">

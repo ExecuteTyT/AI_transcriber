@@ -33,7 +33,7 @@ export default function Login() {
         <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-accent-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
 
         <div className="relative z-10">
-          <Link to="/" className="text-2xl font-bold text-white"><svg className="w-5 h-5 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none"><rect x="2" y="10" width="3" height="4" rx="1" fill="currentColor" opacity="0.5"/><rect x="7" y="6" width="3" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="12" y="3" width="3" height="18" rx="1" fill="currentColor"/><rect x="17" y="7" width="3" height="10" rx="1" fill="currentColor" opacity="0.6"/></svg>Voitra</Link>
+          <Link to="/" className="text-2xl font-bold text-white"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</Link>
         </div>
 
         {/* Wave bars */}
@@ -70,7 +70,7 @@ export default function Login() {
         <div className="w-full max-w-md animate-fade-up">
           {/* Mobile logo */}
           <Link to="/" className="flex justify-center mb-8 md:hidden">
-            <span className="text-2xl font-bold gradient-text"><svg className="w-5 h-5 inline-block mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none"><rect x="2" y="10" width="3" height="4" rx="1" fill="currentColor" opacity="0.5"/><rect x="7" y="6" width="3" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="12" y="3" width="3" height="18" rx="1" fill="currentColor"/><rect x="17" y="7" width="3" height="10" rx="1" fill="currentColor" opacity="0.6"/></svg>Voitra</span>
+            <span className="text-2xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</span>
           </Link>
 
           <div className="card p-8 shadow-elevated">

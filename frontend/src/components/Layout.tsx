@@ -80,8 +80,8 @@ export default function Layout() {
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? "bg-primary-50 text-primary-700 shadow-sm border-l-[4px] border-primary-500"
-                  : "text-gray-600 hover:bg-surface-100 hover:text-gray-900"
+                  ? "bg-primary-50 text-primary-700 shadow-sm border-l-[4px] border-primary-500 font-semibold"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
               }`}
               aria-current={isActive ? "page" : undefined}
             >
@@ -96,7 +96,7 @@ export default function Layout() {
 
       {/* User panel */}
       {user && (
-        <div className="p-4 m-3 rounded-2xl bg-white/60 backdrop-blur-sm border border-gray-100">
+        <div className="p-4 m-3 rounded-2xl bg-gray-50 border border-gray-200/60">
           {/* Usage */}
           <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
             <span>{user.minutes_used} / {user.minutes_limit} мин</span>
@@ -104,9 +104,9 @@ export default function Layout() {
               {planNames[user.plan] || user.plan}
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4" role="progressbar" aria-valuenow={usagePercent} aria-valuemin={0} aria-valuemax={100} aria-label="Использование лимита">
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-4" role="progressbar" aria-valuenow={usagePercent} aria-valuemin={0} aria-valuemax={100} aria-label="Использование лимита">
             <div
-              className={`h-1.5 rounded-full transition-all duration-500 ${
+              className={`h-2 rounded-full transition-all duration-500 ${
                 usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-primary-500"
               }`}
               style={{ width: `${usagePercent}%` }}
@@ -138,8 +138,8 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen bg-surface-50">
       {/* Mobile header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 h-14 flex items-center justify-between px-4">
-        <Link to="/" className="text-lg font-bold gradient-text">Voitra</Link>
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200/60 h-14 shadow-sm flex items-center justify-between px-4">
+        <Link to="/" className="text-lg font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</Link>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-2.5 rounded-lg hover:bg-surface-100 transition"
@@ -167,7 +167,7 @@ export default function Layout() {
 
       {/* Mobile sidebar */}
       <aside
-        className={`md:hidden fixed top-14 left-0 bottom-0 z-40 w-[280px] bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ${
+        className={`md:hidden fixed top-14 left-0 bottom-0 z-40 w-[280px] bg-white border-r border-gray-200/60 shadow-xl flex flex-col transition-transform duration-300 ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -175,10 +175,10 @@ export default function Layout() {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-[260px] bg-surface-50 border-r border-gray-100 flex-col flex-shrink-0">
+      <aside className="hidden md:flex w-[260px] bg-white border-r border-gray-200/60 flex-col flex-shrink-0">
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-gray-100">
-          <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
+          <Link to="/" className="text-xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</Link>
         </div>
         {sidebarContent}
       </aside>
