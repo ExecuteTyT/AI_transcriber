@@ -348,25 +348,25 @@ export default function Transcription() {
               <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg> Копировать</>
             )}
           </button>
-          <button onClick={() => handleExport("txt")} className="btn-secondary !py-2 !px-4 text-sm">TXT</button>
-          <button onClick={() => handleExport("srt")} className="btn-secondary !py-2 !px-4 text-sm">SRT</button>
-          <button onClick={() => handleExport("docx")} className="btn-secondary !py-2 !px-4 text-sm">DOCX</button>
+          <button onClick={() => handleExport("txt")} className="btn-secondary !py-2 !px-3 md:!px-4 text-xs md:text-sm">TXT</button>
+          <button onClick={() => handleExport("srt")} className="btn-secondary !py-2 !px-3 md:!px-4 text-xs md:text-sm">SRT</button>
+          <button onClick={() => handleExport("docx")} className="btn-secondary !py-2 !px-3 md:!px-4 text-xs md:text-sm">DOCX</button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {([
           ["transcript", "Транскрипт"],
           ["summary", "Саммари"],
           ["key_points", "Тезисы"],
-          ["action_items", "Action items"],
+          ["action_items", "Actions"],
           ["chat", "Чат"],
         ] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
               tab === key ? "bg-primary-600 text-white shadow-sm" : "bg-surface-100 text-gray-600 hover:bg-surface-200"
             }`}
           >
@@ -495,7 +495,7 @@ export default function Transcription() {
             )}
             {chatMessages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                <div className={`max-w-[90%] md:max-w-[80%] rounded-2xl px-4 py-3 ${
                   msg.role === "user"
                     ? "bg-primary-600 text-white"
                     : "bg-surface-100 text-gray-800"
@@ -554,7 +554,7 @@ export default function Transcription() {
                 <button
                   onClick={handleSendChat}
                   disabled={chatLoading || !chatInput.trim()}
-                  className="btn-primary !px-4 disabled:opacity-50"
+                  className="btn-primary !px-4 !py-3 disabled:opacity-50"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />

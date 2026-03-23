@@ -104,7 +104,7 @@ export default function Landing() {
 
       {/* ─── Header ─── */}
       <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200/50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#features" className="hover:text-gray-900 transition">Возможности</a>
@@ -117,7 +117,7 @@ export default function Landing() {
             <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5 hidden sm:inline-flex">Попробовать</Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition"
+              className="md:hidden p-2.5 rounded-lg hover:bg-white/10 transition"
               aria-label={mobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
             >
               {mobileMenuOpen ? (
@@ -171,7 +171,7 @@ export default function Landing() {
             ))}
           </div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-6 animate-fade-up text-balance text-white">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-6 animate-fade-up text-balance text-white">
             Аудио и видео в
             <br />
             <span className="gradient-text">структурированный текст</span>
@@ -183,10 +183,10 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            <Link to="/register" className="bg-white text-primary-950 px-8 py-4 rounded-2xl text-lg font-bold hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5 shadow-lg">
+            <Link to="/register" className="bg-white text-primary-950 px-6 py-3 md:px-8 md:py-4 rounded-2xl text-base md:text-lg font-bold hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5 shadow-lg">
               Начать бесплатно — 15 мин/мес
             </Link>
-            <a href="#features" className="px-8 py-4 rounded-2xl text-lg font-medium border border-white/20 text-white hover:bg-white/10 transition-all duration-200">
+            <a href="#features" className="px-6 py-3 md:px-8 md:py-4 rounded-2xl text-base md:text-lg font-medium border border-white/20 text-white hover:bg-white/10 transition-all duration-200">
               Как это работает
             </a>
           </div>
@@ -468,7 +468,7 @@ export default function Landing() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
         <div className="relative max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
             Готовы превращать
             <br />аудио в инсайты?
           </h2>

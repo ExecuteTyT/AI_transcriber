@@ -142,7 +142,7 @@ export default function Layout() {
         <Link to="/" className="text-lg font-bold gradient-text">Voitra</Link>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 rounded-lg hover:bg-surface-100 transition"
+          className="p-2.5 rounded-lg hover:bg-surface-100 transition"
           aria-label={mobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
         >
           {mobileMenuOpen ? (

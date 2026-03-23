@@ -203,7 +203,7 @@ export default function Dashboard() {
                 <button
                   onClick={() => handleDelete(item.id, item.title)}
                   disabled={deletingId === item.id}
-                  className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label={`Удалить ${item.title}`}
                 >
                   {deletingId === item.id ? (

@@ -19,12 +19,12 @@ export default function NotFound() {
           ))}
         </div>
 
-        <div className="text-[160px] font-black text-white/10 leading-none mb-2 select-none">404</div>
-        <div className="gradient-text text-6xl font-black -mt-28 mb-8 select-none">404</div>
+        <div className="text-[100px] sm:text-[160px] font-black text-white/10 leading-none mb-2 select-none">404</div>
+        <div className="gradient-text text-5xl sm:text-6xl font-black -mt-20 sm:-mt-28 mb-8 select-none">404</div>
 
         <h1 className="text-xl font-semibold text-white mb-2">Страница не найдена</h1>
         <p className="text-primary-200/80 mb-8">Возможно, она была удалена или вы ввели неверный адрес.</p>
-        <Link to="/" className="bg-white text-primary-950 px-6 py-3 rounded-xl font-medium hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5">
+        <Link to="/" className="bg-white text-primary-950 px-6 py-3.5 rounded-xl font-medium hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5">
           На главную
         </Link>
       </div>

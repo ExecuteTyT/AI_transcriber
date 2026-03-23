@@ -85,7 +85,7 @@ export default function BlogArticle() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="glass border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
           <div className="flex items-center gap-3">
             <Link to="/blog" className="btn-ghost text-sm">Блог</Link>
