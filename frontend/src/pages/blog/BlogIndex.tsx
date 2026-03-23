@@ -35,7 +35,7 @@ export default function BlogIndex() {
             <Link
               key={article.slug}
               to={`/blog/${article.slug}`}
-              className="card-hover gradient-border block p-6 group"
+              className="card-hover block p-6 group hover:glow-ring"
             >
               <div className="flex items-center gap-3 mb-3">
                 <span className="badge bg-primary-50 text-primary-700">{article.category}</span>

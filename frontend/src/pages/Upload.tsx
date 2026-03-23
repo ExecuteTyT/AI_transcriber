@@ -78,8 +78,8 @@ export default function Upload() {
         {...getRootProps()}
         className={`relative rounded-2xl p-16 text-center cursor-pointer transition-all duration-300 group ${
           isDragActive
-            ? "bg-primary-50 border-2 border-primary-400 shadow-glow"
-            : "border-2 border-dashed border-gray-200 hover:border-primary-300 hover:bg-primary-50/30"
+            ? "bg-primary-50/50 border-2 border-primary-400 shadow-glow-lg"
+            : "border-2 border-dashed border-gray-300 hover:border-primary-400 hover:bg-primary-50/30 hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.15)]"
         }`}
       >
         <input {...getInputProps()} />
@@ -94,7 +94,7 @@ export default function Upload() {
             <p className="text-gray-600 font-medium">Загрузка файла...</p>
             {fileName && <p className="text-xs text-gray-400 truncate max-w-xs mx-auto">{fileName}</p>}
             <div className="w-48 mx-auto bg-gray-200 rounded-full h-2">
-              <div className="bg-primary-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+              <div className="bg-gradient-to-r from-primary-500 via-accent-400 to-primary-500 h-2 rounded-full transition-all duration-300 animate-shimmer" style={{ width: `${progress}%`, backgroundSize: "200% 100%" }} />
             </div>
             <p className="text-xs text-gray-400">{progress}%</p>
           </div>

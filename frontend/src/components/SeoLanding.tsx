@@ -76,7 +76,7 @@ export default function SeoLanding({
       </nav>
 
       {/* Hero */}
-      <section className="max-w-4xl mx-auto px-4 py-16 text-center">
+      <section className="max-w-4xl mx-auto px-4 py-16 text-center bg-dots">
         <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight"><span className="gradient-text">{h1}</span></h1>
         <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-8">{description}</p>
         <Link
@@ -95,7 +95,7 @@ export default function SeoLanding({
           <div className="grid md:grid-cols-3 gap-8">
             {steps.map((step, i) => (
               <div key={step.title} className="text-center">
-                <div className="w-10 h-10 bg-primary-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 text-white rounded-full shadow-lg shadow-primary-500/25 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                   {i + 1}
                 </div>
                 <h3 className="font-semibold mb-2">{step.title}</h3>
@@ -111,7 +111,7 @@ export default function SeoLanding({
         <h2 className="text-2xl font-bold text-center mb-10">Преимущества Voitra</h2>
         <div className="grid md:grid-cols-2 gap-4">
           {benefits.map((b) => (
-            <div key={b} className="bento-card flex items-start gap-3">
+            <div key={b} className="bento-card flex items-start gap-3 hover:glow-ring">
               <span className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="text-green-500 text-xs">&#10003;</span>
               </span>

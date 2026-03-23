@@ -95,7 +95,7 @@ export default function Dashboard() {
 
       {/* Usage card */}
       {user && (
-        <div className="card p-5 mb-6">
+        <div className="card p-5 mb-6 glow-ring">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium text-gray-700">Использование</span>
             <span className="text-sm text-gray-500">
@@ -153,7 +153,7 @@ export default function Dashboard() {
           ))}
         </div>
       ) : filteredItems.length === 0 && items.length === 0 ? (
-        <div className="card p-16 text-center">
+        <div className="card p-16 text-center bg-gradient-to-br from-primary-50/30 to-accent-50/20">
           <div className="flex items-end justify-center gap-1 h-10 mb-6 opacity-40">
             {Array.from({ length: 5 }, (_, i) => (
               <div key={i} className="w-1.5 bg-primary-400 rounded-full animate-wave-bar" style={{ animationDelay: `${i * 0.15}s`, height: "100%" }} />
@@ -175,7 +175,7 @@ export default function Dashboard() {
           {filteredItems.map((item, idx) => (
             <div
               key={item.id}
-              className="card-hover p-5 flex items-center gap-4 animate-fade-in"
+              className="card-hover p-5 flex items-center gap-4 animate-fade-in hover:glow-ring"
               style={{ animationDelay: `${idx * 0.05}s` }}
             >
               {/* Icon */}

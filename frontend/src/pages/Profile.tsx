@@ -97,7 +97,7 @@ export default function Profile() {
       </div>
 
       {/* Account info */}
-      <div className="card p-6">
+      <div className="card p-6 accent-top-border">
         <h2 className="font-semibold mb-4">Аккаунт</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
@@ -127,7 +127,7 @@ export default function Profile() {
           <div className="w-full bg-gray-200 rounded-full h-2" role="progressbar" aria-valuenow={usagePercent} aria-valuemin={0} aria-valuemax={100} aria-label="Использование лимита минут">
             <div
               className={`h-2 rounded-full transition-all duration-500 ${
-                usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-primary-500"
+                usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-gradient-to-r from-primary-500 to-accent-400"
               }`}
               style={{ width: `${usagePercent}%` }}
             />
@@ -184,7 +184,7 @@ export default function Profile() {
       </form>
 
       {/* Change password */}
-      <form onSubmit={handlePasswordChange} className="card p-6">
+      <form onSubmit={handlePasswordChange} className="card p-6 accent-top-border">
         <h2 className="font-semibold mb-4">Сменить пароль</h2>
         <div className="space-y-5">
           <div>

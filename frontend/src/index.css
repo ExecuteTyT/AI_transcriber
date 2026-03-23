@@ -17,11 +17,15 @@
 @layer components {
   /* ─── Glass Effects ─── */
   .glass {
-    @apply bg-white/80 backdrop-blur-2xl border border-white/40 shadow-sm;
+    @apply bg-white/80 backdrop-blur-2xl border border-gray-200/50 shadow-sm;
   }
 
   .glass-dark {
     @apply bg-gray-900/70 backdrop-blur-2xl border border-white/10 shadow-lg;
+  }
+
+  .card-glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl;
   }
 
   /* ─── Buttons ─── */
@@ -57,8 +61,8 @@
 
   /* ─── Cards ─── */
   .card {
-    @apply bg-white rounded-3xl border border-gray-200/60
-           shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.04)]
+    @apply bg-white rounded-3xl border border-gray-200/70
+           shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_12px_-2px_rgba(0,0,0,0.06)]
            transition-all duration-300;
   }
 
@@ -69,11 +73,21 @@
   }
 
   .bento-card {
-    @apply bg-white rounded-3xl border border-gray-200/60
-           shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.04)]
+    @apply bg-white rounded-3xl border border-gray-200/70
+           shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_12px_-2px_rgba(0,0,0,0.06)]
            p-7 transition-all duration-300
            hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12),0_4px_16px_-4px_rgba(0,0,0,0.06)]
            hover:-translate-y-1;
+  }
+
+  /* ─── AI Glow Ring ─── */
+  .glow-ring {
+    @apply ring-1 ring-primary-500/10 transition-all duration-300;
+    box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.1);
+  }
+  .glow-ring:hover {
+    @apply ring-primary-500/20;
+    box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.2);
   }
 
   /* ─── Typography ─── */
@@ -99,6 +113,16 @@
   .gradient-border > * {
     @apply rounded-3xl;
   }
+
+  /* ─── Accent Top Border ─── */
+  .accent-top-border {
+    @apply relative overflow-hidden;
+  }
+  .accent-top-border::before {
+    content: "";
+    @apply absolute top-0 left-0 right-0 h-1;
+    background: linear-gradient(90deg, #6366f1, #f97316, #6366f1);
+  }
 }
 
 @layer utilities {
@@ -121,7 +145,8 @@
     background-size: 40px 40px;
   }
 
-  .bg-noise {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  .bg-dots {
+    background-image: radial-gradient(circle, rgba(99,102,241,0.08) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
 }

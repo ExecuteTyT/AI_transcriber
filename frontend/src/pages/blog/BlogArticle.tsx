@@ -149,7 +149,7 @@ export default function BlogArticle() {
             <h3 className="text-xl font-bold mb-6">Похожие статьи</h3>
             <div className="grid md:grid-cols-2 gap-4">
               {relatedArticles.map((related) => related && (
-                <Link key={related.slug} to={`/blog/${related.slug}`} className="card-hover p-5 group">
+                <Link key={related.slug} to={`/blog/${related.slug}`} className="card-hover p-5 group hover:glow-ring">
                   <span className="badge bg-surface-100 text-gray-500 text-xs mb-2">{related.category}</span>
                   <h4 className="font-semibold group-hover:text-primary-600 transition">{related.title}</h4>
                 </Link>

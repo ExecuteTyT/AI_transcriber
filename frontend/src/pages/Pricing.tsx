@@ -79,7 +79,7 @@ export default function Pricing() {
             <div
               key={plan.id}
               className={`relative flex flex-col transition-all duration-300 ${
-                isPopular ? "gradient-border shadow-glow scale-[1.02]" : "bento-card"
+                isPopular ? "gradient-border shadow-glow scale-[1.02]" : "bento-card hover:glow-ring"
               }`}
             >
               {isPopular && (
@@ -100,7 +100,7 @@ export default function Pricing() {
                 <ul className="flex-1 space-y-3 mb-8">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5 text-sm">
-                      <span className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="w-5 h-5 rounded-full bg-green-50 shadow-sm flex items-center justify-center flex-shrink-0 mt-0.5">
                         <svg className="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                         </svg>
@@ -141,13 +141,13 @@ export default function Pricing() {
 
   if (isStandalone) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-surface-50">
         <Helmet>
           <title>Тарифы Voitra — транскрибация от 290 ₽/мес</title>
           <meta name="description" content="Тарифы Voitra: Free (15 мин/мес бесплатно), Старт (290 ₽/мес, 5 часов), Про (590 ₽/мес, 20 часов). AI-саммари, разметка спикеров, экспорт." />
           <link rel="canonical" href="https://voitra.ru/pricing" />
         </Helmet>
-        <header className="border-b border-gray-100">
+        <header className="border-b border-gray-100 shadow-sm">
           <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
             <div className="flex items-center gap-3">

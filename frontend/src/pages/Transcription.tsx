@@ -367,7 +367,7 @@ export default function Transcription() {
             key={key}
             onClick={() => setTab(key)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-              tab === key ? "bg-primary-600 text-white shadow-sm" : "bg-surface-100 text-gray-600 hover:bg-surface-200"
+              tab === key ? "bg-primary-600 text-white shadow-lg shadow-primary-600/30" : "bg-surface-100 text-gray-600 hover:bg-surface-200"
             }`}
           >
             {label}
@@ -465,12 +465,12 @@ export default function Transcription() {
       {(tab === "summary" || tab === "key_points" || tab === "action_items") && (
         <div className="card p-8">
           {analysisLoading ? (
-            <div className="flex items-center gap-3 text-gray-500">
-              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Генерация анализа...
+            <div className="space-y-3 animate-pulse">
+              <div className="h-4 bg-gradient-to-r from-surface-100 via-primary-50 to-surface-100 rounded-full w-3/4 animate-shimmer" style={{ backgroundSize: "200% 100%" }} />
+              <div className="h-4 bg-gradient-to-r from-surface-100 via-primary-50 to-surface-100 rounded-full w-full animate-shimmer" style={{ backgroundSize: "200% 100%", animationDelay: "0.1s" }} />
+              <div className="h-4 bg-gradient-to-r from-surface-100 via-primary-50 to-surface-100 rounded-full w-5/6 animate-shimmer" style={{ backgroundSize: "200% 100%", animationDelay: "0.2s" }} />
+              <div className="h-4 bg-gradient-to-r from-surface-100 via-primary-50 to-surface-100 rounded-full w-2/3 animate-shimmer" style={{ backgroundSize: "200% 100%", animationDelay: "0.3s" }} />
+              <p className="text-xs text-gray-400 mt-4">Генерируем анализ с помощью AI...</p>
             </div>
           ) : analysis ? (
             <div className="prose prose-sm max-w-none whitespace-pre-wrap text-gray-700 leading-relaxed">
@@ -498,7 +498,7 @@ export default function Transcription() {
                 <div className={`max-w-[90%] md:max-w-[80%] rounded-2xl px-4 py-3 ${
                   msg.role === "user"
                     ? "bg-primary-600 text-white"
-                    : "bg-surface-100 text-gray-800"
+                    : "bg-surface-100 text-gray-800 border-l-2 border-primary-400/40"
                 }`}>
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                   {msg.references && msg.references.length > 0 && (

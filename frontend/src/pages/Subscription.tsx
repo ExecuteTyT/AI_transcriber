@@ -64,7 +64,7 @@ export default function Subscription() {
         <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm border border-red-100">{error}</div>
       )}
 
-      <div className="card p-7 space-y-6">
+      <div className="card p-7 accent-top-border space-y-6">
         {/* Current plan */}
         <div className="flex items-center justify-between">
           <div>
@@ -91,7 +91,7 @@ export default function Subscription() {
           <div className="w-full bg-surface-100 rounded-full h-3">
             <div
               className={`h-3 rounded-full transition-all duration-700 ${
-                usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-gradient-to-r from-primary-500 to-accent-500"
+                usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-gradient-to-r from-primary-500 to-accent-400"
               }`}
               style={{ width: `${usagePercent}%` }}
             />

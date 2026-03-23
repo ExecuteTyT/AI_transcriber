@@ -251,19 +251,19 @@ export default function Landing() {
       </section>
 
       {/* ─── Stats (dark) ─── */}
-      <section className="py-16 bg-primary-900/50 border-y border-primary-800">
+      <section className="py-16 bg-primary-950 bg-grid">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((s, i) => (
             <div key={s.label} className={`text-center ${i < stats.length - 1 ? "md:border-r md:border-primary-800" : ""}`}>
               <div className="text-4xl md:text-5xl font-black text-white">{s.value}</div>
-              <div className="text-sm text-primary-300 mt-1">{s.label}</div>
+              <div className="text-sm text-primary-200/70 mt-1">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* ─── Bento-grid Features ─── */}
-      <section id="features" className="py-24 bg-gradient-to-b from-white to-surface-50">
+      <section id="features" className="py-24 bg-white bg-dots">
         <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -318,7 +318,7 @@ export default function Landing() {
       </section>
 
       {/* ─── How it works ─── */}
-      <section className="py-24 bg-surface-50">
+      <section className="py-24 bg-surface-50 bg-dots">
         <FadeInOnScroll>
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -347,7 +347,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Use cases ─── */}
-      <section id="use-cases" className="py-24 bg-gradient-to-b from-surface-50 to-white">
+      <section id="use-cases" className="py-24 bg-white">
         <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -370,7 +370,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Testimonials ─── */}
-      <section className="py-24 bg-surface-50">
+      <section className="py-24 bg-surface-50 bg-dots">
         <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -380,7 +380,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-6">
             {testimonials.map((t) => (
               <div key={t.name} className="gradient-border">
-                <div className="bg-white rounded-3xl p-7 h-full flex flex-col shadow-sm">
+                <div className="bg-white rounded-3xl p-7 h-full flex flex-col shadow-sm glow-ring">
                   <svg className="w-8 h-8 text-primary-200 mb-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
                   </svg>
@@ -403,7 +403,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Pricing ─── */}
-      <section id="pricing" className="py-24 bg-gradient-to-b from-white to-surface-50">
+      <section id="pricing" className="py-24 bg-white">
         <FadeInOnScroll>
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -428,7 +428,7 @@ export default function Landing() {
               <Link to="/register" className="btn-secondary w-full text-center block">Начать бесплатно</Link>
             </div>
             {/* Start — popular */}
-            <div className="relative gradient-border shadow-glow scale-[1.02]">
+            <div className="relative gradient-border shadow-glow-lg scale-[1.02]">
               <div className="bg-white rounded-2xl p-8 h-full">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-gradient-to-r from-primary-600 to-accent-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
