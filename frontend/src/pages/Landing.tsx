@@ -124,7 +124,7 @@ export default function Landing() {
       {/* ─── Header ─── */}
       <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200/40 shadow-sm">
         <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</Link>
+          <Link to="/" className="text-xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M2 8c1-3 2-5 3-5s2 4 3 4 1.5-6 2.5-6S13 9 13 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M2 16c1 3 2 5 3 5s2-4 3-4 1.5 6 2.5 6S13 15 13 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="7" x2="22" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Voitra</Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#features" className="hover:text-gray-900 transition">Возможности</a>
             <a href="#use-cases" className="hover:text-gray-900 transition">Кому</a>
@@ -522,7 +522,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <span className="font-bold gradient-text text-lg"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</span>
+              <span className="font-bold gradient-text text-lg"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M2 8c1-3 2-5 3-5s2 4 3 4 1.5-6 2.5-6S13 9 13 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M2 16c1 3 2 5 3 5s2-4 3-4 1.5 6 2.5 6S13 15 13 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="7" x2="22" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Voitra</span>
               <span className="text-sm text-gray-400">&copy; 2026</span>
             </div>
             <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">

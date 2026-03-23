@@ -34,7 +34,7 @@ export default function Register() {
         <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-primary-500/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
 
         <div className="relative z-10">
-          <Link to="/" className="text-2xl font-bold text-white"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</Link>
+          <Link to="/" className="text-2xl font-bold text-white"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M2 8c1-3 2-5 3-5s2 4 3 4 1.5-6 2.5-6S13 9 13 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M2 16c1 3 2 5 3 5s2-4 3-4 1.5 6 2.5 6S13 15 13 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="7" x2="22" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Voitra</Link>
         </div>
 
         {/* Wave bars */}
@@ -71,7 +71,7 @@ export default function Register() {
         <div className="w-full max-w-md animate-fade-up">
           {/* Mobile logo */}
           <Link to="/" className="flex justify-center mb-8 md:hidden">
-            <span className="text-2xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</span>
+            <span className="text-2xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M2 8c1-3 2-5 3-5s2 4 3 4 1.5-6 2.5-6S13 9 13 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M2 16c1 3 2 5 3 5s2-4 3-4 1.5 6 2.5 6S13 15 13 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="7" x2="22" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Voitra</span>
           </Link>
 
           <div className="card p-8 shadow-elevated">

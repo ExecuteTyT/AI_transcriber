@@ -139,7 +139,7 @@ export default function Layout() {
     <div className="flex min-h-screen bg-surface-50">
       {/* Mobile header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200/60 h-14 shadow-sm flex items-center justify-between px-4">
-        <Link to="/" className="text-lg font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</Link>
+        <Link to="/" className="text-lg font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M2 8c1-3 2-5 3-5s2 4 3 4 1.5-6 2.5-6S13 9 13 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M2 16c1 3 2 5 3 5s2-4 3-4 1.5 6 2.5 6S13 15 13 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="7" x2="22" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Voitra</Link>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-2.5 rounded-lg hover:bg-surface-100 transition"
@@ -178,7 +178,7 @@ export default function Layout() {
       <aside className="hidden md:flex w-[260px] bg-white border-r border-gray-200/60 flex-col flex-shrink-0">
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-gray-200/60">
-          <Link to="/" className="text-xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M3 12c0-1.5 1-3 2-3s2 3 2 3 1-6 3-6 3 8 3 8 1-4 2.5-4S18 14 18 14s1-8 3-8 2 4 2 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Voitra</Link>
+          <Link to="/" className="text-xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M2 8c1-3 2-5 3-5s2 4 3 4 1.5-6 2.5-6S13 9 13 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M2 16c1 3 2 5 3 5s2-4 3-4 1.5 6 2.5 6S13 15 13 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="7" x2="22" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Voitra</Link>
         </div>
         {sidebarContent}
       </aside>
