@@ -61,8 +61,8 @@ export default function SoundToTextParticles({
   const streams = useMemo(() => generateStreams(count, 42), [count]);
 
   const isDark = variant === "dark";
-  const waveOpacity = isDark ? "0.15" : "0.07";
-  const textOpacity = isDark ? "0.2" : "0.08";
+  const waveOpacity = isDark ? "0.08" : "0.04";
+  const textOpacity = isDark ? "0.12" : "0.05";
   const waveColor = isDark ? "#818cf8" : "#6366f1";
   const textColor = isDark ? "#fb923c" : "#f97316";
 

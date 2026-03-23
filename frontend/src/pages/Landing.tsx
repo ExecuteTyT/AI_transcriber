@@ -123,9 +123,9 @@ export default function Landing() {
       </Helmet>
 
       {/* ─── Header ─── */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200/40 shadow-sm">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-gray-200/40 shadow-sm">
         <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M2 8c1-3 2-5 3-5s2 4 3 4 1.5-6 2.5-6S13 9 13 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M2 16c1 3 2 5 3 5s2-4 3-4 1.5 6 2.5 6S13 15 13 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="7" x2="22" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Voitra</Link>
+          <Link to="/" className="text-xl font-extrabold text-gray-900 tracking-tight">Voitra</Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#features" className="hover:text-gray-900 transition">Возможности</a>
             <a href="#use-cases" className="hover:text-gray-900 transition">Кому</a>
@@ -173,27 +173,10 @@ export default function Landing() {
         <div className="absolute top-20 right-[10%] w-80 h-80 bg-primary-500/30 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-10 left-[5%] w-96 h-96 bg-accent-400/25 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
 
-        <SoundToTextParticles count={10} variant="dark" />
+        <SoundToTextParticles count={8} variant="dark" />
 
         <div className="relative max-w-5xl mx-auto px-6 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-dark text-primary-200 text-sm font-medium mb-8 animate-fade-in">
-            <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" />
-            Нейросеть Voxtral V2 — точность 98%
-          </div>
-
-          {/* Wave bars behind heading */}
-          <div className="flex items-end justify-center gap-1 h-16 mb-6 opacity-20">
-            {Array.from({ length: 24 }, (_, i) => (
-              <div
-                key={i}
-                className="w-1 bg-primary-400 rounded-full animate-wave-bar"
-                style={{ animationDelay: `${i * 0.07}s`, height: "100%" }}
-              />
-            ))}
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-6 animate-fade-up text-balance text-white">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-8 animate-fade-up text-balance text-white">
             От записи к готовому
             <br />
             <span className="gradient-text">тексту за 2 минуты</span>
@@ -528,7 +511,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <span className="font-bold gradient-text text-lg"><svg className="w-6 h-6 inline-block mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none"><path d="M2 8c1-3 2-5 3-5s2 4 3 4 1.5-6 2.5-6S13 9 13 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M2 16c1 3 2 5 3 5s2-4 3-4 1.5 6 2.5 6S13 15 13 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="7" x2="22" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="15" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Voitra</span>
+              <span className="font-extrabold text-gray-900 text-lg tracking-tight">Voitra</span>
               <span className="text-sm text-gray-400">&copy; 2026</span>
             </div>
             <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">
