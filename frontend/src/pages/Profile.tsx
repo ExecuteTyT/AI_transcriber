@@ -195,7 +195,7 @@ export default function Profile() {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               className="input-field"
-              placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
+              placeholder="••••••••"
               required
             />
           </div>
@@ -209,7 +209,7 @@ export default function Profile() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="input-field"
-              placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
+              placeholder="••••••••"
               required
               minLength={8}
             />
@@ -222,7 +222,7 @@ export default function Profile() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="input-field"
-              placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
+              placeholder="••••••••"
               required
               minLength={8}
             />

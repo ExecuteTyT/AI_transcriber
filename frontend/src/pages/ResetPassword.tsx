@@ -87,7 +87,7 @@ export default function ResetPassword() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="input-field"
-                    placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
+                    placeholder="••••••••"
                     required
                     minLength={8}
                   />
@@ -100,7 +100,7 @@ export default function ResetPassword() {
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     className="input-field"
-                    placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
+                    placeholder="••••••••"
                     required
                     minLength={8}
                   />

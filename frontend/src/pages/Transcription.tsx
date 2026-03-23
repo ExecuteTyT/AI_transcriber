@@ -129,6 +129,16 @@ export default function Transcription() {
 
   const getDisplayName = (speaker: string) => speakerNames[speaker] || speaker;
 
+  const highlightSearch = (text: string, query: string) => {
+    if (!query.trim()) return text;
+    const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi"));
+    return parts.map((part, i) =>
+      part.toLowerCase() === query.toLowerCase()
+        ? <mark key={i} className="bg-yellow-200 rounded px-0.5">{part}</mark>
+        : part
+    );
+  };
+
   const toggleSpeaker = (speaker: string) => {
     setActiveSpeakers((prev) => {
       if (prev === null) {
@@ -386,7 +396,7 @@ export default function Transcription() {
                       {getDisplayName(seg.speaker)}
                     </span>
                   )}
-                  <span className="text-gray-700 leading-relaxed">{seg.text}</span>
+                  <span className="text-gray-700 leading-relaxed">{highlightSearch(seg.text, search)}</span>
                 </div>
               ))
             )}

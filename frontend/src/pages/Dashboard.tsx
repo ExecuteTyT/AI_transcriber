@@ -142,9 +142,13 @@ export default function Dashboard() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="card p-5 animate-pulse">
-              <div className="h-4 bg-surface-100 rounded-full w-1/3 mb-3" />
-              <div className="h-3 bg-surface-100 rounded-full w-1/5" />
+            <div key={i} className="card p-5 animate-pulse flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-surface-100 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="h-4 bg-surface-100 rounded-full w-1/3 mb-2" />
+                <div className="h-3 bg-surface-100 rounded-full w-1/5" />
+              </div>
+              <div className="w-16 h-5 bg-surface-100 rounded-lg flex-shrink-0" />
             </div>
           ))}
         </div>

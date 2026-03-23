@@ -60,6 +60,7 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
+    if (!confirm("Выйти из аккаунта?")) return;
     logout();
     navigate("/login");
   };
@@ -79,7 +80,7 @@ export default function Layout() {
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? "bg-primary-50/50 text-primary-700 shadow-sm border-l-[3px] border-primary-500"
+                  ? "bg-primary-50 text-primary-700 shadow-sm border-l-[4px] border-primary-500"
                   : "text-gray-600 hover:bg-surface-100 hover:text-gray-900"
               }`}
               aria-current={isActive ? "page" : undefined}

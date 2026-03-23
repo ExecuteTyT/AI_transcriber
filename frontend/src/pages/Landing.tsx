@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
@@ -55,7 +56,28 @@ const stats = [
   { value: "98%", label: "точность" },
   { value: "13", label: "языков" },
   { value: "~2 мин", label: "на час аудио" },
-  { value: "0.97 ₽", label: "за минуту" },
+  { value: "от 290 ₽", label: "в месяц" },
+];
+
+const testimonials = [
+  {
+    name: "Алексей К.",
+    role: "Подкастер, «Голос Продукта»",
+    text: "Раньше на расшифровку выпуска уходило 4 часа. С Voitra — 3 минуты. Субтитры для YouTube генерирую в один клик.",
+    initials: "АК",
+  },
+  {
+    name: "Мария С.",
+    role: "Руководитель отдела, Fintech",
+    text: "Записываем все совещания. Voitra выдаёт протокол с action items — каждый знает свои задачи. Экономим час в день на фиксации.",
+    initials: "МС",
+  },
+  {
+    name: "Дмитрий Л.",
+    role: "Студент магистратуры, МГУ",
+    text: "Конспектирую лекции за секунды. AI-тезисы помогают готовиться к экзаменам вдвое быстрее. Бесплатного тарифа хватает на неделю.",
+    initials: "ДЛ",
+  },
 ];
 
 const faqs = [
@@ -67,6 +89,8 @@ const faqs = [
 ];
 
 export default function Landing() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen overflow-hidden">
       <Helmet>
@@ -89,11 +113,39 @@ export default function Landing() {
             <Link to="/blog" className="hover:text-gray-900 transition">Блог</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Link to="/login" className="btn-ghost text-sm">Войти</Link>
-            <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5">Попробовать</Link>
+            <Link to="/login" className="btn-ghost text-sm hidden sm:inline-flex">Войти</Link>
+            <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5 hidden sm:inline-flex">Попробовать</Link>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition"
+              aria-label={mobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              ) : (
+                <svg className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+              )}
+            </button>
           </div>
         </div>
       </header>
+
+      {/* ─── Mobile Menu ─── */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[60] md:hidden">
+          <div className="absolute inset-0 bg-primary-950/95 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)} />
+          <nav className="relative flex flex-col items-center justify-center h-full gap-8 text-lg font-medium text-white">
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition">Возможности</a>
+            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition">Кому</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition">Тарифы</a>
+            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition">Блог</Link>
+            <div className="flex flex-col gap-3 mt-4">
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="px-8 py-3 rounded-xl border border-white/20 text-center hover:bg-white/10 transition">Войти</Link>
+              <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="bg-white text-primary-950 px-8 py-3 rounded-xl font-medium text-center hover:bg-gray-100 transition">Попробовать</Link>
+            </div>
+          </nav>
+        </div>
+      )}
 
       {/* ─── Hero (dark) ─── */}
       <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-primary-950 bg-grid">
@@ -293,8 +345,39 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ─── Testimonials ─── */}
+      <section className="py-24 bg-surface-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Отзывы</p>
+            <h2 className="section-heading">Нам доверяют</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {testimonials.map((t) => (
+              <div key={t.name} className="gradient-border">
+                <div className="bg-white rounded-2xl p-6 h-full flex flex-col">
+                  <svg className="w-8 h-8 text-primary-200 mb-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                  </svg>
+                  <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-4">{t.text}</p>
+                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                      {t.initials}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{t.name}</p>
+                      <p className="text-xs text-gray-500">{t.role}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── Pricing ─── */}
-      <section id="pricing" className="py-24 bg-surface-50">
+      <section id="pricing" className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Тарифы</p>
@@ -335,7 +418,7 @@ export default function Landing() {
                   <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Разметка спикеров</li>
                   <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> TXT / SRT / DOCX</li>
                 </ul>
-                <Link to="/register" className="btn-primary w-full text-center block">Попробовать</Link>
+                <Link to="/register" className="btn-primary w-full text-center block">Выбрать Старт</Link>
               </div>
             </div>
             {/* Pro */}
@@ -351,7 +434,7 @@ export default function Landing() {
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> RAG-чат безлимит</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Action items</li>
               </ul>
-              <Link to="/register" className="btn-secondary w-full text-center block">Попробовать</Link>
+              <Link to="/register" className="btn-secondary w-full text-center block">Выбрать Про</Link>
             </div>
           </div>
         </div>
@@ -396,7 +479,7 @@ export default function Landing() {
             to="/register"
             className="inline-block bg-white text-primary-950 px-10 py-4 rounded-2xl text-lg font-bold hover:bg-gray-100 transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
           >
-            Начать бесплатно
+            Попробовать бесплатно — 15 мин
           </Link>
         </div>
       </section>
