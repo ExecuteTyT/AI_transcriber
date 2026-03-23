@@ -40,13 +40,15 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-hero-mesh opacity-40" />
+      <div className="absolute bottom-1/3 left-[10%] w-80 h-80 bg-accent-400/10 rounded-full blur-3xl animate-float" />
+      <div className="relative w-full max-w-md">
+        <div className="text-center mb-8 animate-fade-in">
           <Link to="/" className="text-2xl font-bold gradient-text">Voitra</Link>
         </div>
 
-        <div className="card p-8">
+        <div className="card p-8 shadow-elevated">
           {isInvalidLink ? (
             <div className="text-center">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">

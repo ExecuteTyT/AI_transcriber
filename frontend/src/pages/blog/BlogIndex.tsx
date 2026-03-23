@@ -11,7 +11,7 @@ export default function BlogIndex() {
         <link rel="canonical" href="https://voitra.ru/blog" />
       </Helmet>
       {/* Header */}
-      <header className="border-b border-gray-100">
+      <header className="glass border-b border-gray-200/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
           <div className="flex items-center gap-3">
@@ -35,7 +35,7 @@ export default function BlogIndex() {
             <Link
               key={article.slug}
               to={`/blog/${article.slug}`}
-              className="card-hover block p-6 group"
+              className="card-hover gradient-border block p-6 group"
             >
               <div className="flex items-center gap-3 mb-3">
                 <span className="badge bg-primary-50 text-primary-700">{article.category}</span>

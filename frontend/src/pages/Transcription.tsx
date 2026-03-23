@@ -20,6 +20,11 @@ const SPEAKER_DOT_COLORS = [
   "bg-emerald-500", "bg-pink-500", "bg-teal-500",
 ];
 
+const SPEAKER_BORDER_COLORS = [
+  "border-l-blue-400", "border-l-violet-400", "border-l-amber-400",
+  "border-l-emerald-400", "border-l-pink-400", "border-l-teal-400",
+];
+
 type Tab = "transcript" | "summary" | "key_points" | "action_items";
 
 export default function Transcription() {
@@ -115,6 +120,11 @@ export default function Transcription() {
   const getSpeakerDot = (speaker: string) => {
     const idx = uniqueSpeakers.indexOf(speaker);
     return SPEAKER_DOT_COLORS[idx >= 0 ? idx % SPEAKER_DOT_COLORS.length : 0];
+  };
+
+  const getSpeakerBorder = (speaker: string) => {
+    const idx = uniqueSpeakers.indexOf(speaker);
+    return SPEAKER_BORDER_COLORS[idx >= 0 ? idx % SPEAKER_BORDER_COLORS.length : 0];
   };
 
   const getDisplayName = (speaker: string) => speakerNames[speaker] || speaker;
@@ -279,7 +289,7 @@ export default function Transcription() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-surface-100 rounded-xl w-fit mb-6">
+      <div className="flex gap-2 mb-6 flex-wrap">
         {([
           ["transcript", "Транскрипт"],
           ["summary", "Саммари"],
@@ -289,8 +299,8 @@ export default function Transcription() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              tab === key ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+              tab === key ? "bg-primary-600 text-white shadow-sm" : "bg-surface-100 text-gray-600 hover:bg-surface-200"
             }`}
           >
             {label}
@@ -367,7 +377,7 @@ export default function Transcription() {
               <p className="text-gray-400 text-sm text-center py-8">Нет совпадений</p>
             ) : (
               filteredSegments.map((seg, i) => (
-                <div key={i} className="flex items-start gap-3 text-sm group hover:bg-surface-50 -mx-2 px-2 py-1.5 rounded-lg transition">
+                <div key={i} className={`flex items-start gap-3 text-sm group hover:bg-surface-50 -mx-2 px-2 py-1.5 rounded-lg transition ${seg.speaker ? `border-l-2 ${getSpeakerBorder(seg.speaker)}` : ""}`}>
                   <span className="text-gray-400 font-mono text-xs w-12 flex-shrink-0 pt-0.5">
                     {formatTime(seg.start)}
                   </span>

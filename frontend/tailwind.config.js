@@ -18,6 +18,7 @@ export default {
           700: "#4338ca",
           800: "#3730a3",
           900: "#312e81",
+          950: "#1e1b4b",
         },
         accent: {
           50: "#fdf4ff",
@@ -60,6 +61,7 @@ export default {
         float: "float 6s ease-in-out infinite",
         "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         shimmer: "shimmer 2s linear infinite",
+        "wave-bar": "waveBar 1.2s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -81,6 +83,10 @@ export default {
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
+        },
+        waveBar: {
+          "0%, 100%": { height: "20%" },
+          "50%": { height: "100%" },
         },
       },
     },

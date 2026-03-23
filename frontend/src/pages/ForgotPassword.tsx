@@ -23,13 +23,15 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-hero-mesh opacity-40" />
+      <div className="absolute top-1/4 right-[15%] w-72 h-72 bg-primary-400/10 rounded-full blur-3xl animate-float" />
+      <div className="relative w-full max-w-md">
+        <div className="text-center mb-8 animate-fade-in">
           <Link to="/" className="text-2xl font-bold gradient-text">Voitra</Link>
         </div>
 
-        <div className="card p-8">
+        <div className="card p-8 shadow-elevated">
           {sent ? (
             <div className="text-center">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">

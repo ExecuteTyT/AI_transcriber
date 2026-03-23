@@ -78,56 +78,60 @@ export default function Pricing() {
           return (
             <div
               key={plan.id}
-              className={`relative card p-7 flex flex-col transition-all duration-300 ${
-                isPopular ? "ring-2 ring-primary-500 shadow-glow" : ""
+              className={`relative flex flex-col transition-all duration-300 ${
+                isPopular ? "gradient-border shadow-glow scale-[1.02]" : "bento-card"
               }`}
             >
               {isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
                   <span className="bg-gradient-to-r from-primary-600 to-accent-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
                     Популярный
                   </span>
                 </div>
               )}
 
-              <h2 className="text-lg font-bold">{plan.name}</h2>
-              <div className="mt-3 mb-6">
-                <span className="text-4xl font-extrabold tracking-tight">{plan.price}</span>
-                {plan.period && <span className="text-gray-500 text-sm">{plan.period}</span>}
+              <div className={`flex flex-col h-full ${isPopular ? "bg-white rounded-2xl p-7" : ""}`}>
+                <h2 className="text-lg font-bold">{plan.name}</h2>
+                <div className="mt-3 mb-6">
+                  <span className="text-4xl font-extrabold tracking-tight">{plan.price}</span>
+                  {plan.period && <span className="text-gray-500 text-sm">{plan.period}</span>}
+                </div>
+
+                <ul className="flex-1 space-y-3 mb-8">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm">
+                      <span className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg className="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      </span>
+                      <span className="text-gray-700">{f}</span>
+                    </li>
+                  ))}
+                  {plan.notIncluded.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm text-gray-400">
+                      <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => handleSubscribe(plan.id)}
+                  disabled={isCurrent || loading !== null}
+                  className={`w-full py-3 rounded-xl font-medium transition-all duration-200 ${
+                    isCurrent
+                      ? "bg-surface-100 text-gray-400 cursor-default"
+                      : isPopular
+                        ? "btn-primary !shadow-md"
+                        : "btn-secondary"
+                  }`}
+                >
+                  {loading === plan.id ? "Перенаправление..." : isCurrent ? "Текущий план" : plan.id === "free" ? "Бесплатно" : "Оформить"}
+                </button>
               </div>
-
-              <ul className="flex-1 space-y-3 mb-8">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm">
-                    <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    <span className="text-gray-700">{f}</span>
-                  </li>
-                ))}
-                {plan.notIncluded.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-400">
-                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                onClick={() => handleSubscribe(plan.id)}
-                disabled={isCurrent || loading !== null}
-                className={`w-full py-3 rounded-xl font-medium transition-all duration-200 ${
-                  isCurrent
-                    ? "bg-surface-100 text-gray-400 cursor-default"
-                    : isPopular
-                      ? "btn-primary !shadow-md"
-                      : "btn-secondary"
-                }`}
-              >
-                {loading === plan.id ? "Перенаправление..." : isCurrent ? "Текущий план" : plan.id === "free" ? "Бесплатно" : "Оформить"}
-              </button>
             </div>
           );
         })}

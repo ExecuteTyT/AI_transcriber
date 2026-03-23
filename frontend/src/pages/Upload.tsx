@@ -115,7 +115,7 @@ export default function Upload() {
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
               {["MP3", "WAV", "FLAC", "OGG", "M4A", "MP4", "WebM", "MOV"].map((fmt) => (
-                <span key={fmt} className="badge bg-surface-100 text-gray-500 !text-[10px]">{fmt}</span>
+                <span key={fmt} className="bg-surface-100 text-gray-600 rounded-full px-3 py-1 text-[10px] font-medium">{fmt}</span>
               ))}
             </div>
             <p className="text-xs text-gray-400">Максимум 500 МБ</p>

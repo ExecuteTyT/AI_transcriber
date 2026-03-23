@@ -68,7 +68,7 @@ const faqs = [
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-white overflow-hidden">
+    <div className="min-h-screen overflow-hidden">
       <Helmet>
         <title>Voitra — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
         <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 15 мин/мес. От 290 ₽/мес." />
@@ -77,6 +77,7 @@ export default function Landing() {
         <meta property="og:description" content="Превращайте аудио и видео в текст, саммари и ключевые тезисы с помощью ИИ. Разметка спикеров, таймкоды, экспорт. Бесплатно 15 мин/мес." />
         <meta property="og:url" content="https://voitra.ru/" />
       </Helmet>
+
       {/* ─── Header ─── */}
       <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200/50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -94,98 +95,105 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* ─── Hero ─── */}
-      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32">
-        {/* Background mesh */}
-        <div className="absolute inset-0 bg-hero-mesh opacity-60" />
-        <div className="absolute top-20 right-[10%] w-72 h-72 bg-primary-400/20 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-10 left-[5%] w-96 h-96 bg-accent-400/10 rounded-full blur-3xl animate-pulse-slow" />
+      {/* ─── Hero (dark) ─── */}
+      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-primary-950 bg-grid">
+        {/* Glow blobs */}
+        <div className="absolute top-20 right-[10%] w-80 h-80 bg-primary-500/20 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute bottom-10 left-[5%] w-96 h-96 bg-accent-400/15 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
 
         <div className="relative max-w-5xl mx-auto px-6 text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-50 border border-primary-100 text-primary-700 text-sm font-medium mb-8 animate-fade-in">
-            <span className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-dark text-primary-200 text-sm font-medium mb-8 animate-fade-in">
+            <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" />
             Нейросеть Voxtral V2 — точность 98%
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 animate-fade-up text-balance">
+          {/* Wave bars behind heading */}
+          <div className="flex items-end justify-center gap-1 h-16 mb-6 opacity-20">
+            {Array.from({ length: 24 }, (_, i) => (
+              <div
+                key={i}
+                className="w-1 bg-primary-400 rounded-full animate-wave-bar"
+                style={{ animationDelay: `${i * 0.07}s`, height: "100%" }}
+              />
+            ))}
+          </div>
+
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-6 animate-fade-up text-balance text-white">
             Аудио и видео в
             <br />
             <span className="gradient-text">структурированный текст</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-10 animate-fade-up leading-relaxed" style={{ animationDelay: "0.1s" }}>
+          <p className="text-lg text-primary-200/80 max-w-2xl mx-auto mb-10 animate-fade-up leading-relaxed" style={{ animationDelay: "0.1s" }}>
             Загрузите запись — получите текст с таймкодами, разметкой спикеров,
             AI&#8209;саммари и ключевыми тезисами за&nbsp;минуты
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            <Link to="/register" className="btn-primary text-base !px-8 !py-4 !rounded-2xl !text-lg">
+            <Link to="/register" className="bg-white text-primary-950 px-8 py-4 rounded-2xl text-lg font-bold hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5 shadow-lg">
               Начать бесплатно — 15 мин/мес
             </Link>
-            <a href="#features" className="btn-secondary text-base !px-8 !py-4 !rounded-2xl">
+            <a href="#features" className="px-8 py-4 rounded-2xl text-lg font-medium border border-white/20 text-white hover:bg-white/10 transition-all duration-200">
               Как это работает
             </a>
           </div>
 
-          <p className="text-sm text-gray-400 mt-5 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+          <p className="text-sm text-primary-300/60 mt-5 animate-fade-in" style={{ animationDelay: "0.4s" }}>
             Без кредитной карты &middot; Регистрация за 30 секунд
           </p>
         </div>
 
         {/* Mockup preview */}
         <div className="relative max-w-4xl mx-auto mt-16 px-6 animate-fade-up" style={{ animationDelay: "0.3s" }}>
-          <div className="rounded-2xl border border-gray-200/80 bg-white shadow-elevated overflow-hidden">
+          <div className="rounded-2xl glass-dark overflow-hidden">
             {/* Window chrome */}
-            <div className="flex items-center gap-2 px-4 py-3 bg-surface-100 border-b border-gray-200/80">
-              <div className="w-3 h-3 rounded-full bg-red-400" />
-              <div className="w-3 h-3 rounded-full bg-amber-400" />
-              <div className="w-3 h-3 rounded-full bg-green-400" />
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <div className="w-3 h-3 rounded-full bg-red-400/80" />
+              <div className="w-3 h-3 rounded-full bg-amber-400/80" />
+              <div className="w-3 h-3 rounded-full bg-green-400/80" />
               <div className="flex-1 flex justify-center">
-                <div className="px-6 py-1 bg-white rounded-lg text-xs text-gray-400 border border-gray-200">voitra.ru</div>
+                <div className="px-6 py-1 bg-white/10 rounded-lg text-xs text-primary-300 border border-white/10">voitra.ru</div>
               </div>
             </div>
             {/* Content preview */}
             <div className="p-6 md:p-8 space-y-4">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500" />
-                <div className="h-4 w-48 bg-gray-200 rounded-full" />
-                <div className="ml-auto badge bg-green-100 text-green-700">Готово</div>
+                <div className="h-4 w-48 bg-white/10 rounded-full" />
+                <div className="ml-auto badge bg-green-500/20 text-green-300">Готово</div>
               </div>
-              {/* Transcript lines mockup */}
               {[
-                { time: "0:00", speaker: "Спикер 1", color: "bg-blue-100 text-blue-700", w: "w-4/5" },
-                { time: "0:15", speaker: "Спикер 2", color: "bg-violet-100 text-violet-700", w: "w-3/5" },
-                { time: "0:32", speaker: "Спикер 1", color: "bg-blue-100 text-blue-700", w: "w-[70%]" },
-                { time: "0:48", speaker: "Спикер 3", color: "bg-amber-100 text-amber-700", w: "w-2/3" },
+                { time: "0:00", speaker: "Спикер 1", color: "bg-blue-500/20 text-blue-300", w: "w-4/5" },
+                { time: "0:15", speaker: "Спикер 2", color: "bg-violet-500/20 text-violet-300", w: "w-3/5" },
+                { time: "0:32", speaker: "Спикер 1", color: "bg-blue-500/20 text-blue-300", w: "w-[70%]" },
+                { time: "0:48", speaker: "Спикер 3", color: "bg-amber-500/20 text-amber-300", w: "w-2/3" },
               ].map((line, i) => (
                 <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${0.5 + i * 0.15}s` }}>
-                  <span className="text-xs text-gray-400 font-mono w-10">{line.time}</span>
+                  <span className="text-xs text-primary-400 font-mono w-10">{line.time}</span>
                   <span className={`badge ${line.color} !text-[10px]`}>{line.speaker}</span>
-                  <div className={`h-3 ${line.w} bg-gray-100 rounded-full`} />
+                  <div className={`h-3 ${line.w} bg-white/5 rounded-full`} />
                 </div>
               ))}
             </div>
           </div>
-          {/* Glow */}
-          <div className="absolute inset-0 -z-10 blur-3xl opacity-30 bg-gradient-to-r from-primary-400 via-accent-300 to-primary-400 rounded-3xl scale-105" />
         </div>
       </section>
 
-      {/* ─── Stats ─── */}
-      <section className="py-16 border-y border-gray-100 bg-surface-50">
+      {/* ─── Stats (dark) ─── */}
+      <section className="py-16 bg-primary-900/50 border-y border-primary-800">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold gradient-text">{s.value}</div>
-              <div className="text-sm text-gray-500 mt-1">{s.label}</div>
+          {stats.map((s, i) => (
+            <div key={s.label} className={`text-center ${i < stats.length - 1 ? "md:border-r md:border-primary-800" : ""}`}>
+              <div className="text-3xl md:text-4xl font-black text-white">{s.value}</div>
+              <div className="text-sm text-primary-300 mt-1">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ─── Features ─── */}
-      <section id="features" className="py-24">
+      {/* ─── Bento-grid Features ─── */}
+      <section id="features" className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Возможности</p>
@@ -195,8 +203,37 @@ export default function Landing() {
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
-            {features.map((f) => (
-              <div key={f.title} className="card-hover group p-6">
+            {features.map((f, i) => (
+              <div key={f.title} className={`bento-card group relative overflow-hidden ${i === 0 ? "md:row-span-2" : ""}`}>
+                {/* Unique visual element per card */}
+                {i === 0 && (
+                  <div className="absolute top-4 right-4 flex items-end gap-0.5 h-8 opacity-30">
+                    {Array.from({ length: 5 }, (_, j) => (
+                      <div key={j} className="w-1 bg-primary-500 rounded-full animate-wave-bar" style={{ animationDelay: `${j * 0.15}s`, height: "100%" }} />
+                    ))}
+                  </div>
+                )}
+                {i === 1 && (
+                  <div className="absolute top-4 right-4 flex gap-1">
+                    <div className="w-3 h-3 rounded-full bg-blue-400/40" />
+                    <div className="w-3 h-3 rounded-full bg-violet-400/40" />
+                    <div className="w-3 h-3 rounded-full bg-amber-400/40" />
+                  </div>
+                )}
+                {i === 2 && (
+                  <div className="absolute top-4 right-4">
+                    <svg className="w-5 h-5 text-amber-400/40 animate-pulse-slow" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                    </svg>
+                  </div>
+                )}
+                {i === 3 && (
+                  <div className="absolute top-4 right-4 flex gap-1.5">
+                    <span className="text-[10px] font-mono bg-surface-100 text-gray-400 px-1.5 py-0.5 rounded">TXT</span>
+                    <span className="text-[10px] font-mono bg-surface-100 text-gray-400 px-1.5 py-0.5 rounded">SRT</span>
+                  </div>
+                )}
+
                 <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300`}>
                   {f.icon}
                 </div>
@@ -215,14 +252,18 @@ export default function Landing() {
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">3 шага</p>
             <h2 className="section-heading">Как это работает</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="relative grid md:grid-cols-3 gap-8">
+            {/* Connecting line */}
+            <div className="hidden md:block absolute top-6 left-[20%] right-[20%] h-px bg-primary-200" />
             {[
               { step: "01", title: "Загрузите", desc: "Перетащите аудио или видео. MP3, WAV, MP4 и ещё 8 форматов. До 500 МБ." },
               { step: "02", title: "Подождите", desc: "Нейросеть расшифрует речь за ~2 минуты на час записи. Спикеры и пунктуация автоматически." },
               { step: "03", title: "Получите", desc: "Текст, таймкоды, AI-саммари, тезисы, action items. Экспорт в TXT и SRT." },
             ].map((item) => (
-              <div key={item.step} className="relative">
-                <div className="text-6xl font-extrabold text-primary-100 mb-4">{item.step}</div>
+              <div key={item.step} className="relative text-center md:text-left">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-sm mx-auto md:mx-0 mb-4 relative z-10">
+                  {item.step}
+                </div>
                 <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
               </div>
@@ -232,7 +273,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Use cases ─── */}
-      <section id="use-cases" className="py-24">
+      <section id="use-cases" className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Аудитория</p>
@@ -240,10 +281,12 @@ export default function Landing() {
           </div>
           <div className="grid md:grid-cols-4 gap-5">
             {useCases.map((uc) => (
-              <div key={uc.title} className="card-hover p-6 text-center">
-                <div className="text-4xl mb-4">{uc.emoji}</div>
-                <h3 className="font-semibold mb-2">{uc.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{uc.desc}</p>
+              <div key={uc.title} className="gradient-border">
+                <div className="bg-white rounded-2xl p-6 text-center h-full">
+                  <div className="text-5xl mb-4">{uc.emoji}</div>
+                  <h3 className="font-semibold mb-2">{uc.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{uc.desc}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -274,24 +317,26 @@ export default function Landing() {
               <Link to="/register" className="btn-secondary w-full text-center block">Начать бесплатно</Link>
             </div>
             {/* Start — popular */}
-            <div className="relative card p-8 ring-2 ring-primary-500 shadow-glow">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-gradient-to-r from-primary-600 to-accent-500 text-white text-xs font-bold px-4 py-1 rounded-full">
-                  Популярный
-                </span>
+            <div className="relative gradient-border shadow-glow scale-[1.02]">
+              <div className="bg-white rounded-2xl p-8 h-full">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="bg-gradient-to-r from-primary-600 to-accent-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
+                    Популярный
+                  </span>
+                </div>
+                <h3 className="font-bold text-lg">Старт</h3>
+                <div className="mt-4 mb-6">
+                  <span className="text-4xl font-extrabold">290 ₽</span>
+                  <span className="text-gray-500 text-sm">/мес</span>
+                </div>
+                <ul className="space-y-3 text-sm text-gray-600 mb-8">
+                  <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> 300 мин (5 часов)</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> AI-саммари безлимит</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Разметка спикеров</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> TXT / SRT / DOCX</li>
+                </ul>
+                <Link to="/register" className="btn-primary w-full text-center block">Попробовать</Link>
               </div>
-              <h3 className="font-bold text-lg">Старт</h3>
-              <div className="mt-4 mb-6">
-                <span className="text-4xl font-extrabold">290 ₽</span>
-                <span className="text-gray-500 text-sm">/мес</span>
-              </div>
-              <ul className="space-y-3 text-sm text-gray-600 mb-8">
-                <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> 300 мин (5 часов)</li>
-                <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> AI-саммари безлимит</li>
-                <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Разметка спикеров</li>
-                <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> TXT / SRT / DOCX</li>
-              </ul>
-              <Link to="/register" className="btn-primary w-full text-center block">Попробовать</Link>
             </div>
             {/* Pro */}
             <div className="card p-8">
@@ -313,7 +358,7 @@ export default function Landing() {
       </section>
 
       {/* ─── FAQ ─── */}
-      <section id="faq" className="py-24">
+      <section id="faq" className="py-24 bg-white">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">FAQ</p>
@@ -335,24 +380,21 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Final CTA ─── */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900" />
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-accent-400/30 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary-300/30 rounded-full blur-3xl" />
-        </div>
+      {/* ─── Final CTA (dark) ─── */}
+      <section className="py-24 relative overflow-hidden bg-primary-950 bg-grid">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
         <div className="relative max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
             Готовы превращать
             <br />аудио в инсайты?
           </h2>
-          <p className="text-primary-200 text-lg mb-10">
+          <p className="text-primary-200/80 text-lg mb-10">
             Зарегистрируйтесь бесплатно и получите 15 минут транскрибации.
           </p>
           <Link
             to="/register"
-            className="inline-block bg-white text-primary-700 px-10 py-4 rounded-2xl text-lg font-bold hover:bg-primary-50 transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
+            className="inline-block bg-white text-primary-950 px-10 py-4 rounded-2xl text-lg font-bold hover:bg-gray-100 transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
           >
             Начать бесплатно
           </Link>

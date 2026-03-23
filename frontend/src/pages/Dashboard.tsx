@@ -80,7 +80,7 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Мои транскрипции</h1>
+          <h1 className="text-2xl font-bold tracking-tight"><span className="gradient-text">Мои транскрипции</span></h1>
           <p className="text-sm text-gray-500 mt-1">
             {total > 0 ? `${total} записей` : "Загрузите первый файл для расшифровки"}
           </p>
@@ -150,10 +150,10 @@ export default function Dashboard() {
         </div>
       ) : filteredItems.length === 0 && items.length === 0 ? (
         <div className="card p-16 text-center">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary-50 flex items-center justify-center">
-            <svg className="w-8 h-8 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-            </svg>
+          <div className="flex items-end justify-center gap-1 h-10 mb-6 opacity-40">
+            {Array.from({ length: 5 }, (_, i) => (
+              <div key={i} className="w-1.5 bg-primary-400 rounded-full animate-wave-bar" style={{ animationDelay: `${i * 0.15}s`, height: "100%" }} />
+            ))}
           </div>
           <h3 className="text-lg font-semibold mb-2">Пока пусто</h3>
           <p className="text-gray-500 mb-6">Загрузите аудио или видео для транскрибации</p>

@@ -84,7 +84,7 @@ export default function BlogArticle() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-100">
+      <header className="glass border-b border-gray-200/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
           <div className="flex items-center gap-3">
@@ -134,10 +134,13 @@ export default function BlogArticle() {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 card p-8 text-center bg-gradient-to-br from-primary-50 to-accent-50 border-primary-100">
-          <h3 className="text-xl font-bold mb-2">Попробуйте Voitra бесплатно</h3>
-          <p className="text-gray-500 text-sm mb-6">15 минут транскрибации, AI-саммари и разметка спикеров — без карты.</p>
-          <Link to="/register" className="btn-primary inline-block">Начать бесплатно</Link>
+        <div className="mt-16 rounded-2xl p-8 text-center bg-primary-950 bg-grid relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-primary-500/20 rounded-full blur-3xl" />
+          <div className="relative">
+            <h3 className="text-xl font-bold mb-2 text-white">Попробуйте Voitra бесплатно</h3>
+            <p className="text-primary-200/80 text-sm mb-6">15 минут транскрибации, AI-саммари и разметка спикеров — без карты.</p>
+            <Link to="/register" className="inline-block bg-white text-primary-950 px-6 py-3 rounded-xl font-medium hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5">Начать бесплатно</Link>
+          </div>
         </div>
 
         {/* Related */}

@@ -79,7 +79,7 @@ export default function Layout() {
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? "bg-primary-50 text-primary-700 shadow-sm"
+                  ? "bg-primary-50/50 text-primary-700 shadow-sm border-l-[3px] border-primary-500"
                   : "text-gray-600 hover:bg-surface-100 hover:text-gray-900"
               }`}
               aria-current={isActive ? "page" : undefined}
@@ -95,7 +95,7 @@ export default function Layout() {
 
       {/* User panel */}
       {user && (
-        <div className="p-4 m-3 rounded-2xl bg-surface-50 border border-gray-100">
+        <div className="p-4 m-3 rounded-2xl bg-white/60 backdrop-blur-sm border border-gray-100">
           {/* Usage */}
           <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
             <span>{user.minutes_used} / {user.minutes_limit} мин</span>
@@ -114,7 +114,7 @@ export default function Layout() {
 
           {/* User info */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 ring-2 ring-primary-200">
               {(user.name || user.email || "U")[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
@@ -174,7 +174,7 @@ export default function Layout() {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-[260px] bg-white border-r border-gray-100 flex-col flex-shrink-0">
+      <aside className="hidden md:flex w-[260px] bg-surface-50 border-r border-gray-100 flex-col flex-shrink-0">
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-gray-100">
           <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
