@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import SoundToTextParticles from "@/components/SoundToTextParticles";
 
 const navItems = [
   {
@@ -184,7 +185,8 @@ export default function Layout() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 pt-14 md:pt-0 p-4 md:p-8 overflow-auto">
+      <main className="flex-1 pt-14 md:pt-0 p-4 md:p-8 overflow-auto relative">
+        <SoundToTextParticles count={5} variant="light" />
         <div className="max-w-5xl mx-auto animate-fade-in">
           <Outlet />
         </div>

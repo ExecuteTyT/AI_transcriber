@@ -125,6 +125,73 @@
   }
 }
 
+/* ─── Sound→Text Particle Animations ─── */
+.particle-float {
+  width: 32px;
+  height: 32px;
+  animation: particleFloat linear infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.1), calc(var(--dy) * 0.1)) scale(0.8);
+  }
+  45% {
+    transform: translate(calc(var(--dx) * 0.45), calc(var(--dy) * 0.45)) scale(1);
+  }
+  55% {
+    transform: translate(calc(var(--dx) * 0.55), calc(var(--dy) * 0.55)) scale(1);
+  }
+  90% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.9), calc(var(--dy) * 0.9)) scale(0.8);
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* Wave char: visible 0-50%, fades out 40-55% */
+.particle-wave {
+  animation: particleWave linear infinite;
+  animation-duration: inherit;
+  animation-delay: inherit;
+}
+@keyframes particleWave {
+  0%, 40% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+
+/* Text char: hidden 0-45%, fades in 45-55% */
+.particle-text {
+  animation: particleTextReveal linear infinite;
+  animation-duration: inherit;
+  animation-delay: inherit;
+}
+@keyframes particleTextReveal {
+  0%, 40% { opacity: 0; transform: scale(0.7); }
+  55% { opacity: 1; transform: scale(1.1); }
+  60%, 90% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+/* Disable on reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .particle-float,
+  .particle-wave,
+  .particle-text {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

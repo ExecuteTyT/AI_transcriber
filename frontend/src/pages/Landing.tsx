@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import SoundToTextParticles from "@/components/SoundToTextParticles";
 
 const features = [
   {
@@ -172,6 +173,8 @@ export default function Landing() {
         <div className="absolute top-20 right-[10%] w-80 h-80 bg-primary-500/30 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-10 left-[5%] w-96 h-96 bg-accent-400/25 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
 
+        <SoundToTextParticles count={12} variant="dark" />
+
         <div className="relative max-w-5xl mx-auto px-6 text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-dark text-primary-200 text-sm font-medium mb-8 animate-fade-in">
@@ -263,7 +266,8 @@ export default function Landing() {
       </section>
 
       {/* ─── Bento-grid Features ─── */}
-      <section id="features" className="py-24 bg-white bg-dots">
+      <section id="features" className="relative py-24 bg-white bg-dots">
+        <SoundToTextParticles count={6} variant="light" />
         <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -403,7 +407,8 @@ export default function Landing() {
       </section>
 
       {/* ─── Pricing ─── */}
-      <section id="pricing" className="py-24 bg-white">
+      <section id="pricing" className="relative py-24 bg-white">
+        <SoundToTextParticles count={5} variant="light" />
         <FadeInOnScroll>
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -498,6 +503,7 @@ export default function Landing() {
 
       {/* ─── Final CTA (dark) ─── */}
       <section className="py-24 relative overflow-hidden bg-primary-950 bg-grid">
+        <SoundToTextParticles count={8} variant="dark" />
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
         <div className="relative max-w-3xl mx-auto px-6 text-center">
