@@ -43,31 +43,27 @@ async def generate_rag_response(
 
     context = "\n\n".join(context_parts)
 
-    messages = [
-        {"role": "system", "content": RAG_SYSTEM_PROMPT},
-        {"role": "user", "content": f"Контекст из транскрипции:\n\n{context}\n\n---\nВопрос: {question}"},
-    ]
+    prompt = f"{RAG_SYSTEM_PROMPT}\n\nКонтекст из транскрипции:\n\n{context}\n\n---\nВопрос: {question}"
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
-                "Content-Type": "application/json",
-            },
+            f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent",
+            headers={"Content-Type": "application/json"},
+            params={"key": settings.GOOGLE_API_KEY},
             json={
-                "model": "gpt-4o-mini",
-                "messages": messages,
-                "temperature": 0.3,
-                "max_tokens": 1000,
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.3,
+                    "maxOutputTokens": 1000,
+                },
             },
             timeout=60,
         )
         response.raise_for_status()
         data = response.json()
 
-    content = data["choices"][0]["message"]["content"]
-    tokens = data.get("usage", {}).get("total_tokens", 0)
+    content = data["candidates"][0]["content"]["parts"][0]["text"]
+    tokens = data.get("usageMetadata", {}).get("totalTokenCount", 0)
     return content, references, tokens
 
 

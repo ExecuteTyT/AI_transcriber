@@ -20,8 +20,12 @@ class Settings(BaseSettings):
     MISTRAL_API_KEY: str = ""
     TRANSCRIPTION_PROVIDER: str = "voxtral"
 
-    # OpenAI
+    # OpenAI (embeddings)
     OPENAI_API_KEY: str = ""
+
+    # Google Gemini (LLM — analysis & chat)
+    GOOGLE_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
 
     # Embeddings
     EMBEDDING_MODEL: str = "text-embedding-3-small"

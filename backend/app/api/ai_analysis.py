@@ -100,7 +100,7 @@ async def _get_or_create_analysis(
         transcription_id=transcription_id,
         type=analysis_type,
         content=content,
-        model_used="gpt-4o-mini",
+        model_used="gemini-2.5-flash",
         tokens_used=tokens,
     )
     db.add(analysis)

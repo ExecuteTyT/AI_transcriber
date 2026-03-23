@@ -18,7 +18,7 @@ class AiAnalysis(Base, UUIDMixin, TimestampMixin):
         String(30)
     )  # summary/key_points/action_items
     content: Mapped[str] = mapped_column(Text)
-    model_used: Mapped[str] = mapped_column(String(50), default="gpt-4o-mini")
+    model_used: Mapped[str] = mapped_column(String(50), default="gemini-2.5-flash")
     tokens_used: Mapped[int] = mapped_column(Integer, default=0)
 
     transcription = relationship("Transcription", back_populates="ai_analyses")

@@ -44,40 +44,39 @@ async def generate_analysis(text: str, analysis_type: str) -> tuple[str, int]:
         partial_results = []
         total_tokens = 0
         for chunk in chunks:
-            content, tokens = await _call_openai(prompt_template.format(text=chunk))
+            content, tokens = await _call_llm(prompt_template.format(text=chunk))
             partial_results.append(content)
             total_tokens += tokens
 
         # Объединение результатов
         combined = "\n\n".join(partial_results)
         merge_prompt = f"Объедини и сократи следующие частичные результаты в единый связный текст:\n\n{combined}"
-        final_content, final_tokens = await _call_openai(merge_prompt)
+        final_content, final_tokens = await _call_llm(merge_prompt)
         return final_content, total_tokens + final_tokens
     else:
-        return await _call_openai(prompt_template.format(text=text))
+        return await _call_llm(prompt_template.format(text=text))
 
 
-async def _call_openai(prompt: str) -> tuple[str, int]:
-    """Вызов OpenAI API."""
+async def _call_llm(prompt: str) -> tuple[str, int]:
+    """Вызов Gemini API для генерации анализа."""
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
-                "Content-Type": "application/json",
-            },
+            f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent",
+            headers={"Content-Type": "application/json"},
+            params={"key": settings.GOOGLE_API_KEY},
             json={
-                "model": "gpt-4o-mini",
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.3,
-                "max_tokens": 2000,
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.3,
+                    "maxOutputTokens": 2000,
+                },
             },
             timeout=60,
         )
         response.raise_for_status()
         data = response.json()
-        content = data["choices"][0]["message"]["content"]
-        tokens = data.get("usage", {}).get("total_tokens", 0)
+        content = data["candidates"][0]["content"]["parts"][0]["text"]
+        tokens = data.get("usageMetadata", {}).get("totalTokenCount", 0)
         return content, tokens
 
 
