@@ -110,6 +110,13 @@ function FadeInOnScroll({ children, className = "" }: { children: ReactNode; cla
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <div className="min-h-screen overflow-hidden">
@@ -123,27 +130,27 @@ export default function Landing() {
       </Helmet>
 
       {/* ─── Header ─── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-gray-200/40 shadow-sm">
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/90 backdrop-blur-2xl border-b border-gray-200/40 shadow-sm" : "bg-transparent"}`}>
         <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-extrabold text-gray-900 tracking-tight">Voitra</Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-            <a href="#features" className="hover:text-gray-900 transition">Возможности</a>
-            <a href="#use-cases" className="hover:text-gray-900 transition">Кому</a>
-            <a href="#pricing" className="hover:text-gray-900 transition">Тарифы</a>
-            <Link to="/blog" className="hover:text-gray-900 transition">Блог</Link>
+          <Link to="/" className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${scrolled ? "text-gray-900" : "text-white"}`}>Voitra</Link>
+          <nav className={`hidden md:flex items-center gap-8 text-sm font-medium transition-colors duration-300 ${scrolled ? "text-gray-600" : "text-white/70"}`}>
+            <a href="#features" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Возможности</a>
+            <a href="#use-cases" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Кому</a>
+            <a href="#pricing" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Тарифы</a>
+            <Link to="/blog" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Блог</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Link to="/login" className="btn-ghost text-sm hidden sm:inline-flex">Войти</Link>
-            <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5 hidden sm:inline-flex">Попробовать</Link>
+            <Link to="/login" className={`text-sm px-4 py-2 rounded-xl font-medium transition-all duration-300 hidden sm:inline-flex ${scrolled ? "text-gray-600 hover:bg-gray-100" : "text-white/80 hover:text-white hover:bg-white/10"}`}>Войти</Link>
+            <Link to="/register" className={`text-sm !py-2.5 !px-5 rounded-2xl font-semibold transition-all duration-300 hidden sm:inline-flex ${scrolled ? "btn-primary" : "bg-white text-primary-950 hover:bg-gray-100 shadow-lg"}`}>Попробовать</Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2.5 rounded-lg hover:bg-white/10 transition"
+              className={`md:hidden p-2.5 rounded-lg transition ${scrolled ? "hover:bg-gray-100" : "hover:bg-white/10"}`}
               aria-label={mobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
             >
               {mobileMenuOpen ? (
-                <svg className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg className={`w-6 h-6 transition-colors duration-300 ${scrolled ? "text-gray-700" : "text-white"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               ) : (
-                <svg className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                <svg className={`w-6 h-6 transition-colors duration-300 ${scrolled ? "text-gray-700" : "text-white"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
               )}
             </button>
           </div>

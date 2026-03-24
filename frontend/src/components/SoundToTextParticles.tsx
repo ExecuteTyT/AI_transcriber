@@ -39,7 +39,7 @@ function generateStreams(count: number, seed: number): Stream[] {
       startY: 5 + rand() * 90,
       duration: 14 + rand() * 16, // 14-30s for a full pass
       delay: rand() * -30,
-      fontSize: 16 + rand() * 12, // 16-28px
+      fontSize: 13 + rand() * 8, // 13-21px
       amplitude: 20 + rand() * 40, // 20-60px sine amplitude
       reverse,
     });
@@ -61,8 +61,8 @@ export default function SoundToTextParticles({
   const streams = useMemo(() => generateStreams(count, 42), [count]);
 
   const isDark = variant === "dark";
-  const waveOpacity = isDark ? "0.08" : "0.04";
-  const textOpacity = isDark ? "0.12" : "0.05";
+  const waveOpacity = isDark ? "0.04" : "0.025";
+  const textOpacity = isDark ? "0.06" : "0.03";
   const waveColor = isDark ? "#818cf8" : "#6366f1";
   const textColor = isDark ? "#fb923c" : "#f97316";
 
