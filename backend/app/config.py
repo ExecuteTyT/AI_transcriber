@@ -59,9 +59,10 @@ class Settings(BaseSettings):
     # App
     APP_URL: str = "http://localhost:3000"
     API_URL: str = "http://localhost:8000"
+    CORS_EXTRA_ORIGINS: str = ""  # Доп. CORS origins через запятую (напр. https://app.vercel.app)
     ENVIRONMENT: str = "development"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": (".env", "../.env"), "env_file_encoding": "utf-8"}
 
 
 settings = Settings()
