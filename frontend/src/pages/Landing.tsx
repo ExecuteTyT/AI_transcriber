@@ -180,7 +180,7 @@ export default function Landing() {
         <div className="absolute top-20 right-[10%] w-80 h-80 bg-primary-500/30 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-10 left-[5%] w-96 h-96 bg-accent-400/25 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
 
-        <SoundToTextParticles count={8} variant="dark" />
+        <SoundToTextParticles count={5} variant="dark" />
 
         <div className="relative max-w-5xl mx-auto px-6 text-center">
           <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-8 animate-fade-up text-balance text-white">
@@ -256,8 +256,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Bento-grid Features ─── */}
-      <section id="features" className="relative py-24 bg-white bg-dots">
-        <SoundToTextParticles count={6} variant="light" />
+      <section id="features" className="py-24 bg-white">
         <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -272,10 +271,8 @@ export default function Landing() {
               <div key={f.title} className={`bento-card group relative overflow-hidden backdrop-blur-sm ${i === 0 ? "md:row-span-2 bg-gradient-to-br from-primary-50/40 to-white" : ""}`}>
                 {/* Unique visual element per card */}
                 {i === 0 && (
-                  <div className="absolute top-4 right-4 flex items-end gap-0.5 h-8 opacity-30">
-                    {Array.from({ length: 5 }, (_, j) => (
-                      <div key={j} className="w-1 bg-primary-500 rounded-full animate-wave-bar" style={{ animationDelay: `${j * 0.15}s`, height: "100%" }} />
-                    ))}
+                  <div className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" /></svg>
                   </div>
                 )}
                 {i === 1 && (
@@ -312,15 +309,13 @@ export default function Landing() {
       </section>
 
       {/* ─── How it works ─── */}
-      <section className="py-24 bg-surface-50 bg-dots">
-        <FadeInOnScroll>
+      <section className="py-24 bg-surface-50">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">3 шага</p>
             <h2 className="section-heading">Как это работает</h2>
           </div>
           <div className="relative grid md:grid-cols-3 gap-8">
-            {/* Connecting line */}
             <div className="hidden md:block absolute top-6 left-[20%] right-[20%] h-px bg-primary-200" />
             {[
               { step: "01", title: "Загрузите", desc: "Перетащите аудио или видео. MP3, WAV, MP4 и ещё 8 форматов. До 500 МБ." },
@@ -337,12 +332,10 @@ export default function Landing() {
             ))}
           </div>
         </div>
-        </FadeInOnScroll>
       </section>
 
       {/* ─── Use cases ─── */}
       <section id="use-cases" className="py-24 bg-white">
-        <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Аудитория</p>
@@ -360,7 +353,6 @@ export default function Landing() {
             ))}
           </div>
         </div>
-        </FadeInOnScroll>
       </section>
 
       {/* ─── Testimonials ─── */}
@@ -397,9 +389,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Pricing ─── */}
-      <section id="pricing" className="relative py-24 bg-white">
-        <SoundToTextParticles count={5} variant="light" />
-        <FadeInOnScroll>
+      <section id="pricing" className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Тарифы</p>
@@ -463,12 +453,10 @@ export default function Landing() {
             </div>
           </div>
         </div>
-        </FadeInOnScroll>
       </section>
 
       {/* ─── FAQ ─── */}
       <section id="faq" className="py-24 bg-surface-50">
-        <FadeInOnScroll>
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">FAQ</p>
@@ -488,12 +476,11 @@ export default function Landing() {
             ))}
           </div>
         </div>
-        </FadeInOnScroll>
       </section>
 
       {/* ─── Final CTA (dark) ─── */}
       <section className="py-24 relative overflow-hidden bg-primary-950 bg-grid">
-        <SoundToTextParticles count={8} variant="dark" />
+        <SoundToTextParticles count={4} variant="dark" />
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
         <div className="relative max-w-3xl mx-auto px-6 text-center">

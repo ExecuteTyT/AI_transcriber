@@ -29,22 +29,10 @@ export default function Login() {
     <div className="min-h-screen flex">
       {/* Left panel — dark, hidden on mobile */}
       <div className="hidden md:flex md:w-1/2 bg-primary-950 bg-grid relative overflow-hidden flex-col justify-between p-12">
-        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-primary-500/20 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-accent-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
+        <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-primary-500/15 rounded-full blur-3xl" />
 
         <div className="relative z-10">
           <Link to="/" className="text-2xl font-bold text-white">Voitra</Link>
-        </div>
-
-        {/* Wave bars */}
-        <div className="relative z-10 flex items-end justify-center gap-1.5 h-24">
-          {Array.from({ length: 12 }, (_, i) => (
-            <div
-              key={i}
-              className="w-1.5 bg-white/30 rounded-full animate-wave-bar"
-              style={{ animationDelay: `${i * 0.1}s`, height: "100%" }}
-            />
-          ))}
         </div>
 
         {/* Stats */}

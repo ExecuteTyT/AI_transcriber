@@ -68,16 +68,14 @@
 
   .card-hover {
     @apply card
-           hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12),0_4px_16px_-4px_rgba(0,0,0,0.06)]
-           hover:-translate-y-1;
+           hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12),0_4px_16px_-4px_rgba(0,0,0,0.06)];
   }
 
   .bento-card {
     @apply bg-white rounded-3xl border border-gray-200/70
            shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_12px_-2px_rgba(0,0,0,0.06)]
            p-7 transition-all duration-300
-           hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12),0_4px_16px_-4px_rgba(0,0,0,0.06)]
-           hover:-translate-y-1;
+           hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12),0_4px_16px_-4px_rgba(0,0,0,0.06)];
   }
 
   /* ─── AI Glow Ring ─── */

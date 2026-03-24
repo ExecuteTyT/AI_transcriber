@@ -153,11 +153,11 @@ export default function Dashboard() {
           ))}
         </div>
       ) : filteredItems.length === 0 && items.length === 0 ? (
-        <div className="card p-16 text-center bg-gradient-to-br from-primary-50/30 to-accent-50/20">
-          <div className="flex items-end justify-center gap-1 h-10 mb-6 opacity-40">
-            {Array.from({ length: 5 }, (_, i) => (
-              <div key={i} className="w-1.5 bg-primary-400 rounded-full animate-wave-bar" style={{ animationDelay: `${i * 0.15}s`, height: "100%" }} />
-            ))}
+        <div className="card p-16 text-center">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary-50 flex items-center justify-center">
+            <svg className="w-8 h-8 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+            </svg>
           </div>
           <h3 className="text-lg font-semibold mb-2">Здесь будут ваши записи</h3>
           <p className="text-gray-500 mb-6">Загрузите первый файл и увидите результат за 2 минуты</p>
