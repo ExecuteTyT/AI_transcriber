@@ -40,6 +40,9 @@ htmlcov/
 .pytest_cache/
 *.db
 
+# Local file storage
+data/
+
 # Alembic
 alembic/versions/__pycache__/
 frontend/tsconfig.tsbuildinfo

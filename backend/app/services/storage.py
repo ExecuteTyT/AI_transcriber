@@ -1,16 +1,39 @@
+import logging
+import os
 import uuid
 from io import BytesIO
-
-import boto3
-from botocore.config import Config as BotoConfig
+from pathlib import Path
 
 from app.config import settings
 
+logger = logging.getLogger(__name__)
 
-class S3Service:
-    """Сервис для работы с S3-хранилищем (Selectel)."""
+
+class StorageBackend:
+    """Абстрактный интерфейс хранилища файлов."""
+
+    def generate_file_key(self, original_filename: str) -> str:
+        """Генерация уникального ключа для файла."""
+        ext = original_filename.rsplit(".", 1)[-1] if "." in original_filename else ""
+        return f"uploads/{uuid.uuid4()}.{ext}" if ext else f"uploads/{uuid.uuid4()}"
+
+    def upload_file(self, file_data: bytes, file_key: str, content_type: str) -> str:
+        raise NotImplementedError
+
+    def download_file(self, file_key: str) -> bytes:
+        raise NotImplementedError
+
+    def delete_file(self, file_key: str) -> None:
+        raise NotImplementedError
+
+
+class S3Service(StorageBackend):
+    """S3-хранилище (Selectel / AWS)."""
 
     def __init__(self):
+        import boto3
+        from botocore.config import Config as BotoConfig
+
         self.client = boto3.client(
             "s3",
             endpoint_url=settings.S3_ENDPOINT_URL,
@@ -20,11 +43,6 @@ class S3Service:
             config=BotoConfig(signature_version="s3v4"),
         )
         self.bucket = settings.S3_BUCKET_NAME
-
-    def generate_file_key(self, original_filename: str) -> str:
-        """Генерация уникального ключа для файла."""
-        ext = original_filename.rsplit(".", 1)[-1] if "." in original_filename else ""
-        return f"uploads/{uuid.uuid4()}.{ext}" if ext else f"uploads/{uuid.uuid4()}"
 
     def upload_file(self, file_data: bytes, file_key: str, content_type: str) -> str:
         """Загрузка файла в S3."""
@@ -36,14 +54,6 @@ class S3Service:
         )
         return file_key
 
-    def get_presigned_url(self, file_key: str, expires_in: int = 3600) -> str:
-        """Получение presigned URL для скачивания."""
-        return self.client.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": self.bucket, "Key": file_key},
-            ExpiresIn=expires_in,
-        )
-
     def download_file(self, file_key: str) -> bytes:
         """Скачивание файла из S3."""
         response = self.client.get_object(Bucket=self.bucket, Key=file_key)
@@ -54,4 +64,46 @@ class S3Service:
         self.client.delete_object(Bucket=self.bucket, Key=file_key)
 
 
-s3_service = S3Service() if settings.S3_ACCESS_KEY else None
+class LocalStorage(StorageBackend):
+    """Локальное файловое хранилище (для разработки без S3)."""
+
+    def __init__(self):
+        self.base_dir = Path(settings.LOCAL_STORAGE_PATH)
+        self.base_dir.mkdir(parents=True, exist_ok=True)
+        logger.info("LocalStorage initialized at %s", self.base_dir)
+
+    def upload_file(self, file_data: bytes, file_key: str, content_type: str) -> str:
+        """Сохранение файла на диск."""
+        file_path = self.base_dir / file_key
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.write_bytes(file_data)
+        return file_key
+
+    def download_file(self, file_key: str) -> bytes:
+        """Чтение файла с диска."""
+        file_path = self.base_dir / file_key
+        if not file_path.exists():
+            raise FileNotFoundError(f"File not found: {file_key}")
+        return file_path.read_bytes()
+
+    def delete_file(self, file_key: str) -> None:
+        """Удаление файла с диска."""
+        file_path = self.base_dir / file_key
+        if file_path.exists():
+            file_path.unlink()
+
+
+def _create_storage() -> StorageBackend:
+    """Выбор бэкенда хранилища: S3 если ключ есть, иначе локальное."""
+    if settings.S3_ACCESS_KEY:
+        logger.info("Using S3 storage (bucket=%s)", settings.S3_BUCKET_NAME)
+        return S3Service()
+    else:
+        logger.info("S3 not configured — using local storage")
+        return LocalStorage()
+
+
+storage_service = _create_storage()
+
+# Обратная совместимость
+s3_service = storage_service

@@ -34,10 +34,6 @@ class TranscriptionProvider(ABC):
 
 
 def get_provider() -> TranscriptionProvider:
-    """Фабрика провайдеров по настройке TRANSCRIPTION_PROVIDER."""
-    if settings.TRANSCRIPTION_PROVIDER == "whisper":
-        from app.services.whisper import WhisperProvider
-        return WhisperProvider()
-    else:
-        from app.services.voxtral import VoxtralProvider
-        return VoxtralProvider()
+    """Фабрика провайдеров. Используем Voxtral (Mistral AI)."""
+    from app.services.voxtral import VoxtralProvider
+    return VoxtralProvider()

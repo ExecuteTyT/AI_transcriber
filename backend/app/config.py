@@ -31,12 +31,13 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = "text-embedding-3-small"
     EMBEDDING_DIMENSION: int = 1536
 
-    # S3 (Selectel)
+    # S3 (Selectel) — если S3_ACCESS_KEY пуст, используется локальное хранилище
     S3_ENDPOINT_URL: str = "https://s3.storage.selcloud.ru"
     S3_ACCESS_KEY: str = ""
     S3_SECRET_KEY: str = ""
     S3_BUCKET_NAME: str = "aivoice-files"
     S3_REGION: str = "ru-1"
+    LOCAL_STORAGE_PATH: str = "./data/uploads"
 
     # YooKassa
     YOOKASSA_SHOP_ID: str = ""
