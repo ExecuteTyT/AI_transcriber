@@ -53,6 +53,8 @@ if [ ! -f .env ]; then
     # Обновляем DATABASE_URL с новым паролем
     sed -i "s|postgresql+asyncpg://aivoice:aivoice@|postgresql+asyncpg://aivoice:$DB_PASSWORD@|" .env
     sed -i "s|ENVIRONMENT=development|ENVIRONMENT=production|" .env
+    sed -i "s|APP_URL=http://localhost:3000|APP_URL=https://voitra.pro|" .env
+    sed -i "s|API_URL=http://localhost:8000|API_URL=https://voitra.pro|" .env
     echo ""
     echo "========================================="
     echo "  .env создан с безопасными секретами"
@@ -89,9 +91,8 @@ echo "     # Сначала привяжи домен A-записью к IP с�
 echo "     # Затем:"
 echo "     docker compose -f docker-compose.prod.yml run --rm certbot \\"
 echo "       certonly --webroot -w /var/www/certbot \\"
-echo "       -d YOUR_DOMAIN --email YOUR_EMAIL --agree-tos"
+echo "       -d voitra.pro --email YOUR_EMAIL --agree-tos"
 echo ""
-echo "     # Замени YOUR_DOMAIN в nginx.prod.conf"
 echo "     # Раскомментируй HTTPS-блок в nginx.prod.conf"
 echo "     # Перезапусти nginx:"
 echo "     docker compose -f docker-compose.prod.yml restart nginx"
