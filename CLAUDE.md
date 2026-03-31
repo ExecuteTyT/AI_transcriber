@@ -2,217 +2,103 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# AI Voice — Сервис умной транскрибации аудио и видео
-
 ## О проекте
-AI Voice — платформа, которая превращает аудио и видео не просто в текст, а в структурированные инсайты: саммари, ключевые тезисы, action items, RAG-чат по транскрипту. Целевой рынок — Россия (фаза 1-2), затем глобальный (фаза 3).
 
-## Команды разработки
+AI Voice — платформа транскрибации аудио/видео с AI-анализом (саммари, тезисы, action items, RAG-чат). Backend на FastAPI + Celery, frontend на React + Vite. Целевой рынок — Россия.
+
+## Команды
 
 ### Запуск окружения
 ```bash
-cp .env.example .env          # первый раз: создать .env
-docker compose up -d           # поднять все сервисы (db, redis, api, celery, frontend)
-docker compose up -d db redis  # только инфраструктуру (для локальной разработки без Docker)
+cp .env.example .env                # первый раз
+docker compose up -d                # все сервисы
+docker compose up -d db redis       # только инфра (для локальной разработки)
 ```
 
-### Backend
+### Backend (выполнять из `backend/`)
 ```bash
-# Запуск API-сервера (из backend/)
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-# Тесты
-pytest                                          # все тесты
-pytest tests/test_auth.py                       # один файл
-pytest tests/test_auth.py::test_login -v        # один тест
-
-# Миграции БД (из backend/)
-alembic upgrade head                            # применить все миграции
-alembic revision --autogenerate -m "описание"   # создать миграцию
-
-# Celery воркер
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload    # API-сервер
+pytest                                                        # все тесты
+pytest tests/test_auth.py::test_login -v                      # один тест
+alembic upgrade head                                          # применить миграции
+alembic revision --autogenerate -m "описание"                 # создать миграцию
 celery -A app.tasks.celery_app worker --loglevel=info --concurrency=2
 ```
 
-### Frontend
+### Frontend (выполнять из `frontend/`)
 ```bash
-# Запуск dev-сервера (из frontend/)
-npm run dev
-
-# Тесты
-npx vitest                    # все тесты
-npx vitest run src/foo.test.ts  # один файл
+npm run dev                           # dev-сервер (port 3000)
+npx vitest                            # все тесты
+npx vitest run src/foo.test.ts        # один тест
+npx tsc --noEmit                      # проверка типов
 ```
 
-### Полезные URL (при запущенном docker compose)
-- API: http://localhost:8000
-- OpenAPI docs: http://localhost:8000/docs
+### Полезные URL
+- API docs: http://localhost:8000/docs
 - Frontend: http://localhost:3000
-
-## Технологический стек
-
-### Backend
-- **Python 3.12** + **FastAPI** (async, OpenAPI автодокументация)
-- **Celery** + **Redis 7** (фоновая обработка транскрибации)
-- **SQLAlchemy 2.0** (async) + **Alembic** (миграции)
-- **PostgreSQL 16** + **pgvector** (данные + векторный поиск для RAG)
-
-### Frontend
-- **React 18** + **Vite** + **TypeScript**
-- **Zustand** для state management
-- **Axios** с JWT-интерцептором
-
-### Транскрибация
-- **Voxtral Transcribe V2** (Mistral AI) — основной провайдер ($0.003/мин)
-  - Diarization (разметка спикеров) встроен
-  - 13 языков включая русский
-  - Файлы до 3 часов за один запрос
-- **faster-whisper** — fallback-провайдер (если Voxtral не устроит по качеству русского)
-- Абстракция через интерфейс `TranscriptionProvider`
-
-### AI/LLM
-- **GPT-4o-mini** — саммари, тезисы, action items (~1.5 ₽/транскрипт)
-- **text-embedding-3-small** — embeddings для RAG-чата (~0.03 ₽/час аудио)
-
-### Инфраструктура
-- **Selectel VDS** (4 vCPU, 8 GB RAM)
-- **Selectel S3** (файловое хранилище, очистка через 24ч)
-- **Nginx** / **Caddy** (reverse proxy, SSL)
-- **Docker** + **Docker Compose**
-- **ЮKassa** (оплата: СБП, карты МИР/Visa/MC)
 
 ## Архитектура
 
-### Ключевые принципы
-1. **TranscriptionProvider** — абстрактный класс. VoxtralProvider и WhisperProvider реализуют один интерфейс. Переключение — замена одного класса.
-2. **Пайплайн из 5 шагов**: Upload → FFmpeg (только для видео) → Voxtral (транскрибация + diarization) → LLM (AI-анализ) → Deliver
-3. **Всё асинхронно**: Celery-задачи с retry (3x, exponential backoff). Юзер получает task_id и поллит статус.
-4. **Одна БД для всего**: PostgreSQL хранит данные, pgvector хранит embeddings для RAG.
+### Слои backend
+- **api/** — FastAPI роуты (thin controllers), используют `Depends()` для DI
+- **services/** — бизнес-логика (auth, transcription, storage, ai_analysis, payment, rag_chat, email)
+- **models/** — SQLAlchemy ORM с `UUIDMixin` и `TimestampMixin` (из `models/base.py`)
+- **schemas/** — Pydantic-схемы request/response
+- **tasks/** — Celery-задачи (async обработка транскрибации)
 
-### Структура проекта
-```
-ai-voice/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI app, CORS, middleware
-│   │   ├── config.py            # Pydantic BaseSettings
-│   │   ├── models/              # SQLAlchemy модели
-│   │   │   ├── user.py
-│   │   │   ├── transcription.py
-│   │   │   ├── subscription.py
-│   │   │   └── embedding.py
-│   │   ├── api/                 # FastAPI роуты
-│   │   │   ├── auth.py
-│   │   │   ├── transcriptions.py
-│   │   │   ├── ai_analysis.py
-│   │   │   ├── payments.py
-│   │   │   └── users.py
-│   │   ├── services/            # Бизнес-логика
-│   │   │   ├── transcription.py # TranscriptionProvider ABC
-│   │   │   ├── voxtral.py       # Voxtral V2 API клиент
-│   │   │   ├── whisper.py       # faster-whisper fallback
-│   │   │   ├── ai_analysis.py   # LLM (summary, chat, actions)
-│   │   │   ├── storage.py       # S3 upload/download
-│   │   │   └── payment.py       # YooKassa SDK
-│   │   ├── tasks/               # Celery задачи
-│   │   │   ├── celery_app.py
-│   │   │   └── transcribe.py
-│   │   └── utils/
-│   ├── alembic/
-│   ├── tests/
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── api/                 # Axios клиент
-│   │   └── store/               # Zustand
-│   └── Dockerfile
-├── landing/                     # Статические SEO-лендинги
-├── docs/                        # Проектная документация
-├── docker-compose.yml
-├── nginx.conf
-└── .env.example
-```
+### Ключевые паттерны
 
-### Схема БД (основные таблицы)
+**Dependency Injection**: `api/deps.py` содержит `get_db()` (AsyncSession) и `get_current_user()` (JWT → User). Все защищённые роуты используют `Depends(get_current_user)`.
 
-**users**: id (UUID PK), email (UNIQUE), password_hash, name, plan (free/start/pro), minutes_used, minutes_limit, created_at
+**TranscriptionProvider ABC** (`services/transcription.py`): абстрактный класс. `VoxtralProvider` — основная реализация. Переключение провайдера — замена одного класса.
 
-**transcriptions**: id (UUID PK), user_id (FK), title, status (queued/processing/completed/failed), language, duration_sec, file_key (S3), full_text (TEXT), segments (JSONB: [{start, end, text, speaker}]), created_at, completed_at
+**Celery-задачи синхронные**: Celery не поддерживает async, поэтому `tasks/transcribe.py` использует синхронный SQLAlchemy engine (заменяет `+asyncpg` на чистый psycopg). Это осознанное решение, не баг.
 
-**ai_analyses**: id (UUID PK), transcription_id (FK), type (summary/key_points/action_items), content (TEXT), model_used, tokens_used
+**Пайплайн транскрибации**: Upload → S3 → Celery task (FFmpeg для видео → Voxtral → сохранение) → поллинг статуса клиентом.
 
-**embeddings**: id (UUID PK), transcription_id (FK), chunk_index, chunk_text, start_time, end_time, embedding (VECTOR(1536))
+**Rate limiting**: slowapi — строгие лимиты на auth-эндпоинтах (5/мин register, 10/мин login), 100/мин глобально. Отключается при `ENVIRONMENT=testing`.
 
-**subscriptions**: id (UUID PK), user_id (FK), plan, yookassa_id, status (active/cancelled/expired), current_period_start, current_period_end
+**JWT**: access token 15 мин, refresh 7 дней. Frontend автоматически рефрешит через Axios interceptor (`src/api/client.ts`).
 
-**chat_messages**: id (UUID PK), transcription_id (FK), user_id (FK), role (user/assistant), content, references (JSONB)
+**Storage fallback**: `S3Service` для production, `LocalService` (filesystem) для разработки без S3.
 
-### API эндпоинты
-- `POST /api/auth/register|login|refresh|logout` — JWT аутентификация
-- `POST /api/transcriptions/upload` — загрузка файла
-- `GET /api/transcriptions/{id}` — транскрипт + таймкоды + спикеры
-- `GET /api/transcriptions/{id}/status` — статус обработки
-- `GET /api/transcriptions` — список (пагинация)
-- `DELETE /api/transcriptions/{id}` — удаление
-- `GET /api/transcriptions/{id}/export/{format}` — экспорт (txt/srt/docx)
-- `GET /api/transcriptions/{id}/summary` — AI-саммари
-- `GET /api/transcriptions/{id}/key-points` — тезисы
-- `GET /api/transcriptions/{id}/action-items` — action items
-- `POST /api/transcriptions/{id}/chat` — RAG-чат
-- `POST /api/payments/subscribe` — создать подписку
-- `POST /api/payments/webhook` — вебхук ЮKassa
-- `GET /api/payments/subscription` — текущая подписка + лимиты
+### Frontend
+
+- **React Router v7**: публичные (/, /login, /pricing, SEO-страницы) и защищённые роуты (/dashboard, /upload, /transcription/:id)
+- **Zustand store** (`src/store/authStore.ts`): единый стор для auth-состояния
+- **Axios client** (`src/api/client.ts`): interceptor добавляет Bearer token, auto-refresh при 401
+- **API модули** (`src/api/`): отдельный файл на группу эндпоинтов (auth, transcriptions, payments)
+- **SEO**: React Helmet Async для мета-тегов, SSR prerender (`scripts/prerender.ts`)
+
+## Тестирование
+
+### Backend тесты
+- Используют SQLite in-memory (`conftest.py`), не PostgreSQL
+- Фикстура `client` — httpx `AsyncClient` с ASGI transport
+- Фикстура `db_session` — прямой доступ к тестовой БД
+- Таблицы пересоздаются перед каждым тестом (`setup_db` auto-fixture)
+- `app.dependency_overrides[get_db]` подменяет БД-сессию на тестовую
+
+### Frontend тесты
+- vitest + jsdom + @testing-library/react
+- Setup: `src/test/setup.ts`
+
+### CI (.github/workflows/ci.yml)
+- **Frontend**: tsc → vite build → vitest
+- **Backend**: pytest с PostgreSQL 16 (pgvector) + Redis 7. Сейчас `pytest || true` (soft fail)
 
 ## Правила кода
 
-### Backend (Python)
-- Типизация через **Pydantic** для всех API-схем (request/response)
-- **Type hints** везде (параметры функций, возвращаемые значения)
+- Коммиты — Conventional Commits (`feat:`, `fix:`, `docs:`, etc.)
 - Docstrings на русском для публичных функций
-- Все роуты через **FastAPI Router** с тегами для OpenAPI
-- Миграции только через **Alembic**, никогда напрямую SQL
-- Async SQLAlchemy сессии через `async_sessionmaker`
-- Пароли — **bcrypt** (passlib)
-- JWT — **python-jose** (access 15 мин, refresh 7 дней)
-- Настройки — **Pydantic BaseSettings** + .env файл
-- Тесты — **pytest** + **pytest-asyncio** + **httpx** (AsyncClient)
-
-### Frontend (React/TypeScript)
-- Функциональные компоненты + hooks
-- **Zustand** для глобального состояния (не Redux)
-- **Axios** с интерцептором для JWT refresh
-- Все API-вызовы в `src/api/` (отдельный файл на группу)
-- Компоненты в `src/components/`, страницы в `src/pages/`
-- CSS: Tailwind CSS (utility-first)
-- Тесты — **vitest** + **@testing-library/react**
-
-### Общие правила
-- Docker Compose для локальной разработки
-- .env.example с описанием всех переменных
-- Коммиты — Conventional Commits (feat:, fix:, docs:, etc.)
-- Не коммитить .env, секреты, node_modules, __pycache__
-
-## Тарифы и лимиты
-| | Free | Старт (290 ₽) | Про (590 ₽) |
-|---|---|---|---|
-| Минут/мес | 15 | 300 (5ч) | 1200 (20ч) |
-| Макс. файл | 10 мин | 2 часа | 3 часа |
-| AI-саммари | 3/мес | ✔ | ✔ |
-| Спикеры | ✗ | ✔ | ✔ |
-| RAG-чат | ✗ | 5 вопр./транскрипт | Безлимит |
-| Action items | ✗ | ✗ | ✔ |
-| Экспорт | TXT | TXT/SRT/DOCX | TXT/SRT/DOCX |
-
-## Текущие задачи
-Полный список задач с подзадачами — в `docs/tasks_v2.md`.
-Текущий спринт и статусы отслеживаются там же.
+- Type hints везде (Python), TypeScript strict (frontend)
+- Pydantic-схемы для всех API request/response
+- Роуты через FastAPI Router с тегами для OpenAPI
+- Миграции только через Alembic
+- Zustand для состояния (не Redux), Axios для HTTP (не fetch)
+- Tailwind CSS для стилей
 
 ## Контекст для решений
 - Себестоимость 1 часа аудио: ~19 ₽ (Voxtral 17 + LLM 1.5 + embeddings 0.03)
-- Breakeven инфраструктуры: 14 платящих пользователей
-- Бюджет на инфраструктуру: до 5 000 ₽/мес на старте
-- SEO — основной канал привлечения (не платная реклама)
+- AI-анализ: Gemini 2.5-flash (актуальная модель в `services/ai_analysis.py`), embeddings: OpenAI text-embedding-3-small
+- Задачи проекта: `docs/tasks_v2.md`
