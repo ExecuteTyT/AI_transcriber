@@ -35,6 +35,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - uploads:/app/data/uploads
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
     restart: unless-stopped
 
@@ -48,6 +50,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - uploads:/app/data/uploads
     command: celery -A app.tasks.celery_app worker --loglevel=warning --concurrency=2
     restart: unless-stopped
 
@@ -96,5 +100,6 @@ services:
 volumes:
   pgdata:
   redisdata:
+  uploads:
   certbot-webroot:
   certbot-certs:
