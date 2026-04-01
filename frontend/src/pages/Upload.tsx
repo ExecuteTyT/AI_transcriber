@@ -71,6 +71,12 @@ export default function Upload() {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary-600 mb-4">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+        К транскрипциям
+      </Link>
       <h1 className="text-2xl font-bold tracking-tight mb-2">Загрузить файл</h1>
       <p className="text-sm text-gray-500 mb-8">Перетащите аудио или видео для транскрибации</p>
 

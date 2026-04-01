@@ -72,7 +72,9 @@ export default function Layout() {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Основная навигация">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.to;
+          const isActive = item.to === "/dashboard"
+            ? location.pathname === "/dashboard" || location.pathname.startsWith("/transcription/")
+            : location.pathname === item.to;
           return (
             <Link
               key={item.to}

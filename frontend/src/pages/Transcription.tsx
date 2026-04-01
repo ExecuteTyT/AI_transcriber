@@ -6,6 +6,7 @@ import {
   type AiAnalysis,
   type ChatMessage as ChatMessageType,
 } from "@/api/transcriptions";
+import { useAuthStore } from "@/store/authStore";
 
 const SPEAKER_COLORS = [
   "bg-blue-50 text-blue-700 border-blue-200",
@@ -75,6 +76,9 @@ export default function Transcription() {
               setTranscription(updated);
               if (updated.status === "completed" || updated.status === "failed") {
                 if (pollingRef.current) clearInterval(pollingRef.current);
+                if (updated.status === "completed") {
+                  useAuthStore.getState().loadUser();
+                }
               }
             } catch { /* polling error — retry next interval */ }
           }, 3000);
@@ -285,6 +289,12 @@ export default function Transcription() {
           </h2>
           <p className="text-gray-500 text-sm">{transcription.original_filename}</p>
           <p className="text-xs text-gray-400 mt-2">Обычно это занимает 1-3 минуты</p>
+          <Link to="/dashboard" className="mt-6 inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 hover:underline">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            К списку транскрипций
+          </Link>
         </div>
       </div>
     );

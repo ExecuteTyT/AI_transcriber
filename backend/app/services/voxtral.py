@@ -54,6 +54,10 @@ class VoxtralProvider(TranscriptionProvider):
         full_text = data.get("text", "")
         duration = data.get("duration", None)
 
+        # Fallback: вычисляем длительность из последнего сегмента
+        if duration is None and segments:
+            duration = segments[-1].end
+
         return TranscriptionResult(
             full_text=full_text,
             segments=segments,

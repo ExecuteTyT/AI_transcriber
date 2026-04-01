@@ -47,7 +47,12 @@ export default function Pricing() {
       const result = await paymentsApi.subscribe(planId);
       window.location.href = result.confirmation_url;
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Ошибка создания платежа");
+      const axiosErr = err as { response?: { status?: number }; message?: string };
+      if (axiosErr.response?.status === 502 || axiosErr.response?.status === 503) {
+        setError("Платёжный сервис временно недоступен. Попробуйте позже.");
+      } else {
+        setError(axiosErr.response?.status === 500 ? "Ошибка сервера. Попробуйте позже." : (axiosErr.message || "Ошибка создания платежа"));
+      }
     } finally {
       setLoading(null);
     }
@@ -58,6 +63,14 @@ export default function Pricing() {
 
   const content = (
     <div className={isStandalone ? "max-w-5xl mx-auto py-16 px-6" : ""}>
+      {!isStandalone && (
+        <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary-600 mb-6">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+          К транскрипциям
+        </Link>
+      )}
       <div className="text-center mb-12">
         <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Тарифы</p>
         <h1 className="section-heading mb-4">Простые и прозрачные</h1>
