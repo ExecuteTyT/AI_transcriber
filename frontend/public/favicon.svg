@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="8" fill="#4c6ef5"/>
+  <!-- Sound wave bars (left) -->
+  <rect x="4" y="12" width="2" height="8" rx="1" fill="white" opacity="0.5"/>
+  <rect x="8" y="9" width="2" height="14" rx="1" fill="white" opacity="0.7"/>
+  <!-- V letter -->
+  <path d="M13 8 L16.5 24 L20 8" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Sound wave bars (right) -->
+  <rect x="22" y="9" width="2" height="14" rx="1" fill="white" opacity="0.7"/>
+  <rect x="26" y="12" width="2" height="8" rx="1" fill="white" opacity="0.5"/>
+</svg>
