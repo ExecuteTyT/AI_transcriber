@@ -153,7 +153,7 @@ export default function Dashboard() {
           ))}
         </div>
       ) : filteredItems.length === 0 && items.length === 0 ? (
-        <div className="card p-16 text-center">
+        <div className="card p-8 md:p-16 text-center">
           <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary-50 flex items-center justify-center">
             <svg className="w-8 h-8 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
@@ -203,7 +203,7 @@ export default function Dashboard() {
                 <button
                   onClick={() => handleDelete(item.id, item.title)}
                   disabled={deletingId === item.id}
-                  className="p-2.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-3 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label={`Удалить ${item.title}`}
                 >
                   {deletingId === item.id ? (

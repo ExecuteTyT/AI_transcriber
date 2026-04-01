@@ -7,6 +7,7 @@ import {
   type ChatMessage as ChatMessageType,
 } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
+import MarkdownContent from "@/components/MarkdownContent";
 
 const SPEAKER_COLORS = [
   "bg-blue-50 text-blue-700 border-blue-200",
@@ -350,8 +351,8 @@ export default function Transcription() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={handleCopy} className="btn-secondary !py-2 !px-4 text-sm flex items-center gap-2">
+        <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
+          <button onClick={handleCopy} className="btn-secondary !py-2 !px-3 md:!px-4 text-xs md:text-sm flex items-center gap-1.5">
             {copied ? (
               <><svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg> Скопировано</>
             ) : (
@@ -473,7 +474,7 @@ export default function Transcription() {
 
       {/* AI analysis tabs */}
       {(tab === "summary" || tab === "key_points" || tab === "action_items") && (
-        <div className="card p-8">
+        <div className="card p-4 md:p-8">
           {analysisLoading ? (
             <div className="space-y-3 animate-pulse">
               <div className="h-4 bg-gradient-to-r from-surface-100 via-primary-50 to-surface-100 rounded-full w-3/4 animate-shimmer" style={{ backgroundSize: "200% 100%" }} />
@@ -483,8 +484,8 @@ export default function Transcription() {
               <p className="text-xs text-gray-400 mt-4">Генерируем анализ с помощью AI...</p>
             </div>
           ) : analysis ? (
-            <div className="prose prose-sm max-w-none whitespace-pre-wrap text-gray-700 leading-relaxed">
-              {analysis.content}
+            <div className="max-w-none">
+              <MarkdownContent content={analysis.content} />
             </div>
           ) : (
             <p className="text-gray-500">Не удалось загрузить анализ</p>
