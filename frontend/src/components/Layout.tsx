@@ -184,7 +184,7 @@ export default function Layout() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 pt-14 md:pt-0 p-4 md:p-8 overflow-auto">
+      <main className="flex-1 pt-14 md:pt-8 p-4 md:px-8 md:pb-8 overflow-auto">
         <div className="max-w-5xl mx-auto animate-fade-in">
           <Outlet />
         </div>
