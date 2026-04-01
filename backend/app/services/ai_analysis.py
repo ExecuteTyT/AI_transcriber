@@ -32,7 +32,7 @@ PROMPTS = {
 
 
 async def generate_analysis(text: str, analysis_type: str) -> tuple[str, int]:
-    """Генерация AI-анализа через GPT-4o-mini."""
+    """Генерация AI-анализа через Mistral AI."""
     prompt_template = PROMPTS.get(analysis_type)
     if not prompt_template:
         raise ValueError(f"Неизвестный тип анализа: {analysis_type}")
@@ -58,25 +58,26 @@ async def generate_analysis(text: str, analysis_type: str) -> tuple[str, int]:
 
 
 async def _call_llm(prompt: str) -> tuple[str, int]:
-    """Вызов Gemini API для генерации анализа."""
+    """Вызов Mistral AI API для генерации анализа."""
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent",
-            headers={"Content-Type": "application/json"},
-            params={"key": settings.GOOGLE_API_KEY},
+            "https://api.mistral.ai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {settings.MISTRAL_API_KEY}",
+                "Content-Type": "application/json",
+            },
             json={
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.3,
-                    "maxOutputTokens": 2000,
-                },
+                "model": "mistral-small-latest",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.3,
+                "max_tokens": 2000,
             },
             timeout=60,
         )
         response.raise_for_status()
         data = response.json()
-        content = data["candidates"][0]["content"]["parts"][0]["text"]
-        tokens = data.get("usageMetadata", {}).get("totalTokenCount", 0)
+        content = data["choices"][0]["message"]["content"]
+        tokens = data.get("usage", {}).get("total_tokens", 0)
         return content, tokens
 
 
