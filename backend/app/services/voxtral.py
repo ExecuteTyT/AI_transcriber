@@ -1,5 +1,5 @@
-import base64
 import logging
+import os
 
 import httpx
 
@@ -16,9 +16,6 @@ class VoxtralProvider(TranscriptionProvider):
 
     def transcribe(self, file_path: str) -> TranscriptionResult:
         """Транскрибировать аудиофайл через Voxtral V2 API."""
-        with open(file_path, "rb") as f:
-            file_data = f.read()
-
         # Определяем MIME-тип
         ext = file_path.rsplit(".", 1)[-1].lower()
         mime_map = {
@@ -26,25 +23,21 @@ class VoxtralProvider(TranscriptionProvider):
             "ogg": "audio/ogg", "m4a": "audio/mp4", "webm": "audio/webm",
         }
         mime_type = mime_map.get(ext, "audio/mpeg")
+        filename = os.path.basename(file_path)
 
-        # Кодируем в base64 data URI
-        b64_data = base64.b64encode(file_data).decode()
-        data_uri = f"data:{mime_type};base64,{b64_data}"
+        with open(file_path, "rb") as f:
+            response = httpx.post(
+                self.API_URL,
+                headers={"Authorization": f"Bearer {settings.MISTRAL_API_KEY}"},
+                files={"file": (filename, f, mime_type)},
+                data={
+                    "model": "voxtral-mini-latest",
+                    "timestamp_granularities": "segment",
+                    "diarize": "true",
+                },
+                timeout=600,
+            )
 
-        response = httpx.post(
-            self.API_URL,
-            headers={
-                "Authorization": f"Bearer {settings.MISTRAL_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": "mistral-audio-latest",
-                "file": data_uri,
-                "response_format": "verbose_json",
-                "timestamp_granularities": ["segment"],
-            },
-            timeout=600,
-        )
         response.raise_for_status()
         data = response.json()
 
