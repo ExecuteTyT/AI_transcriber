@@ -14,6 +14,7 @@ export interface User {
   minutes_used: number;
   minutes_limit: number;
   is_email_verified: boolean;
+  is_admin: boolean;
   created_at: string | null;
 }
 
