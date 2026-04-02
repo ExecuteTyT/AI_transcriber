@@ -2,10 +2,11 @@ import { useMemo } from "react";
 
 /**
  * Анимированная аудио-волна для hero-секции.
- * Три слоя SVG-синусоид + яркий эквалайзер по центру = мгновенный wow.
+ * Две зоны визуализации: верхняя (за заголовком, тонкие волны) и нижняя (эквалайзер над мокапом).
+ * Центральная зона текста остаётся чистой.
  */
 
-const EQ_BARS = 32;
+const EQ_BARS = 48;
 
 interface EqBar {
   id: number;
@@ -24,12 +25,12 @@ function generateEqBars(count: number): EqBar[] {
 
   for (let i = 0; i < count; i++) {
     const centerDist = Math.abs(i - count / 2) / (count / 2);
-    const baseHeight = 0.2 + (1 - centerDist * centerDist) * 0.8;
+    const baseHeight = 0.15 + (1 - centerDist * centerDist) * 0.85;
     bars.push({
       id: i,
-      height: baseHeight * (0.5 + rand() * 0.5),
+      height: baseHeight * (0.4 + rand() * 0.6),
       delay: rand() * -4,
-      duration: 0.8 + rand() * 1.2,
+      duration: 0.8 + rand() * 1.4,
     });
   }
   return bars;
@@ -41,112 +42,112 @@ export default function HeroWaveform() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
 
-      {/* Large ambient glow */}
-      <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-primary-500/15 rounded-full blur-[120px]" />
-      <div className="absolute top-[45%] left-[30%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-violet-500/10 rounded-full blur-[80px]" />
-      <div className="absolute top-[45%] left-[70%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-accent-500/8 rounded-full blur-[80px]" />
+      {/* ─── Ambient glow blobs ─── */}
+      <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-primary-500/12 rounded-full blur-[120px]" />
+      <div className="absolute top-[20%] left-[25%] -translate-x-1/2 w-[300px] h-[250px] bg-violet-500/8 rounded-full blur-[80px]" />
+      <div className="absolute top-[20%] left-[75%] -translate-x-1/2 w-[300px] h-[250px] bg-accent-500/6 rounded-full blur-[80px]" />
+      <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary-600/10 rounded-full blur-[100px]" />
 
-      {/* ─── Flowing sine waves (3 layers) ─── */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1200 800" preserveAspectRatio="none">
+      {/* ─── Upper sine waves — behind title area (subtle) ─── */}
+      <svg className="absolute top-0 left-0 w-full h-[40%]" viewBox="0 0 1200 300" preserveAspectRatio="none">
         <defs>
           <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="rgba(99,102,241,0)" />
-            <stop offset="20%" stopColor="rgba(99,102,241,0.2)" />
-            <stop offset="50%" stopColor="rgba(139,92,246,0.35)" />
-            <stop offset="80%" stopColor="rgba(99,102,241,0.2)" />
+            <stop offset="30%" stopColor="rgba(99,102,241,0.12)" />
+            <stop offset="50%" stopColor="rgba(139,92,246,0.2)" />
+            <stop offset="70%" stopColor="rgba(99,102,241,0.12)" />
             <stop offset="100%" stopColor="rgba(99,102,241,0)" />
           </linearGradient>
           <linearGradient id="wg2" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(139,92,246,0)" />
-            <stop offset="30%" stopColor="rgba(139,92,246,0.15)" />
-            <stop offset="50%" stopColor="rgba(168,85,247,0.25)" />
-            <stop offset="70%" stopColor="rgba(139,92,246,0.15)" />
-            <stop offset="100%" stopColor="rgba(139,92,246,0)" />
-          </linearGradient>
-          <linearGradient id="wg3" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(249,115,22,0)" />
-            <stop offset="25%" stopColor="rgba(249,115,22,0.08)" />
-            <stop offset="50%" stopColor="rgba(249,115,22,0.15)" />
-            <stop offset="75%" stopColor="rgba(249,115,22,0.08)" />
-            <stop offset="100%" stopColor="rgba(249,115,22,0)" />
+            <stop offset="0%" stopColor="rgba(168,85,247,0)" />
+            <stop offset="25%" stopColor="rgba(168,85,247,0.08)" />
+            <stop offset="50%" stopColor="rgba(168,85,247,0.15)" />
+            <stop offset="75%" stopColor="rgba(168,85,247,0.08)" />
+            <stop offset="100%" stopColor="rgba(168,85,247,0)" />
           </linearGradient>
         </defs>
 
-        {/* Wave 1 — primary indigo, slow */}
-        <path stroke="url(#wg1)" strokeWidth="2.5" fill="none">
-          <animate
-            attributeName="d"
-            dur="7s"
-            repeatCount="indefinite"
-            values="
-              M0,400 C150,340 300,460 450,400 S750,340 900,400 S1050,460 1200,400;
-              M0,400 C150,460 300,340 450,400 S750,460 900,400 S1050,340 1200,400;
-              M0,400 C150,340 300,460 450,400 S750,340 900,400 S1050,460 1200,400
-            "
-          />
+        <path stroke="url(#wg1)" strokeWidth="1.5" fill="none">
+          <animate attributeName="d" dur="8s" repeatCount="indefinite" values="
+            M0,200 C200,160 400,240 600,200 S1000,160 1200,200;
+            M0,200 C200,240 400,160 600,200 S1000,240 1200,200;
+            M0,200 C200,160 400,240 600,200 S1000,160 1200,200
+          " />
         </path>
-
-        {/* Wave 2 — violet, medium */}
-        <path stroke="url(#wg2)" strokeWidth="2" fill="none">
-          <animate
-            attributeName="d"
-            dur="5s"
-            repeatCount="indefinite"
-            values="
-              M0,400 C100,360 200,440 350,400 S550,360 700,400 S900,440 1050,400 L1200,400;
-              M0,400 C100,440 200,360 350,400 S550,440 700,400 S900,360 1050,400 L1200,400;
-              M0,400 C100,360 200,440 350,400 S550,360 700,400 S900,440 1050,400 L1200,400
-            "
-          />
-        </path>
-
-        {/* Wave 3 — accent orange, fastest */}
-        <path stroke="url(#wg3)" strokeWidth="1.5" fill="none">
-          <animate
-            attributeName="d"
-            dur="4s"
-            repeatCount="indefinite"
-            values="
-              M0,400 C80,375 160,425 240,400 S400,375 480,400 S640,425 720,400 S880,375 960,400 S1120,425 1200,400;
-              M0,400 C80,425 160,375 240,400 S400,425 480,400 S640,375 720,400 S880,425 960,400 S1120,375 1200,400;
-              M0,400 C80,375 160,425 240,400 S400,375 480,400 S640,425 720,400 S880,375 960,400 S1120,425 1200,400
-            "
-          />
+        <path stroke="url(#wg2)" strokeWidth="1" fill="none">
+          <animate attributeName="d" dur="6s" repeatCount="indefinite" values="
+            M0,220 C150,190 350,250 550,220 S850,190 1050,220 L1200,220;
+            M0,220 C150,250 350,190 550,220 S850,250 1050,220 L1200,220;
+            M0,220 C150,190 350,250 550,220 S850,190 1050,220 L1200,220
+          " />
         </path>
       </svg>
 
-      {/* ─── Center equalizer bars ─── */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="flex items-center gap-[3px] md:gap-1 h-[120px] md:h-[180px]">
+      {/* ─── Lower sine waves — above mockup (more visible) ─── */}
+      <svg className="absolute bottom-0 left-0 w-full h-[45%]" viewBox="0 0 1200 350" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="wg3" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(99,102,241,0)" />
+            <stop offset="20%" stopColor="rgba(99,102,241,0.18)" />
+            <stop offset="50%" stopColor="rgba(139,92,246,0.3)" />
+            <stop offset="80%" stopColor="rgba(99,102,241,0.18)" />
+            <stop offset="100%" stopColor="rgba(99,102,241,0)" />
+          </linearGradient>
+          <linearGradient id="wg4" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(249,115,22,0)" />
+            <stop offset="25%" stopColor="rgba(249,115,22,0.06)" />
+            <stop offset="50%" stopColor="rgba(249,115,22,0.12)" />
+            <stop offset="75%" stopColor="rgba(249,115,22,0.06)" />
+            <stop offset="100%" stopColor="rgba(249,115,22,0)" />
+          </linearGradient>
+          <linearGradient id="wg5" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(139,92,246,0)" />
+            <stop offset="30%" stopColor="rgba(139,92,246,0.1)" />
+            <stop offset="50%" stopColor="rgba(139,92,246,0.2)" />
+            <stop offset="70%" stopColor="rgba(139,92,246,0.1)" />
+            <stop offset="100%" stopColor="rgba(139,92,246,0)" />
+          </linearGradient>
+        </defs>
+
+        <path stroke="url(#wg3)" strokeWidth="2" fill="none">
+          <animate attributeName="d" dur="7s" repeatCount="indefinite" values="
+            M0,120 C200,80 400,160 600,120 S1000,80 1200,120;
+            M0,120 C200,160 400,80 600,120 S1000,160 1200,120;
+            M0,120 C200,80 400,160 600,120 S1000,80 1200,120
+          " />
+        </path>
+        <path stroke="url(#wg4)" strokeWidth="1.5" fill="none">
+          <animate attributeName="d" dur="5s" repeatCount="indefinite" values="
+            M0,140 C100,115 250,165 400,140 S650,115 800,140 S1000,165 1200,140;
+            M0,140 C100,165 250,115 400,140 S650,165 800,140 S1000,115 1200,140;
+            M0,140 C100,115 250,165 400,140 S650,115 800,140 S1000,165 1200,140
+          " />
+        </path>
+        <path stroke="url(#wg5)" strokeWidth="1" fill="none">
+          <animate attributeName="d" dur="9s" repeatCount="indefinite" values="
+            M0,100 C180,70 360,130 540,100 S900,70 1080,100 L1200,100;
+            M0,100 C180,130 360,70 540,100 S900,130 1080,100 L1200,100;
+            M0,100 C180,70 360,130 540,100 S900,70 1080,100 L1200,100
+          " />
+        </path>
+      </svg>
+
+      {/* ─── Equalizer bars — bottom zone, above mockup ─── */}
+      <div className="absolute bottom-[18%] md:bottom-[22%] left-1/2 -translate-x-1/2">
+        <div className="flex items-end gap-[2px] md:gap-[3px] h-[60px] md:h-[80px] opacity-60">
           {eqBars.map((bar) => (
             <div
               key={bar.id}
               className="hero-eq-bar rounded-full"
               style={{
-                width: "3px",
+                width: "2px",
                 height: `${bar.height * 100}%`,
                 animationDelay: `${bar.delay}s`,
                 animationDuration: `${bar.duration}s`,
-                background: "linear-gradient(to top, rgba(99,102,241,0.8), rgba(139,92,246,0.6), rgba(168,85,247,0.3))",
-                boxShadow: "0 0 8px rgba(99,102,241,0.3)",
+                background: "linear-gradient(to top, rgba(99,102,241,0.7), rgba(139,92,246,0.4), rgba(168,85,247,0.15))",
               }}
             />
           ))}
-        </div>
-      </div>
-
-      {/* ─── Glowing orb at center (microphone metaphor) ─── */}
-      <div className="absolute top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div className="relative">
-          {/* Outer ring pulse */}
-          <div className="absolute -inset-8 rounded-full border border-primary-400/20 animate-ping" style={{ animationDuration: "3s" }} />
-          <div className="absolute -inset-4 rounded-full border border-primary-400/10 animate-ping" style={{ animationDuration: "2.5s", animationDelay: "0.5s" }} />
-          {/* Core orb */}
-          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-primary-500/30 via-violet-500/20 to-accent-500/10 backdrop-blur-sm border border-white/10 flex items-center justify-center shadow-[0_0_60px_rgba(99,102,241,0.3)]">
-            <svg className="w-7 h-7 md:w-8 md:h-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-            </svg>
-          </div>
         </div>
       </div>
 
