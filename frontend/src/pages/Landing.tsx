@@ -214,7 +214,7 @@ export default function Landing() {
       {/* ─── Header ─── */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/90 backdrop-blur-2xl border-b border-gray-200/40 shadow-sm" : "bg-transparent"}`}>
         <div className={`max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between transition-all duration-300 ${scrolled ? "h-14" : "h-16"}`}>
-          <Link to="/" className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${scrolled ? "text-gray-900" : "text-white"}`}>Voitra</Link>
+          <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`text-xl font-extrabold tracking-tight transition-colors duration-300 cursor-pointer ${scrolled ? "text-gray-900" : "text-white"}`}>Voitra</a>
           <nav className={`hidden md:flex items-center gap-8 text-sm font-medium transition-colors duration-300 ${scrolled ? "text-gray-600" : "text-white/70"}`}>
             <a href="#features" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Возможности</a>
             <a href="#use-cases" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Кому</a>
