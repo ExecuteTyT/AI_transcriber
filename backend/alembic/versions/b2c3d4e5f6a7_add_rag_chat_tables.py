@@ -34,7 +34,7 @@ def upgrade() -> None:
         sa.Column("chunk_text", sa.Text(), nullable=False),
         sa.Column("start_time", sa.Float(), nullable=True),
         sa.Column("end_time", sa.Float(), nullable=True),
-        sa.Column("embedding", Vector(1536), nullable=False),
+        sa.Column("embedding", Vector(1024), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),

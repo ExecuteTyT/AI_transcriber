@@ -68,17 +68,17 @@ async def generate_rag_response(
 
 
 async def embed_question(question: str) -> list[float]:
-    """Получить embedding для вопроса."""
+    """Получить embedding для вопроса через Mistral API."""
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "https://api.openai.com/v1/embeddings",
+            "https://api.mistral.ai/v1/embeddings",
             headers={
-                "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+                "Authorization": f"Bearer {settings.MISTRAL_API_KEY}",
                 "Content-Type": "application/json",
             },
             json={
                 "model": settings.EMBEDDING_MODEL,
-                "input": question,
+                "input": [question],
             },
             timeout=30,
         )
