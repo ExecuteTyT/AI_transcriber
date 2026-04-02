@@ -12,6 +12,7 @@ import Register from "@/pages/Register";
 import ResetPassword from "@/pages/ResetPassword";
 import Subscription from "@/pages/Subscription";
 import Transcription from "@/pages/Transcription";
+import Admin from "@/pages/Admin";
 import Upload from "@/pages/Upload";
 import AudioToText from "@/pages/seo/AudioToText";
 import VideoToText from "@/pages/seo/VideoToText";
@@ -71,6 +72,7 @@ export default function App() {
         <Route path="/transcription/:id" element={<Transcription />} />
         <Route path="/subscription" element={<Subscription />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/admin" element={<Admin />} />
       </Route>
 
       {/* 404 */}

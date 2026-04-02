@@ -43,6 +43,7 @@ class UserResponse(BaseModel):
     minutes_used: int
     minutes_limit: int
     is_email_verified: bool = False
+    is_admin: bool = False
     created_at: datetime | None = None
 
     model_config = {"from_attributes": True}

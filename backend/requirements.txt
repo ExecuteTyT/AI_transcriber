@@ -39,6 +39,9 @@ yookassa==3.4.0
 # DOCX export
 python-docx==1.1.2
 
+# Metrics
+prometheus-fastapi-instrumentator==7.0.2
+
 # Rate limiting
 slowapi==0.1.9
 

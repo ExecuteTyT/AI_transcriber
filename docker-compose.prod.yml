@@ -97,9 +97,45 @@ services:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h; done'"
     restart: unless-stopped
 
+  # ─── Monitoring ───
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-voitra2026}
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+
 volumes:
   pgdata:
   redisdata:
   uploads:
   certbot-webroot:
   certbot-certs:
+  prometheus_data:
+  grafana_data:

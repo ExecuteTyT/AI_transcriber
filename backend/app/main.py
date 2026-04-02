@@ -12,6 +12,7 @@ from app.api.ai_analysis import router as ai_analysis_router
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.payments import router as payments_router
+from app.api.admin import router as admin_router
 from app.api.transcriptions import router as transcriptions_router
 from app.config import settings
 
@@ -58,11 +59,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(transcriptions_router)
 app.include_router(ai_analysis_router)
 app.include_router(payments_router)
 app.include_router(chat_router)
+
+
+# Prometheus metrics
+from prometheus_fastapi_instrumentator import Instrumentator
+Instrumentator(
+    should_group_status_codes=True,
+    should_ignore_untemplated=True,
+    excluded_handlers=["/metrics", "/api/health"],
+).instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 
 
 @app.get("/api/health", tags=["system"])

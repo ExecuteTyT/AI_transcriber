@@ -19,6 +19,9 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Email verification
     is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Admin access
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+
     # Password reset token (хранится хеш, не сам токен)
     password_reset_token_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_reset_expires_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
