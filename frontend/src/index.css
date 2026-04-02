@@ -99,7 +99,7 @@
   }
 
   .section-heading {
-    @apply text-3xl md:text-5xl font-extrabold tracking-tight;
+    @apply text-3xl md:text-5xl font-extrabold tracking-tight leading-[1.15];
   }
 
   /* ─── Gradient Border ─── */

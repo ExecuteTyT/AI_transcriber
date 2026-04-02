@@ -68,7 +68,7 @@ export default function SoundToTextParticles({
 
   return (
     <div
-      className={`absolute inset-0 overflow-hidden pointer-events-none ${className}`}
+      className={`absolute inset-0 overflow-hidden pointer-events-none hidden md:block ${className}`}
       aria-hidden="true"
     >
       {streams.map((st) => (
