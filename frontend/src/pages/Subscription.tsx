@@ -101,7 +101,7 @@ export default function Subscription() {
 
         {/* Actions */}
         <div className="flex gap-3 pt-2">
-          <button onClick={() => navigate("/pricing")} className="btn-primary flex-1 text-sm">
+          <button onClick={() => navigate("/app/pricing")} className="btn-primary flex-1 text-sm">
             {sub.plan === "free" ? "Улучшить план" : "Сменить план"}
           </button>
           {sub.status === "active" && sub.plan !== "free" && (
