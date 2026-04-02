@@ -205,10 +205,10 @@ export default function Landing() {
       <Helmet>
         <title>Voitra — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
         <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 15 мин/мес. От 290 ₽/мес." />
-        <link rel="canonical" href="https://voitra.ru/" />
+        <link rel="canonical" href="https://voitra.pro/" />
         <meta property="og:title" content="Voitra — Транскрибация аудио и видео в текст онлайн" />
         <meta property="og:description" content="Превращайте аудио и видео в текст, саммари и ключевые тезисы с помощью ИИ. Разметка спикеров, таймкоды, экспорт. Бесплатно 15 мин/мес." />
-        <meta property="og:url" content="https://voitra.ru/" />
+        <meta property="og:url" content="https://voitra.pro/" />
       </Helmet>
 
       {/* ─── Header ─── */}
@@ -276,10 +276,10 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            <Link to="/register" className="bg-white text-primary-950 px-6 py-3 md:px-8 md:py-4 rounded-2xl text-base md:text-lg font-bold hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5 shadow-lg hover:shadow-[0_8px_30px_rgba(255,255,255,0.25)]">
+            <Link to="/register" className="bg-gradient-to-r from-primary-500 to-primary-400 text-white px-6 py-3 md:px-8 md:py-4 rounded-2xl text-base md:text-lg font-bold hover:from-primary-400 hover:to-primary-300 transition-all duration-200 hover:-translate-y-0.5 shadow-[0_4px_20px_-4px_rgba(99,102,241,0.5)]">
               Начать бесплатно — 15 мин/мес
             </Link>
-            <a href="#features" className="px-6 py-3 md:px-8 md:py-4 rounded-2xl text-base md:text-lg font-medium border border-white/20 text-white hover:bg-white/10 transition-all duration-200">
+            <a href="#features" className="px-6 py-3 md:px-8 md:py-4 rounded-2xl text-base md:text-lg font-medium border border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-200">
               Как это работает
             </a>
           </div>
@@ -298,7 +298,7 @@ export default function Landing() {
               <div className="w-3 h-3 rounded-full bg-amber-400/80" />
               <div className="w-3 h-3 rounded-full bg-green-400/80" />
               <div className="flex-1 flex justify-center">
-                <div className="px-6 py-1 bg-white/10 rounded-lg text-xs text-primary-300 border border-white/10">voitra.ru</div>
+                <div className="px-6 py-1 bg-white/10 rounded-lg text-xs text-primary-300 border border-white/10">voitra.pro</div>
               </div>
             </div>
             {/* Content preview */}
