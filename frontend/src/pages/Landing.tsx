@@ -258,9 +258,6 @@ export default function Landing() {
 
       {/* ─── Hero (dark) ─── */}
       <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-primary-950 bg-grid">
-        {/* Glow blobs */}
-        <div className="absolute top-20 right-[10%] w-80 h-80 bg-primary-500/30 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-10 left-[5%] w-96 h-96 bg-accent-400/25 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
 
         <HeroWaveform />
 
