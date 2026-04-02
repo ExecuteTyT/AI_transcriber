@@ -34,6 +34,12 @@ function HomePage() {
   return <Landing />;
 }
 
+function SmartPricingRoute() {
+  const { isAuthenticated } = useAuthStore();
+  if (isAuthenticated) return <Navigate to="/app/pricing" replace />;
+  return <Pricing />;
+}
+
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
 
@@ -49,7 +55,7 @@ export default function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/pricing" element={<SmartPricingRoute />} />
       <Route path="/audio-v-tekst" element={<AudioToText />} />
       <Route path="/video-v-tekst" element={<VideoToText />} />
       <Route path="/nejroset-transkribaciya" element={<NeuralTranscription />} />
@@ -72,6 +78,7 @@ export default function App() {
         <Route path="/transcription/:id" element={<Transcription />} />
         <Route path="/subscription" element={<Subscription />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/app/pricing" element={<Pricing />} />
         <Route path="/admin" element={<Admin />} />
       </Route>
 

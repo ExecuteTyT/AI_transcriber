@@ -513,7 +513,7 @@ export default function Transcription() {
                 {tab === "action_items" ? "Action items — тариф Про" : "Лимит исчерпан"}
               </h3>
               <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">{analysisError.message}</p>
-              <Link to="/pricing" className="btn-primary inline-flex items-center gap-2">
+              <Link to="/app/pricing" className="btn-primary inline-flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
@@ -582,7 +582,7 @@ export default function Transcription() {
             {chatRemaining === 0 ? (
               <p className="text-sm text-gray-500 text-center py-2">
                 Лимит вопросов исчерпан.{" "}
-                <Link to="/pricing" className="text-primary-600 hover:underline">Перейти на Про</Link>
+                <Link to="/app/pricing" className="text-primary-600 hover:underline">Перейти на Про</Link>
               </p>
             ) : (
               <div className="flex gap-2">
