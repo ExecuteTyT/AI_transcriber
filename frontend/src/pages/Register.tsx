@@ -30,13 +30,26 @@ export default function Register() {
     <div className="min-h-screen flex">
       {/* Left panel — dark, hidden on mobile */}
       <div className="hidden md:flex md:w-1/2 bg-primary-950 bg-grid relative overflow-hidden flex-col justify-between p-12">
-        <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-accent-400/15 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-accent-400/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 left-1/4 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl" />
 
         <div className="relative z-10">
           <Link to="/" className="text-2xl font-bold text-white">Voitra</Link>
         </div>
 
-        {/* Promo text */}
+        {/* Hero text */}
+        <div className="relative z-10 space-y-6">
+          <h2 className="text-3xl lg:text-4xl font-black text-white leading-[1.15] tracking-tight">
+            Начните бесплатно —
+            <br />
+            <span className="bg-gradient-to-r from-primary-400 via-primary-300 to-accent-400 bg-clip-text text-transparent">15 минут транскрибации</span>
+          </h2>
+          <p className="text-primary-200/70 text-base leading-relaxed max-w-sm">
+            Транскрибация, разметка спикеров, AI-саммари и ключевые тезисы. Без кредитной карты.
+          </p>
+        </div>
+
+        {/* Stats */}
         <div className="relative z-10 space-y-4">
           <div className="flex gap-4">
             {[

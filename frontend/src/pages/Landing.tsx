@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import SoundToTextParticles from "@/components/SoundToTextParticles";
+import HeroWaveform from "@/components/HeroWaveform";
 
 /* ─── useCountUp hook ─── */
 function useCountUp(target: number, duration = 1500) {
@@ -262,7 +262,7 @@ export default function Landing() {
         <div className="absolute top-20 right-[10%] w-80 h-80 bg-primary-500/30 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-10 left-[5%] w-96 h-96 bg-accent-400/25 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
 
-        <SoundToTextParticles count={5} variant="dark" />
+        <HeroWaveform />
 
         <div className="relative max-w-5xl mx-auto px-6 text-center">
           <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-8 animate-fade-up text-balance text-white">
