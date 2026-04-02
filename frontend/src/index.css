@@ -136,6 +136,57 @@
   }
 }
 
+/* ─── Hero Waveform Animations ─── */
+
+.hero-bar {
+  animation: heroPulse ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes heroPulse {
+  0% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0.5);
+  }
+}
+
+.hero-text-float {
+  animation: heroTextFloat 8s ease-in-out infinite;
+}
+
+@keyframes heroTextFloat {
+  0%, 100% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    filter: blur(4px);
+  }
+  15%, 60% {
+    opacity: 0.12;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+  80% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    filter: blur(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bar,
+  .hero-text-float {
+    animation: none !important;
+  }
+  .hero-bar {
+    transform: scaleY(0.6) !important;
+  }
+}
+
 /* ─── Sound→Text Stream Animations ─── */
 
 .stream-flow {
