@@ -43,9 +43,9 @@ async def upload_file(
     db: AsyncSession = Depends(get_db),
 ):
     """Загрузка аудио/видео файла для транскрибации."""
-    # Проверка лимитов
+    # Проверка лимитов (админы без ограничений)
     plan = get_plan(user.plan)
-    if user.minutes_used >= user.minutes_limit:
+    if not user.is_admin and user.minutes_used >= user.minutes_limit:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Лимит минут исчерпан ({user.minutes_used}/{user.minutes_limit}). "

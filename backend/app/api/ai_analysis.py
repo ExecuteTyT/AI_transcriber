@@ -23,6 +23,9 @@ async def _check_analysis_limits(
     db: AsyncSession,
 ) -> None:
     """Проверка лимитов AI-анализа по тарифу."""
+    if user.is_admin:
+        return  # Админы без лимитов
+
     plan = get_plan(user.plan)
 
     # Action items только для pro

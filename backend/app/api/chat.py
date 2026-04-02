@@ -30,7 +30,7 @@ async def send_chat_message(
     """Отправить сообщение в RAG-чат по транскрипции."""
     plan = get_plan(user.plan)
 
-    if plan.rag_chat_limit == 0:
+    if not user.is_admin and plan.rag_chat_limit == 0:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="RAG-чат недоступен на бесплатном тарифе. Перейдите на Старт или Про.",
@@ -48,7 +48,7 @@ async def send_chat_message(
     if transcription.status != "completed" or not transcription.full_text:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Транскрипция ещё не завершена")
 
-    if plan.rag_chat_limit > 0:
+    if not user.is_admin and plan.rag_chat_limit > 0:
         count_result = await db.execute(
             select(func.count()).select_from(ChatMessage).where(
                 ChatMessage.transcription_id == transcription_id,
@@ -120,10 +120,10 @@ async def get_chat_history(
     messages = list(result.scalars().all())
 
     plan = get_plan(user.plan)
-    if plan.rag_chat_limit == 0:
-        remaining = 0
-    elif plan.rag_chat_limit == -1:
+    if user.is_admin or plan.rag_chat_limit == -1:
         remaining = -1
+    elif plan.rag_chat_limit == 0:
+        remaining = 0
     else:
         user_msgs = sum(1 for m in messages if m.role == "user")
         remaining = max(0, plan.rag_chat_limit - user_msgs)
