@@ -36,6 +36,7 @@ export default function Transcription() {
   const [tab, setTab] = useState<Tab>("transcript");
   const [analysis, setAnalysis] = useState<AiAnalysis | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<{ status: number; message: string } | null>(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -94,8 +95,9 @@ export default function Transcription() {
 
   // AI analysis loading
   useEffect(() => {
-    if (!id || tab === "transcript") { setAnalysis(null); return; }
+    if (!id || tab === "transcript") { setAnalysis(null); setAnalysisError(null); return; }
     setAnalysisLoading(true);
+    setAnalysisError(null);
     const fetchers: Record<string, (id: string) => ReturnType<typeof transcriptionApi.getSummary>> = {
       summary: transcriptionApi.getSummary,
       key_points: transcriptionApi.getKeyPoints,
@@ -105,7 +107,15 @@ export default function Transcription() {
     if (!fetchAnalysis) return;
     fetchAnalysis(id)
       .then(({ data }) => setAnalysis(data))
-      .catch(() => setAnalysis(null))
+      .catch((err: unknown) => {
+        setAnalysis(null);
+        const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+        const status = axiosErr.response?.status || 0;
+        const message = axiosErr.response?.data?.detail || "";
+        if (status === 403 && message) {
+          setAnalysisError({ status, message });
+        }
+      })
       .finally(() => setAnalysisLoading(false));
   }, [id, tab]);
 
@@ -366,21 +376,26 @@ export default function Transcription() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+      <div className="flex gap-1.5 md:gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {([
-          ["transcript", "Транскрипт"],
-          ["summary", "Саммари"],
-          ["key_points", "Тезисы"],
-          ["action_items", "Actions"],
-          ["chat", "Чат"],
-        ] as const).map(([key, label]) => (
+          ["transcript", "Транскрипт", false],
+          ["summary", "Саммари", false],
+          ["key_points", "Тезисы", false],
+          ["action_items", "Actions", useAuthStore.getState().user?.plan === "free" || useAuthStore.getState().user?.plan === "start"],
+          ["chat", "Чат", false],
+        ] as const).map(([key, label, locked]) => (
           <button
             key={key}
-            onClick={() => setTab(key)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-              tab === key ? "bg-primary-600 text-white shadow-lg shadow-primary-600/30" : "bg-surface-100 text-gray-600 hover:bg-surface-200"
+            onClick={() => setTab(key as Tab)}
+            className={`px-3 md:px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 ${
+              tab === key ? "bg-primary-600 text-white shadow-lg shadow-primary-600/30" : locked ? "bg-surface-100 text-gray-400" : "bg-surface-100 text-gray-600 hover:bg-surface-200"
             }`}
           >
+            {locked && tab !== key && (
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            )}
             {label}
           </button>
         ))}
@@ -486,6 +501,24 @@ export default function Transcription() {
           ) : analysis ? (
             <div className="max-w-none">
               <MarkdownContent content={analysis.content} />
+            </div>
+          ) : analysisError ? (
+            <div className="text-center py-8">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary-50 flex items-center justify-center">
+                <svg className="w-7 h-7 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-gray-900 mb-1.5">
+                {tab === "action_items" ? "Action items — тариф Про" : "Лимит исчерпан"}
+              </h3>
+              <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">{analysisError.message}</p>
+              <Link to="/pricing" className="btn-primary inline-flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                Улучшить тариф
+              </Link>
             </div>
           ) : (
             <p className="text-gray-500">Не удалось загрузить анализ</p>
