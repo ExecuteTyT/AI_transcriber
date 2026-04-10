@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import HeroWaveform from "@/components/HeroWaveform";
+import HeroLiveDemo from "@/components/HeroLiveDemo";
 
 /* ─── useCountUp hook ─── */
 function useCountUp(target: number, duration = 1500) {
@@ -286,40 +287,8 @@ export default function Landing() {
           </p>
         </div>
 
-        {/* Mockup preview */}
-        <div className="relative max-w-4xl mx-auto mt-16 px-6 animate-fade-up" style={{ animationDelay: "0.3s" }}>
-          <div className="rounded-2xl glass-dark overflow-hidden shadow-elevated-lg">
-            {/* Window chrome */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <div className="w-3 h-3 rounded-full bg-red-400/80" />
-              <div className="w-3 h-3 rounded-full bg-amber-400/80" />
-              <div className="w-3 h-3 rounded-full bg-green-400/80" />
-              <div className="flex-1 flex justify-center">
-                <div className="px-6 py-1 bg-white/10 rounded-lg text-xs text-primary-300 border border-white/10">voitra.pro</div>
-              </div>
-            </div>
-            {/* Content preview */}
-            <div className="p-6 md:p-8 space-y-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500" />
-                <div className="h-4 w-48 bg-white/10 rounded-full" />
-                <div className="ml-auto badge bg-green-500/20 text-green-300">Готово</div>
-              </div>
-              {[
-                { time: "0:00", speaker: "Спикер 1", color: "bg-blue-500/20 text-blue-300", w: "w-4/5" },
-                { time: "0:15", speaker: "Спикер 2", color: "bg-violet-500/20 text-violet-300", w: "w-3/5" },
-                { time: "0:32", speaker: "Спикер 1", color: "bg-blue-500/20 text-blue-300", w: "w-[70%]" },
-                { time: "0:48", speaker: "Спикер 3", color: "bg-amber-500/20 text-amber-300", w: "w-2/3" },
-              ].map((line, i) => (
-                <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${0.5 + i * 0.15}s` }}>
-                  <span className="text-xs text-primary-400 font-mono w-10">{line.time}</span>
-                  <span className={`badge ${line.color} text-[11px]`}>{line.speaker}</span>
-                  <div className={`h-3 ${line.w} bg-white/5 rounded-full`} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Live transcription demo */}
+        <HeroLiveDemo />
       </section>
 
       {/* ─── Stats (dark) ─── */}
