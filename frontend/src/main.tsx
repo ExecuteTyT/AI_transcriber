@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { Toaster } from "sonner";
 import App from "./App";
 import "./index.css";
 
@@ -11,6 +12,13 @@ const app = (
     <HelmetProvider>
       <BrowserRouter>
         <App />
+        <Toaster
+          position="top-center"
+          richColors
+          closeButton
+          offset={16}
+          toastOptions={{ className: "!font-sans" }}
+        />
       </BrowserRouter>
     </HelmetProvider>
   </React.StrictMode>

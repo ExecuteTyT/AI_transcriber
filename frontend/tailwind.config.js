@@ -3,8 +3,22 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      screens: {
+        xs: "400px",
+      },
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+      },
+      fontSize: {
+        xs: ["0.8125rem", { lineHeight: "1.25rem" }],
+        sm: ["0.9375rem", { lineHeight: "1.375rem" }],
+        base: ["1rem", { lineHeight: "1.5rem" }],
+      },
+      spacing: {
+        "safe-t": "env(safe-area-inset-top)",
+        "safe-b": "env(safe-area-inset-bottom)",
+        "tab-bar": "64px",
+        "top-bar": "56px",
       },
       colors: {
         primary: {
@@ -56,8 +70,9 @@ export default {
         "glow-accent": "0 0 40px -8px rgba(249, 115, 22, 0.25)",
         "glow-sm": "0 0 20px -4px rgba(99, 102, 241, 0.2)",
         soft: "0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.03)",
-        card: "0 1px 2px rgba(0, 0, 0, 0.03), 0 2px 8px -2px rgba(0, 0, 0, 0.04)",
-        elevated: "0 8px 30px -8px rgba(0, 0, 0, 0.1), 0 4px 12px -4px rgba(0, 0, 0, 0.04)",
+        card: "0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px -2px rgba(0, 0, 0, 0.04)",
+        elevated: "0 8px 28px -8px rgba(0, 0, 0, 0.12)",
+        floating: "0 20px 50px -12px rgba(0, 0, 0, 0.18)",
         "elevated-lg": "0 20px 60px -15px rgba(0, 0, 0, 0.15), 0 8px 24px -8px rgba(0, 0, 0, 0.06)",
         "inner-glow": "inset 0 1px 0 rgba(255, 255, 255, 0.05)",
       },

@@ -226,7 +226,7 @@ export default function Landing() {
             <Link to="/register" className={`text-[15px] !py-2.5 !px-6 rounded-2xl font-semibold transition-all duration-300 hidden sm:inline-flex ${scrolled ? "btn-primary" : "bg-white text-primary-950 hover:bg-gray-100 shadow-lg"}`}>Попробовать</Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`md:hidden p-2.5 rounded-lg transition ${scrolled ? "hover:bg-gray-100" : "hover:bg-white/10"}`}
+              className={`md:hidden p-3 rounded-xl transition touch-target ${scrolled ? "hover:bg-gray-100" : "hover:bg-white/10"}`}
               aria-label={mobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
             >
               {mobileMenuOpen ? (
@@ -243,14 +243,14 @@ export default function Landing() {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[60] md:hidden">
           <div className="absolute inset-0 bg-primary-950/95 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)} />
-          <nav className="relative flex flex-col items-center justify-center h-full gap-8 text-lg font-medium text-white">
-            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition">Возможности</a>
-            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition">Кому</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition">Тарифы</a>
-            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition">Блог</Link>
-            <div className="flex flex-col gap-3 mt-4">
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="px-8 py-3 rounded-xl border border-white/20 text-center hover:bg-white/10 transition">Войти</Link>
-              <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="bg-white text-primary-950 px-8 py-3 rounded-xl font-medium text-center hover:bg-gray-100 transition">Попробовать</Link>
+          <nav className="relative flex flex-col items-center justify-center h-full gap-6 text-lg font-medium text-white">
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition py-2 px-4 touch-target">Возможности</a>
+            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition py-2 px-4 touch-target">Кому</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition py-2 px-4 touch-target">Тарифы</a>
+            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition py-2 px-4 touch-target">Блог</Link>
+            <div className="flex flex-col gap-3 mt-4 w-64">
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="px-8 py-3.5 rounded-xl border border-white/20 text-center hover:bg-white/10 transition">Войти</Link>
+              <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="bg-white text-primary-950 px-8 py-3.5 rounded-xl font-medium text-center hover:bg-gray-100 transition">Попробовать</Link>
             </div>
           </nav>
         </div>
@@ -262,7 +262,7 @@ export default function Landing() {
         <HeroWaveform />
 
         <div className="relative max-w-5xl mx-auto px-6 text-center">
-          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-8 animate-fade-up text-balance text-white">
+          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] mb-6 md:mb-8 animate-fade-up text-balance text-white">
             От записи к готовому
             <br />
             <span className="gradient-text">тексту за 2 минуты</span>
@@ -273,10 +273,10 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            <Link to="/register" className="bg-gradient-to-r from-primary-500 to-primary-400 text-white px-6 py-3 md:px-8 md:py-4 rounded-2xl text-base md:text-lg font-bold hover:from-primary-400 hover:to-primary-300 transition-all duration-200 hover:-translate-y-0.5 shadow-[0_4px_20px_-4px_rgba(99,102,241,0.5)]">
-              Начать бесплатно — 15 мин/мес
+            <Link to="/register" className="bg-gradient-to-r from-primary-500 to-primary-400 text-white px-6 py-3.5 md:px-8 md:py-4 rounded-2xl text-[15px] md:text-lg font-bold hover:from-primary-400 hover:to-primary-300 transition-all duration-200 hover:-translate-y-0.5 shadow-[0_4px_20px_-4px_rgba(99,102,241,0.5)] w-full sm:w-auto text-center">
+              Начать бесплатно
             </Link>
-            <a href="#features" className="px-6 py-3 md:px-8 md:py-4 rounded-2xl text-base md:text-lg font-medium border border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-200">
+            <a href="#features" className="px-6 py-3.5 md:px-8 md:py-4 rounded-2xl text-[15px] md:text-lg font-medium border border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-200 w-full sm:w-auto text-center">
               Как это работает
             </a>
           </div>
@@ -313,7 +313,7 @@ export default function Landing() {
               ].map((line, i) => (
                 <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${0.5 + i * 0.15}s` }}>
                   <span className="text-xs text-primary-400 font-mono w-10">{line.time}</span>
-                  <span className={`badge ${line.color} !text-[10px]`}>{line.speaker}</span>
+                  <span className={`badge ${line.color} text-[11px]`}>{line.speaker}</span>
                   <div className={`h-3 ${line.w} bg-white/5 rounded-full`} />
                 </div>
               ))}
@@ -324,7 +324,7 @@ export default function Landing() {
 
       {/* ─── Stats (dark) ─── */}
       <section className="py-12 bg-primary-950 bg-grid">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
           {stats.map((s, i) => {
             const countUp = useCountUp(s.value);
             return (
@@ -428,7 +428,7 @@ export default function Landing() {
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Аудитория</p>
             <h2 className="section-heading">Кому подходит Voitra</h2>
           </div>
-          <div className="grid md:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
             {useCases.map((uc) => (
               <div key={uc.title} className="gradient-border group">
                 <div className="bg-white rounded-2xl p-6 text-center h-full transition-transform duration-300 group-hover:scale-[1.02]">
@@ -566,7 +566,7 @@ export default function Landing() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
         <FadeInOnScroll>
         <div className="relative max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
+          <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
             Ваша следующая запись
             <br />станет текстом за 2 минуты
           </h2>
