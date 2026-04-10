@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
+  FileText, Clock, Search, Copy, Check, Download,
+  ChevronLeft, Send, Loader2, Lock, TrendingUp, Pencil, AlertCircle,
+} from "lucide-react";
+import { toast } from "sonner";
+import {
   transcriptionApi,
   type Transcription as TranscriptionType,
   type AiAnalysis,
@@ -8,6 +13,8 @@ import {
 } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
 import MarkdownContent from "@/components/MarkdownContent";
+import IconButton from "@/components/ui/IconButton";
+import MobileSheet from "@/components/ui/MobileSheet";
 
 const SPEAKER_COLORS = [
   "bg-blue-50 text-blue-700 border-blue-200",
@@ -52,11 +59,14 @@ export default function Transcription() {
   // Speaker UI state
   const [speakerNames, setSpeakerNames] = useState<Record<string, string>>({});
   const [activeSpeakers, setActiveSpeakers] = useState<Set<string> | null>(null);
-  const [editingSpeaker, setEditingSpeaker] = useState<string | null>(null);
+  const [renamingSpeaker, setRenamingSpeaker] = useState<string | null>(null);
+
+  // Export sheet (mobile)
+  const [exportSheetOpen, setExportSheetOpen] = useState(false);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollCountRef = useRef(0);
-  const MAX_POLLS = 600; // 30 min max (600 * 3s)
+  const MAX_POLLS = 600;
 
   useEffect(() => {
     if (!id) return;
@@ -82,7 +92,7 @@ export default function Transcription() {
                   useAuthStore.getState().loadUser();
                 }
               }
-            } catch { /* polling error — retry next interval */ }
+            } catch { /* polling error */ }
           }, 3000);
         }
       } catch {
@@ -93,9 +103,9 @@ export default function Transcription() {
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [id]);
 
-  // AI analysis loading
+  // AI analysis
   useEffect(() => {
-    if (!id || tab === "transcript") { setAnalysis(null); setAnalysisError(null); return; }
+    if (!id || tab === "transcript" || tab === "chat") { setAnalysis(null); setAnalysisError(null); return; }
     setAnalysisLoading(true);
     setAnalysisError(null);
     const fetchers: Record<string, (id: string) => ReturnType<typeof transcriptionApi.getSummary>> = {
@@ -112,14 +122,12 @@ export default function Transcription() {
         const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
         const status = axiosErr.response?.status || 0;
         const message = axiosErr.response?.data?.detail || "";
-        if (status === 403 && message) {
-          setAnalysisError({ status, message });
-        }
+        if (status === 403 && message) setAnalysisError({ status, message });
       })
       .finally(() => setAnalysisLoading(false));
   }, [id, tab]);
 
-  // Chat history loading
+  // Chat history
   useEffect(() => {
     if (!id || tab !== "chat") return;
     transcriptionApi.getChatHistory(id).then(({ data }) => {
@@ -133,13 +141,10 @@ export default function Transcription() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, chatLoading]);
 
-  // Extract unique speakers
   const uniqueSpeakers = useMemo(() => {
     const speakers: string[] = [];
     for (const seg of transcription?.segments || []) {
-      if (seg.speaker && !speakers.includes(seg.speaker)) {
-        speakers.push(seg.speaker);
-      }
+      if (seg.speaker && !speakers.includes(seg.speaker)) speakers.push(seg.speaker);
     }
     return speakers;
   }, [transcription?.segments]);
@@ -194,7 +199,8 @@ export default function Transcription() {
 
   const handleRenameSpeaker = (original: string, newName: string) => {
     setSpeakerNames((prev) => ({ ...prev, [original]: newName || original }));
-    setEditingSpeaker(null);
+    setRenamingSpeaker(null);
+    toast.success(`Спикер переименован: ${newName || original}`);
   };
 
   const handleSendChat = async () => {
@@ -204,12 +210,8 @@ export default function Transcription() {
     setChatError("");
 
     const tempUserMsg: ChatMessageType = {
-      id: "temp",
-      role: "user",
-      content: message,
-      references: null,
-      tokens_used: 0,
-      created_at: new Date().toISOString(),
+      id: "temp", role: "user", content: message,
+      references: null, tokens_used: 0, created_at: new Date().toISOString(),
     };
     setChatMessages((prev) => [...prev, tempUserMsg]);
     setChatLoading(true);
@@ -234,32 +236,38 @@ export default function Transcription() {
     if (transcription?.full_text) {
       navigator.clipboard.writeText(transcription.full_text);
       setCopied(true);
+      toast.success("Текст скопирован");
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
   const handleExport = async (format: "txt" | "srt" | "docx") => {
     if (!id) return;
-    const { data } = await transcriptionApi.exportFile(id, format);
-    const url = URL.createObjectURL(data as Blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${transcription?.title || "export"}.${format}`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setExportSheetOpen(false);
+    try {
+      const { data } = await transcriptionApi.exportFile(id, format);
+      const url = URL.createObjectURL(data as Blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${transcription?.title || "export"}.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Файл ${format.toUpperCase()} скачан`);
+    } catch {
+      toast.error("Не удалось скачать файл");
+    }
   };
 
+  // ─── Loading state ───
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
-        <div className="h-8 bg-surface-100 rounded-xl w-1/3" />
+        <div className="h-7 bg-surface-100 rounded-xl w-2/5" />
         <div className="h-4 bg-surface-100 rounded-xl w-1/4" />
-        <div className="card p-8 mt-6">
-          <div className="space-y-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-4 bg-surface-100 rounded-full" style={{ width: `${60 + i * 10}%` }} />
-            ))}
-          </div>
+        <div className="card p-6 md:p-8 mt-6 space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-4 bg-surface-100 rounded-full" style={{ width: `${60 + i * 10}%` }} />
+          ))}
         </div>
       </div>
     );
@@ -267,16 +275,14 @@ export default function Transcription() {
 
   if (!transcription) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="text-center card p-10">
+      <div className="flex items-center justify-center py-16 md:py-24">
+        <div className="text-center card p-8 md:p-10">
           <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-surface-100 flex items-center justify-center">
-            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-            </svg>
+            <FileText className="w-8 h-8 text-gray-400" />
           </div>
           <h2 className="text-xl font-semibold mb-2">Транскрипция не найдена</h2>
           <p className="text-sm text-gray-500 mb-6">Возможно, она была удалена или ссылка неверна.</p>
-          <Link to="/dashboard" className="btn-primary inline-block !py-2.5 !px-8">К списку транскрипций</Link>
+          <Link to="/dashboard" className="btn-primary inline-block">К списку транскрипций</Link>
         </div>
       </div>
     );
@@ -284,15 +290,12 @@ export default function Transcription() {
 
   if (transcription.status === "queued" || transcription.status === "processing") {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="flex items-center justify-center py-16 md:py-24">
         <div className="text-center">
           <div className="relative w-20 h-20 mx-auto mb-6">
             <div className="absolute inset-0 rounded-full bg-primary-100 animate-ping opacity-30" />
             <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-              <svg className="w-8 h-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
             </div>
           </div>
           <h2 className="text-xl font-semibold mb-2">
@@ -301,9 +304,7 @@ export default function Transcription() {
           <p className="text-gray-500 text-sm">{transcription.original_filename}</p>
           <p className="text-xs text-gray-400 mt-2">Обычно это занимает 1-3 минуты</p>
           <Link to="/dashboard" className="mt-6 inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 hover:underline">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
+            <ChevronLeft className="w-4 h-4" />
             К списку транскрипций
           </Link>
         </div>
@@ -313,25 +314,22 @@ export default function Transcription() {
 
   if (transcription.status === "failed") {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="text-center card p-10">
+      <div className="flex items-center justify-center py-16 md:py-24">
+        <div className="text-center card p-8 md:p-10">
           <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-50 flex items-center justify-center">
-            <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-            </svg>
+            <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold mb-2 text-red-600">Ошибка обработки</h2>
           <p className="text-sm text-gray-500 mb-6">{transcription.error_message || "Произошла неизвестная ошибка"}</p>
           <div className="flex items-center justify-center gap-3">
-            <Link to="/upload" className="btn-primary !py-2.5 !px-6">Загрузить заново</Link>
-            <Link to="/dashboard" className="btn-secondary !py-2.5 !px-6">К списку</Link>
+            <Link to="/upload" className="btn-primary">Загрузить заново</Link>
+            <Link to="/dashboard" className="btn-secondary">К списку</Link>
           </div>
         </div>
       </div>
     );
   }
 
-  // Filter by search + active speakers
   const filteredSegments = (transcription.segments || []).filter((seg) => {
     if (search && !seg.text.toLowerCase().includes(search.toLowerCase())) return false;
     if (activeSpeakers !== null && seg.speaker && !activeSpeakers.has(seg.speaker)) return false;
@@ -341,18 +339,16 @@ export default function Transcription() {
   return (
     <div className="animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{transcription.title}</h1>
-          <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4 mb-5 md:mb-6">
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight truncate">{transcription.title}</h1>
+          <div className="flex flex-wrap items-center gap-3 mt-1.5 text-sm text-gray-500">
             {transcription.language && (
               <span className="badge bg-surface-100 text-gray-600">{transcription.language.toUpperCase()}</span>
             )}
             {transcription.duration_sec && (
               <span className="flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <Clock className="w-4 h-4" />
                 {formatTime(transcription.duration_sec)}
               </span>
             )}
@@ -361,22 +357,30 @@ export default function Transcription() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
-          <button onClick={handleCopy} className="btn-secondary !py-2 !px-3 md:!px-4 text-xs md:text-sm flex items-center gap-1.5">
-            {copied ? (
-              <><svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg> Скопировано</>
-            ) : (
-              <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg> Копировать</>
-            )}
+
+        {/* Export actions — desktop inline, mobile via sheet */}
+        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+          <button onClick={handleCopy} className="btn-secondary flex items-center gap-1.5">
+            {copied ? <><Check className="w-4 h-4 text-green-500" /> Скопировано</> : <><Copy className="w-4 h-4" /> Копировать</>}
           </button>
-          <button onClick={() => handleExport("txt")} className="btn-secondary !py-2 !px-3 md:!px-4 text-xs md:text-sm">TXT</button>
-          <button onClick={() => handleExport("srt")} className="btn-secondary !py-2 !px-3 md:!px-4 text-xs md:text-sm">SRT</button>
-          <button onClick={() => handleExport("docx")} className="btn-secondary !py-2 !px-3 md:!px-4 text-xs md:text-sm">DOCX</button>
+          <button onClick={() => handleExport("txt")} className="btn-secondary">TXT</button>
+          <button onClick={() => handleExport("srt")} className="btn-secondary">SRT</button>
+          <button onClick={() => handleExport("docx")} className="btn-secondary">DOCX</button>
+        </div>
+
+        {/* Mobile export trigger */}
+        <div className="flex md:hidden items-center gap-2">
+          <button onClick={handleCopy} className="btn-secondary flex-1 flex items-center justify-center gap-1.5">
+            {copied ? <><Check className="w-4 h-4 text-green-500" /> Скопировано</> : <><Copy className="w-4 h-4" /> Копировать</>}
+          </button>
+          <IconButton aria-label="Экспорт" onClick={() => setExportSheetOpen(true)}>
+            <Download className="w-5 h-5" />
+          </IconButton>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1.5 md:gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+      <div className="flex gap-1.5 md:gap-2 mb-5 md:mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {([
           ["transcript", "Транскрипт", false],
           ["summary", "Саммари", false],
@@ -387,24 +391,20 @@ export default function Transcription() {
           <button
             key={key}
             onClick={() => setTab(key as Tab)}
-            className={`px-3 md:px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 ${
+            className={`px-3.5 md:px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 min-h-[44px] ${
               tab === key ? "bg-primary-600 text-white shadow-lg shadow-primary-600/30" : locked ? "bg-surface-100 text-gray-400" : "bg-surface-100 text-gray-600 hover:bg-surface-200"
             }`}
           >
-            {locked && tab !== key && (
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-              </svg>
-            )}
+            {locked && tab !== key && <Lock className="w-3 h-3" />}
             {label}
           </button>
         ))}
       </div>
 
-      {/* Transcript tab */}
+      {/* ─── Transcript tab ─── */}
       {tab === "transcript" && (
         <>
-          {/* Speaker filter chips */}
+          {/* Speaker filter */}
           {uniqueSpeakers.length > 1 && (
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className="text-xs text-gray-400 mr-1">Спикеры:</span>
@@ -414,31 +414,23 @@ export default function Transcription() {
                   <div key={speaker} className="flex items-center gap-1">
                     <button
                       onClick={() => toggleSpeaker(speaker)}
-                      className={`badge border transition-all duration-200 cursor-pointer ${
+                      className={`chip border transition-all duration-200 cursor-pointer min-h-[36px] ${
                         isActive
                           ? getSpeakerColor(speaker)
                           : "bg-gray-100 text-gray-400 border-gray-200 opacity-50"
                       }`}
                     >
-                      <span className={`w-2 h-2 rounded-full mr-1.5 ${isActive ? getSpeakerDot(speaker) : "bg-gray-300"}`} />
-                      {editingSpeaker === speaker ? (
-                        <input
-                          autoFocus
-                          defaultValue={getDisplayName(speaker)}
-                          className="bg-transparent border-none outline-none w-20 text-xs"
-                          onBlur={(e) => handleRenameSpeaker(speaker, e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleRenameSpeaker(speaker, e.currentTarget.value);
-                            if (e.key === "Escape") setEditingSpeaker(null);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      ) : (
-                        <span onDoubleClick={() => setEditingSpeaker(speaker)}>
-                          {getDisplayName(speaker)}
-                        </span>
-                      )}
+                      <span className={`w-2 h-2 rounded-full ${isActive ? getSpeakerDot(speaker) : "bg-gray-300"}`} />
+                      {getDisplayName(speaker)}
                     </button>
+                    <IconButton
+                      aria-label={`Переименовать ${speaker}`}
+                      size="md"
+                      className="!min-w-[36px] !min-h-[36px] !p-1.5"
+                      onClick={() => setRenamingSpeaker(speaker)}
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </IconButton>
                   </div>
                 );
               })}
@@ -452,9 +444,7 @@ export default function Transcription() {
 
           {/* Search */}
           <div className="relative mb-4">
-            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-            </svg>
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Поиск по тексту..."
@@ -464,22 +454,22 @@ export default function Transcription() {
             />
           </div>
 
-          {/* Segments */}
-          <div className="card p-6 max-h-[70vh] overflow-y-auto space-y-1">
+          {/* Segments — no more max-h-[70vh] */}
+          <div className="card p-4 md:p-6 space-y-1">
             {filteredSegments.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-8">Нет совпадений</p>
+              <p className="text-gray-400 text-center py-8">Нет совпадений</p>
             ) : (
               filteredSegments.map((seg, i) => (
-                <div key={i} className={`flex items-start gap-3 text-sm group hover:bg-surface-50 -mx-2 px-2 py-1.5 rounded-lg transition ${seg.speaker ? `border-l-2 ${getSpeakerBorder(seg.speaker)}` : ""}`}>
-                  <span className="text-gray-400 font-mono text-xs w-12 flex-shrink-0 pt-0.5">
+                <div key={i} className={`flex items-start gap-2 md:gap-3 group hover:bg-surface-50 -mx-2 px-2 py-2 rounded-lg transition ${seg.speaker ? `border-l-2 ${getSpeakerBorder(seg.speaker)}` : ""}`}>
+                  <span className="text-gray-400 font-mono text-xs w-12 flex-shrink-0 pt-0.5 tabular-nums">
                     {formatTime(seg.start)}
                   </span>
                   {seg.speaker && (
-                    <span className={`badge border !text-[10px] flex-shrink-0 ${getSpeakerColor(seg.speaker)}`}>
+                    <span className={`chip border text-xs flex-shrink-0 ${getSpeakerColor(seg.speaker)}`}>
                       {getDisplayName(seg.speaker)}
                     </span>
                   )}
-                  <span className="text-gray-700 leading-relaxed">{highlightSearch(seg.text, search)}</span>
+                  <span className="text-gray-700 leading-relaxed text-[15px]">{highlightSearch(seg.text, search)}</span>
                 </div>
               ))
             )}
@@ -487,7 +477,7 @@ export default function Transcription() {
         </>
       )}
 
-      {/* AI analysis tabs */}
+      {/* ─── AI analysis tabs ─── */}
       {(tab === "summary" || tab === "key_points" || tab === "action_items") && (
         <div className="card p-4 md:p-8">
           {analysisLoading ? (
@@ -505,18 +495,14 @@ export default function Transcription() {
           ) : analysisError ? (
             <div className="text-center py-8">
               <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary-50 flex items-center justify-center">
-                <svg className="w-7 h-7 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                </svg>
+                <Lock className="w-7 h-7 text-primary-400" />
               </div>
               <h3 className="text-base font-semibold text-gray-900 mb-1.5">
                 {tab === "action_items" ? "Action items — тариф Про" : "Лимит исчерпан"}
               </h3>
               <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">{analysisError.message}</p>
               <Link to="/app/pricing" className="btn-primary inline-flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
+                <TrendingUp className="w-4 h-4" />
                 Улучшить тариф
               </Link>
             </div>
@@ -526,31 +512,31 @@ export default function Transcription() {
         </div>
       )}
 
-      {/* Chat tab */}
+      {/* ─── Chat tab ─── */}
       {tab === "chat" && (
-        <div className="card flex flex-col" style={{ height: "70vh" }}>
+        <div className="card flex flex-col h-[calc(100dvh-13rem)] md:h-[calc(100dvh-16rem)] min-h-[300px]">
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4">
             {chatMessages.length === 0 && !chatLoading && (
-              <div className="text-center text-gray-400 py-12">
+              <div className="text-center text-gray-400 py-8 md:py-12">
                 <p className="text-lg mb-2">Задайте вопрос по транскрипции</p>
                 <p className="text-sm">Например: &laquo;О чём говорили в первые 10 минут?&raquo;</p>
               </div>
             )}
             {chatMessages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[90%] md:max-w-[80%] rounded-2xl px-4 py-3 ${
+                <div className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 ${
                   msg.role === "user"
                     ? "bg-primary-600 text-white"
                     : "bg-surface-100 text-gray-800 border-l-2 border-primary-400/40"
                 }`}>
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-[15px] whitespace-pre-wrap break-words">{msg.content}</p>
                   {msg.references && msg.references.length > 0 && (
                     <div className="mt-2 pt-2 border-t border-gray-200/30 space-y-1">
                       {msg.references.map((ref, i) => (
                         <p key={i} className="text-xs opacity-70">
                           {ref.start_time != null && (
-                            <span className="font-mono">[{Math.floor(ref.start_time / 60)}:{String(Math.floor(ref.start_time % 60)).padStart(2, "0")}]</span>
+                            <span className="font-mono tabular-nums">[{Math.floor(ref.start_time / 60)}:{String(Math.floor(ref.start_time % 60)).padStart(2, "0")}]</span>
                           )}{" "}
                           {ref.chunk_text.slice(0, 100)}...
                         </p>
@@ -574,8 +560,8 @@ export default function Transcription() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input */}
-          <div className="border-t border-gray-100 p-4">
+          {/* Chat input */}
+          <div className="flex-shrink-0 border-t border-gray-100 p-3 md:p-4 pb-safe">
             {chatError && (
               <p className="text-sm text-red-500 mb-2">{chatError}</p>
             )}
@@ -595,15 +581,15 @@ export default function Transcription() {
                   className="input-field flex-1"
                   disabled={chatLoading}
                 />
-                <button
+                <IconButton
+                  variant="solid"
+                  aria-label="Отправить"
                   onClick={handleSendChat}
                   disabled={chatLoading || !chatInput.trim()}
-                  className="btn-primary !px-4 !py-3 disabled:opacity-50"
+                  loading={chatLoading}
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                  </svg>
-                </button>
+                  <Send className="w-5 h-5" />
+                </IconButton>
               </div>
             )}
             {chatRemaining > 0 && (
@@ -614,6 +600,50 @@ export default function Transcription() {
           </div>
         </div>
       )}
+
+      {/* ─── Export sheet (mobile) ─── */}
+      <MobileSheet open={exportSheetOpen} onClose={() => setExportSheetOpen(false)} title="Экспорт">
+        <div className="space-y-1">
+          {(["txt", "srt", "docx"] as const).map((fmt) => (
+            <button
+              key={fmt}
+              onClick={() => handleExport(fmt)}
+              className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors w-full touch-target"
+            >
+              <Download className="w-5 h-5 text-gray-400" />
+              <span className="text-[15px] font-medium">Скачать {fmt.toUpperCase()}</span>
+            </button>
+          ))}
+        </div>
+      </MobileSheet>
+
+      {/* ─── Speaker rename sheet ─── */}
+      <MobileSheet
+        open={!!renamingSpeaker}
+        onClose={() => setRenamingSpeaker(null)}
+        title="Переименовать спикера"
+      >
+        {renamingSpeaker && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const input = (e.target as HTMLFormElement).elements.namedItem("name") as HTMLInputElement;
+              handleRenameSpeaker(renamingSpeaker, input.value);
+            }}
+          >
+            <input
+              name="name"
+              autoFocus
+              defaultValue={getDisplayName(renamingSpeaker)}
+              className="input-field mb-4"
+              placeholder="Имя спикера"
+            />
+            <button type="submit" className="btn-primary w-full">
+              Сохранить
+            </button>
+          </form>
+        )}
+      </MobileSheet>
     </div>
   );
 }
