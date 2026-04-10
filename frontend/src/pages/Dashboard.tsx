@@ -123,20 +123,20 @@ export default function Dashboard() {
 
       {/* Quick stats */}
       {user && total > 0 && (
-        <div className="grid grid-cols-3 gap-2 xs:gap-3 md:gap-4 mb-6 md:mb-8">
-          <div className="bg-white rounded-2xl border border-gray-100 p-3 xs:p-4 md:p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Записей</p>
-            <p className="text-xl xs:text-2xl md:text-3xl font-bold text-gray-900 tabular-nums">{total}</p>
+        <div className="grid grid-cols-3 gap-1.5 xs:gap-2.5 md:gap-4 mb-6 md:mb-8">
+          <div className="bg-white rounded-xl xs:rounded-2xl border border-gray-100 p-2.5 xs:p-4 md:p-5 overflow-hidden">
+            <p className="text-[10px] xs:text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5 truncate">Записей</p>
+            <p className="text-lg xs:text-2xl md:text-3xl font-bold text-gray-900 tabular-nums">{total}</p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-3 xs:p-4 md:p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Потрачено</p>
-            <p className="text-xl xs:text-2xl md:text-3xl font-bold text-gray-900 tabular-nums">{user.minutes_used}<span className="text-xs font-normal text-gray-400 ml-1">мин</span></p>
+          <div className="bg-white rounded-xl xs:rounded-2xl border border-gray-100 p-2.5 xs:p-4 md:p-5 overflow-hidden">
+            <p className="text-[10px] xs:text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5 truncate">Потрачено</p>
+            <p className="text-lg xs:text-2xl md:text-3xl font-bold text-gray-900 tabular-nums">{user.minutes_used}<span className="text-[10px] xs:text-xs font-normal text-gray-400 ml-0.5">мин</span></p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-3 xs:p-4 md:p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Осталось</p>
-            <p className="text-xl xs:text-2xl md:text-3xl font-bold tabular-nums">
+          <div className="bg-white rounded-xl xs:rounded-2xl border border-gray-100 p-2.5 xs:p-4 md:p-5 overflow-hidden">
+            <p className="text-[10px] xs:text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5 truncate">Осталось</p>
+            <p className="text-lg xs:text-2xl md:text-3xl font-bold tabular-nums">
               <span className="gradient-text">{Math.max(0, user.minutes_limit - user.minutes_used)}</span>
-              <span className="text-xs font-normal text-gray-400 ml-1">мин</span>
+              <span className="text-[10px] xs:text-xs font-normal text-gray-400 ml-0.5">мин</span>
             </p>
           </div>
         </div>

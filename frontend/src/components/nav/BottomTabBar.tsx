@@ -17,7 +17,7 @@ export default function BottomTabBar() {
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-40 md:hidden bg-white/95 backdrop-blur-xl border-t border-gray-200/70">
-        <ul className="relative mx-auto flex h-tab-bar max-w-md items-stretch justify-around pb-safe">
+        <ul className="relative mx-auto flex h-tab-bar items-stretch justify-around pb-safe">
           {PRIMARY_TABS.map((tab) => {
             const active = isActive(tab);
             const Icon = tab.Icon;
