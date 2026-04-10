@@ -1,55 +1,38 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { User, Mail, Calendar, Clock, Shield, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
 import { authApi } from "@/api/auth";
 import { useAuthStore } from "@/store/authStore";
+
+const planNames: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
+const planColors: Record<string, string> = {
+  free: "bg-gray-100 text-gray-600",
+  start: "bg-primary-50 text-primary-600",
+  pro: "bg-gradient-to-r from-primary-500 to-accent-500 text-white",
+};
 
 export default function Profile() {
   const { user, loadUser } = useAuthStore();
 
-  // Profile form
   const [name, setName] = useState(user?.name || "");
   const [profileLoading, setProfileLoading] = useState(false);
-  const [profileMsg, setProfileMsg] = useState("");
-  const [profileError, setProfileError] = useState("");
 
-  // Password form
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwdLoading, setPwdLoading] = useState(false);
-  const [pwdMsg, setPwdMsg] = useState("");
-  const [pwdError, setPwdError] = useState("");
-
-  // Auto-dismiss success messages after 4 seconds
-  useEffect(() => {
-    if (profileMsg) {
-      const t = setTimeout(() => setProfileMsg(""), 4000);
-      return () => clearTimeout(t);
-    }
-  }, [profileMsg]);
-
-  useEffect(() => {
-    if (pwdMsg) {
-      const t = setTimeout(() => setPwdMsg(""), 4000);
-      return () => clearTimeout(t);
-    }
-  }, [pwdMsg]);
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setProfileError("Имя не может быть пустым");
-      return;
-    }
+    if (!name.trim()) { toast.error("Имя не может быть пустым"); return; }
     setProfileLoading(true);
-    setProfileMsg("");
-    setProfileError("");
     try {
       await authApi.updateProfile({ name: name.trim() });
       await loadUser();
-      setProfileMsg("Профиль обновлён");
+      toast.success("Профиль обновлён");
     } catch (err: any) {
-      setProfileError(err.response?.data?.detail || "Ошибка обновления");
+      toast.error(err.response?.data?.detail || "Ошибка обновления");
     } finally {
       setProfileLoading(false);
     }
@@ -57,27 +40,15 @@ export default function Profile() {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPwdMsg("");
-    setPwdError("");
-
-    if (newPassword.length < 8) {
-      setPwdError("Минимум 8 символов");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPwdError("Пароли не совпадают");
-      return;
-    }
-
+    if (newPassword.length < 8) { toast.error("Минимум 8 символов"); return; }
+    if (newPassword !== confirmPassword) { toast.error("Пароли не совпадают"); return; }
     setPwdLoading(true);
     try {
       await authApi.changePassword(currentPassword, newPassword);
-      setPwdMsg("Пароль успешно изменён");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      toast.success("Пароль успешно изменён");
+      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
     } catch (err: any) {
-      setPwdError(err.response?.data?.detail || "Ошибка смены пароля");
+      toast.error(err.response?.data?.detail || "Ошибка смены пароля");
     } finally {
       setPwdLoading(false);
     }
@@ -85,46 +56,53 @@ export default function Profile() {
 
   if (!user) return null;
 
-  const planNames: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
   const createdDate = user.created_at ? new Date(user.created_at).toLocaleDateString("ru-RU") : "—";
   const usagePercent = Math.min(100, Math.round((user.minutes_used / user.minutes_limit) * 100));
+  const initial = (user.name || user.email || "U")[0].toUpperCase();
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Профиль</h1>
-        <p className="text-sm text-gray-500">Управление аккаунтом и настройки</p>
-      </div>
+    <div className="max-w-2xl mx-auto space-y-4 md:space-y-6">
+      {/* User card */}
+      <div className="card p-5 md:p-6">
+        <div className="flex items-center gap-4 mb-5">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-xl font-bold shadow-lg flex-shrink-0">
+            {initial}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg font-bold text-gray-900 truncate">{user.name || "Пользователь"}</h2>
+            <p className="text-sm text-gray-500 truncate">{user.email}</p>
+          </div>
+          <span className={`badge text-[11px] font-bold px-3 py-1 ${planColors[user.plan] || "bg-gray-100 text-gray-600"}`}>
+            {planNames[user.plan] || user.plan}
+          </span>
+        </div>
 
-      {/* Account info */}
-      <div className="card p-6 accent-top-border">
-        <h2 className="font-semibold mb-4">Аккаунт</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-500">Email</span>
-            <p className="font-medium">{user.email}</p>
+        {/* Info rows */}
+        <div className="space-y-0 divide-y divide-gray-100">
+          <div className="flex items-center gap-3 py-3">
+            <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span className="text-sm text-gray-500 w-24 flex-shrink-0">Email</span>
+            <span className="text-sm font-medium text-gray-900 truncate">{user.email}</span>
           </div>
-          <div>
-            <span className="text-gray-500">Тариф</span>
-            <p className="font-medium">{planNames[user.plan] || user.plan}</p>
+          <div className="flex items-center gap-3 py-3">
+            <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span className="text-sm text-gray-500 w-24 flex-shrink-0">Регистрация</span>
+            <span className="text-sm font-medium text-gray-900">{createdDate}</span>
           </div>
-          <div>
-            <span className="text-gray-500">Регистрация</span>
-            <p className="font-medium">{createdDate}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Использовано</span>
-            <p className="font-medium">{user.minutes_used} / {user.minutes_limit} мин</p>
+          <div className="flex items-center gap-3 py-3">
+            <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span className="text-sm text-gray-500 w-24 flex-shrink-0">Использовано</span>
+            <span className="text-sm font-medium text-gray-900">{user.minutes_used} / {user.minutes_limit} мин</span>
           </div>
         </div>
 
         {/* Usage bar */}
-        <div className="mt-4">
-          <div className="flex justify-between text-xs text-gray-500 mb-1">
+        <div className="mt-4 p-3 rounded-xl bg-surface-50">
+          <div className="flex justify-between text-xs text-gray-500 mb-1.5">
             <span>Лимит минут</span>
-            <span>{usagePercent}%</span>
+            <span className="font-semibold tabular-nums">{usagePercent}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2" role="progressbar" aria-valuenow={usagePercent} aria-valuemin={0} aria-valuemax={100} aria-label="Использование лимита минут">
+          <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all duration-500 ${
                 usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-gradient-to-r from-primary-500 to-accent-400"
@@ -134,19 +112,39 @@ export default function Profile() {
           </div>
           {usagePercent >= 80 && (
             <p className="text-xs mt-2 text-amber-600">
-              {usagePercent >= 100
-                ? "Лимит исчерпан. "
-                : "Лимит почти исчерпан. "}
+              {usagePercent >= 100 ? "Лимит исчерпан. " : "Лимит почти исчерпан. "}
               <Link to="/subscription" className="underline font-medium hover:text-amber-700">Перейти на расширенный тариф</Link>
             </p>
           )}
         </div>
+
+        {/* Upgrade CTA */}
+        {user.plan === "free" && (
+          <Link
+            to="/app/pricing"
+            className="mt-4 flex items-center gap-3 p-3 rounded-xl bg-primary-50 border border-primary-100 hover:bg-primary-100 transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-primary-700">Больше минут?</p>
+              <p className="text-xs text-primary-500">Перейдите на тариф Старт — от 290 ₽/мес</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-primary-400 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        )}
       </div>
 
       {/* Edit profile */}
-      <form onSubmit={handleProfileSave} className="card p-6">
-        <h2 className="font-semibold mb-4">Редактировать профиль</h2>
-        <div className="space-y-5">
+      <form onSubmit={handleProfileSave} className="card p-5 md:p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <User className="w-4 h-4 text-gray-400" />
+          <h2 className="font-semibold text-gray-900">Редактировать профиль</h2>
+        </div>
+        <div className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">Имя</label>
             <input
@@ -160,23 +158,10 @@ export default function Profile() {
               minLength={1}
             />
           </div>
-
-          {profileMsg && (
-            <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl text-sm border border-green-100 flex items-center gap-2">
-              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-              {profileMsg}
-            </div>
-          )}
-          {profileError && (
-            <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-100">{profileError}</div>
-          )}
-
           <button
             type="submit"
             disabled={profileLoading}
-            className="btn-primary !py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {profileLoading ? "Сохранение..." : "Сохранить"}
           </button>
@@ -184,66 +169,30 @@ export default function Profile() {
       </form>
 
       {/* Change password */}
-      <form onSubmit={handlePasswordChange} className="card p-6 accent-top-border">
-        <h2 className="font-semibold mb-4">Сменить пароль</h2>
-        <div className="space-y-5">
+      <form onSubmit={handlePasswordChange} className="card p-5 md:p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Shield className="w-4 h-4 text-gray-400" />
+          <h2 className="font-semibold text-gray-900">Сменить пароль</h2>
+        </div>
+        <div className="space-y-4">
           <div>
             <label htmlFor="current-pwd" className="block text-sm font-medium text-gray-700 mb-1.5">Текущий пароль</label>
-            <input
-              id="current-pwd"
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="input-field"
-              placeholder="••••••••"
-              required
-            />
+            <input id="current-pwd" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="input-field" placeholder="••••••••" required />
           </div>
           <div>
             <label htmlFor="new-pwd" className="block text-sm font-medium text-gray-700 mb-1.5">
-              Новый пароль <span className="text-gray-400 font-normal">(мин. 8 символов)</span>
+              Новый пароль <span className="text-gray-400 font-normal">(мин. 8)</span>
             </label>
-            <input
-              id="new-pwd"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="input-field"
-              placeholder="••••••••"
-              required
-              minLength={8}
-            />
+            <input id="new-pwd" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="input-field" placeholder="••••••••" required minLength={8} />
           </div>
           <div>
             <label htmlFor="confirm-pwd" className="block text-sm font-medium text-gray-700 mb-1.5">Подтвердите пароль</label>
-            <input
-              id="confirm-pwd"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="input-field"
-              placeholder="••••••••"
-              required
-              minLength={8}
-            />
+            <input id="confirm-pwd" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="input-field" placeholder="••••••••" required minLength={8} />
           </div>
-
-          {pwdMsg && (
-            <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl text-sm border border-green-100 flex items-center gap-2">
-              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-              {pwdMsg}
-            </div>
-          )}
-          {pwdError && (
-            <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-100">{pwdError}</div>
-          )}
-
           <button
             type="submit"
             disabled={pwdLoading}
-            className="btn-secondary !py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-secondary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {pwdLoading ? "Сохранение..." : "Сменить пароль"}
           </button>
