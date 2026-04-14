@@ -21,15 +21,19 @@ export default function BottomTabBar() {
       <nav
         aria-label="Основная навигация"
         className="fixed inset-x-0 bottom-0 z-40 md:hidden pointer-events-none"
-        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))", paddingTop: "1.25rem" }}
       >
-        <ul className="pointer-events-auto mx-3 flex items-center justify-between gap-1 rounded-full border border-white/70 bg-white/85 px-2 py-1.5 shadow-overlay backdrop-blur-xl ring-1 ring-gray-900/[0.03]">
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[calc(100%+1rem)] bg-gradient-to-t from-white via-white/85 to-transparent md:hidden"
+          aria-hidden
+        />
+        <ul className="pointer-events-auto relative mx-3 flex items-center justify-between gap-1 rounded-full border border-white/80 bg-white/95 px-2 py-1.5 shadow-overlay backdrop-blur-xl ring-1 ring-gray-900/[0.04]">
           {PRIMARY_TABS.map((tab) => {
             const active = isActive(tab);
 
             if (tab.isFab) {
               return (
-                <li key={tab.to} className="relative flex items-center justify-center -mt-6">
+                <li key={tab.to} className="relative flex items-center justify-center -mt-5">
                   <motion.div whileTap={{ scale: 0.92 }} transition={springTight}>
                     <Link
                       to={tab.to}

@@ -1,3 +1,9 @@
 export default function BottomBarSpacer() {
-  return <div className="h-[88px] pb-safe md:hidden" aria-hidden />;
+  return (
+    <div
+      className="md:hidden"
+      aria-hidden
+      style={{ height: "calc(96px + env(safe-area-inset-bottom))" }}
+    />
+  );
 }
