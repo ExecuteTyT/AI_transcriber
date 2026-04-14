@@ -1,10 +1,16 @@
 import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, type FileRejection } from "react-dropzone";
 import { Link, useNavigate } from "react-router-dom";
-import { Upload as UploadIcon, AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
+import { FileAudio, Film, Music2, Upload as UploadIcon, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { transcriptionApi } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
+import { Icon } from "@/components/Icon";
+import { PipelineSteps, type PipelineStage } from "@/components/upload/PipelineSteps";
+import { ErrorState } from "@/components/states/ErrorState";
+import { fadeUp, staggerChildren } from "@/lib/motion";
+import { cn } from "@/lib/cn";
 
 const ACCEPTED_TYPES = {
   "audio/*": [".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".webm"],
@@ -13,30 +19,36 @@ const ACCEPTED_TYPES = {
 
 const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
 
-const FORMATS = ["MP3", "WAV", "FLAC", "OGG", "M4A", "MP4", "WebM", "MOV"];
+const FORMATS = [
+  { label: "MP3", icon: Music2 },
+  { label: "WAV", icon: Music2 },
+  { label: "M4A", icon: Music2 },
+  { label: "MP4", icon: Film },
+  { label: "MOV", icon: Film },
+  { label: "WebM", icon: Film },
+];
 
 export default function Upload() {
   const { user } = useAuthStore();
-  const [uploading, setUploading] = useState(false);
+  const [stage, setStage] = useState<PipelineStage>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
   const navigate = useNavigate();
 
+  const minutesLeft = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
+
   const onDrop = useCallback(
-    async (acceptedFiles: File[], fileRejections: any[]) => {
+    async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
       if (fileRejections.length > 0) {
         const rejection = fileRejections[0];
-        if (rejection.errors?.some((e: any) => e.code === "file-too-large")) {
-          toast.error("Файл слишком большой. Максимум 500 МБ.");
-          setError("Файл слишком большой. Максимум 500 МБ.");
-        } else if (rejection.errors?.some((e: any) => e.code === "file-invalid-type")) {
-          toast.error("Неподдерживаемый формат файла.");
-          setError("Неподдерживаемый формат файла.");
-        } else {
-          toast.error("Файл не принят.");
-          setError("Файл не принят.");
-        }
+        const msg = rejection.errors?.some((e) => e.code === "file-too-large")
+          ? "Файл слишком большой. Максимум 500 МБ."
+          : rejection.errors?.some((e) => e.code === "file-invalid-type")
+          ? "Неподдерживаемый формат файла."
+          : "Файл не принят.";
+        toast.error(msg);
+        setError(msg);
         return;
       }
 
@@ -44,26 +56,24 @@ export default function Upload() {
       if (!file) return;
 
       setError("");
-      setUploading(true);
+      setStage("uploading");
       setProgress(0);
       setFileName(file.name);
 
       try {
-        const { data } = await transcriptionApi.upload(file, (percent) => {
-          setProgress(percent);
-        });
-        toast.success("Файл загружен! Начинаем обработку...");
-        navigate(`/transcription/${data.id}`);
-      } catch (err: unknown) {
-        const message =
-          (err as { response?: { data?: { detail?: string } } })?.response?.data
-            ?.detail || "Ошибка загрузки файла";
+        const { data } = await transcriptionApi.upload(file, (percent) => setProgress(percent));
+        setStage("processing");
+        // Give user a brief moment to see the pipeline before navigating.
+        setTimeout(() => {
+          toast.success("Файл загружен — обрабатываем!");
+          navigate(`/transcription/${data.id}`);
+        }, 600);
+      } catch (err) {
+        const axiosErr = err as { response?: { data?: { detail?: string } } };
+        const message = axiosErr.response?.data?.detail || "Ошибка загрузки файла";
         setError(message);
+        setStage("failed");
         toast.error(message);
-      } finally {
-        setUploading(false);
-        setProgress(0);
-        setFileName("");
       }
     },
     [navigate]
@@ -74,96 +84,135 @@ export default function Upload() {
     accept: ACCEPTED_TYPES,
     maxSize: MAX_FILE_SIZE,
     multiple: false,
-    disabled: uploading,
+    disabled: stage === "uploading",
     noClick: false,
   });
 
-  return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-xl md:text-2xl font-bold tracking-tight mb-1">Загрузить файл</h1>
-      <p className="text-sm text-gray-500 mb-6 md:mb-8">Перетащите аудио или видео для транскрибации</p>
+  const busy = stage === "uploading" || stage === "processing";
 
-      {/* Drop zone */}
-      <div
-        {...getRootProps()}
-        className={`relative rounded-3xl p-6 md:p-16 text-center cursor-pointer transition-all duration-300 group ${
-          isDragActive
-            ? "bg-primary-50/50 border-2 border-primary-400 shadow-glow-lg"
-            : "border-2 border-dashed border-gray-300 hover:border-primary-400 hover:bg-primary-50/30 hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.15)]"
-        }`}
-      >
-        <input {...getInputProps()} />
-        {uploading ? (
-          <div className="space-y-4">
-            {/* Circular progress */}
-            <div className="w-24 h-24 mx-auto relative">
-              <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
-                <circle cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="4" className="text-gray-100" />
-                <circle
-                  cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="4"
-                  className="text-primary-500 transition-all duration-300"
-                  strokeLinecap="round"
-                  strokeDasharray={2 * Math.PI * 40}
-                  strokeDashoffset={2 * Math.PI * 40 * (1 - progress / 100)}
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-lg font-bold text-primary-600 tabular-nums">{progress}%</span>
-              </div>
-            </div>
-            <p className="text-gray-600 font-medium">Загрузка файла...</p>
-            {fileName && <p className="text-xs text-gray-400 truncate max-w-[280px] mx-auto">{fileName}</p>}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center transition-all duration-300 ${
-              isDragActive ? "bg-primary-200 scale-110" : "bg-surface-100 group-hover:bg-primary-100"
-            }`}>
-              <UploadIcon className={`w-8 h-8 transition-colors duration-300 ${isDragActive ? "text-primary-600" : "text-gray-400 group-hover:text-primary-500"}`} />
+  return (
+    <motion.div
+      variants={staggerChildren(0.06)}
+      initial="hidden"
+      animate="visible"
+      className="mx-auto max-w-2xl space-y-5"
+    >
+      <motion.header variants={fadeUp}>
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Новая запись</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Загрузите аудио или видео — превратим в текст, саммари и задачи.
+        </p>
+      </motion.header>
+
+      {busy ? (
+        <motion.div variants={fadeUp}>
+          <PipelineSteps stage={stage} uploadPercent={progress} fileName={fileName} />
+        </motion.div>
+      ) : (
+        <motion.div variants={fadeUp}>
+        <div
+          {...getRootProps()}
+          className={cn(
+            "group relative overflow-hidden rounded-3xl border-2 border-dashed p-6 text-center transition-all duration-base cursor-pointer md:p-10",
+            isDragActive
+              ? "border-primary-400 bg-primary-50/60 shadow-glow-lg"
+              : "border-surface-300 bg-white hover:border-primary-300 hover:bg-primary-50/30 hover:shadow-glow-sm"
+          )}
+        >
+          <div
+            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-base group-hover:opacity-100"
+            aria-hidden
+            style={{
+              background:
+                "radial-gradient(80% 60% at 50% 0%, rgba(99,102,241,0.08) 0%, transparent 60%)",
+            }}
+          />
+          <input {...getInputProps()} />
+          <div className="relative space-y-4">
+            <motion.div
+              animate={{ scale: isDragActive ? 1.12 : 1, rotate: isDragActive ? 2 : 0 }}
+              transition={{ type: "spring", stiffness: 320, damping: 24 }}
+              className={cn(
+                "mx-auto flex h-16 w-16 items-center justify-center rounded-2xl md:h-20 md:w-20",
+                isDragActive
+                  ? "bg-gradient-to-br from-primary-500 to-accent-500 text-white shadow-glow"
+                  : "bg-gradient-to-br from-primary-100 to-primary-50 text-primary-600"
+              )}
+            >
+              <Icon icon={UploadIcon} size={isDragActive ? 32 : 28} strokeWidth={1.75} />
+            </motion.div>
+            <div>
+              <p className="text-lg font-bold tracking-tight text-gray-900">
+                {isDragActive ? "Отпустите файл — загрузим!" : "Перетащите файл сюда"}
+              </p>
+              <p className="mt-1 text-sm text-gray-500">или нажмите, чтобы выбрать с устройства</p>
             </div>
             <div>
-              <p className="text-lg font-medium text-gray-700">
-                {isDragActive ? "Отпустите файл" : "Перетащите файл сюда"}
-              </p>
-              <p className="text-sm text-gray-400 mt-1">или нажмите для выбора</p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  open();
+                }}
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                <Icon icon={UploadIcon} size={16} strokeWidth={2.25} />
+                Выбрать файл
+              </button>
             </div>
-
-            {/* Explicit CTA for mobile */}
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); open(); }}
-              className="btn-primary inline-flex items-center gap-2 md:hidden"
-            >
-              <UploadIcon className="w-4 h-4" />
-              Выбрать файл
-            </button>
-
-            <div className="flex flex-wrap items-center justify-center gap-1.5 xs:gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
               {FORMATS.map((fmt) => (
-                <span key={fmt} className="chip bg-surface-100 text-gray-600">{fmt}</span>
+                <span
+                  key={fmt.label}
+                  className="inline-flex items-center gap-1 rounded-full bg-surface-100 px-2.5 py-1 text-[11px] font-semibold text-gray-600"
+                >
+                  <Icon icon={fmt.icon} size={12} />
+                  {fmt.label}
+                </span>
               ))}
             </div>
-            <p className="text-xs text-gray-400">Максимум 500 МБ</p>
+            <p className="text-[11px] font-medium text-gray-400">Максимум 500 МБ</p>
           </div>
-        )}
-      </div>
+        </div>
+        </motion.div>
+      )}
 
-      {/* Minutes remaining */}
-      {user && (
-        <div className="mt-4 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-1 text-sm text-gray-500">
-          <span>Осталось: {Math.max(0, user.minutes_limit - user.minutes_used)} мин из {user.minutes_limit}</span>
+      {user && !busy && (
+        <motion.div
+          variants={fadeUp}
+          className="flex items-center justify-between gap-3 rounded-2xl border border-gray-200/70 bg-white px-4 py-3 md:px-5"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+              <Icon icon={FileAudio} size={18} />
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-gray-900">
+                <span className="tabular">{minutesLeft}</span> из{" "}
+                <span className="tabular">{user.minutes_limit}</span> мин доступно
+              </p>
+              <p className="text-xs text-gray-500">
+                На этот план хватит примерно {Math.floor(minutesLeft / 30)} получасовых встреч
+              </p>
+            </div>
+          </div>
           {user.minutes_used >= user.minutes_limit && (
-            <Link to="/subscription" className="text-primary-600 hover:underline font-medium">Увеличить лимит</Link>
+            <Link
+              to="/app/pricing"
+              className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-primary-600 to-accent-500 px-3 py-1.5 text-xs font-semibold text-white shadow-glow-sm press"
+            >
+              <Icon icon={Zap} size={12} />
+              Увеличить
+            </Link>
           )}
-        </div>
+        </motion.div>
       )}
 
-      {error && (
-        <div className="mt-6 bg-red-50 text-red-600 px-5 py-4 rounded-xl text-sm border border-red-100 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          {error}
-        </div>
+      {error && !busy && (
+        <motion.div variants={fadeUp}>
+          <ErrorState title="Не удалось загрузить" description={error} />
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

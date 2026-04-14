@@ -71,10 +71,23 @@ export default {
         "glow-sm": "0 0 20px -4px rgba(99, 102, 241, 0.2)",
         soft: "0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.03)",
         card: "0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px -2px rgba(0, 0, 0, 0.04)",
+        raised: "0 2px 6px rgba(0, 0, 0, 0.05), 0 8px 24px -6px rgba(15, 23, 42, 0.08)",
         elevated: "0 8px 28px -8px rgba(0, 0, 0, 0.12)",
+        overlay: "0 12px 40px -12px rgba(15, 23, 42, 0.18), 0 4px 12px -4px rgba(15, 23, 42, 0.06)",
         floating: "0 20px 50px -12px rgba(0, 0, 0, 0.18)",
+        modal: "0 32px 80px -20px rgba(15, 23, 42, 0.28)",
         "elevated-lg": "0 20px 60px -15px rgba(0, 0, 0, 0.15), 0 8px 24px -8px rgba(0, 0, 0, 0.06)",
         "inner-glow": "inset 0 1px 0 rgba(255, 255, 255, 0.05)",
+      },
+      transitionTimingFunction: {
+        "out-quart": "cubic-bezier(0.25, 1, 0.5, 1)",
+        "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "in-out-quart": "cubic-bezier(0.76, 0, 0.24, 1)",
+      },
+      transitionDuration: {
+        fast: "150ms",
+        base: "220ms",
+        slow: "320ms",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

@@ -250,6 +250,21 @@
   .touch-target {
     @apply min-w-[44px] min-h-[44px] inline-flex items-center justify-center;
   }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  .press {
+    @apply transition-transform duration-fast ease-out-quart active:scale-[0.97];
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .press {
+      transform: none !important;
+    }
+  }
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }

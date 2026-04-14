@@ -23,6 +23,75 @@ from app.services.storage import s3_service
 
 router = APIRouter(prefix="/api/transcriptions", tags=["transcriptions"])
 
+
+@router.get("/media/stream")
+async def stream_media(request: Request, token: str):
+    """Стриминг локально хранящегося файла по signed-токену с поддержкой Range.
+
+    Объявлен первым, чтобы путь `/media/stream` не конфликтовал с `/{transcription_id}/...`.
+    """
+    from fastapi.responses import StreamingResponse
+
+    from app.services.auth import decode_media_token
+
+    payload = decode_media_token(token)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Недействительный токен")
+
+    file_key = payload.get("fk")
+    if not file_key:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверный токен")
+
+    if s3_service is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Хранилище не настроено")
+
+    try:
+        total_size = s3_service.get_file_size(file_key)
+    except (FileNotFoundError, NotImplementedError):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Файл не найден")
+
+    content_type = s3_service.get_content_type(file_key)
+    range_header = request.headers.get("range")
+    start = 0
+    end = total_size - 1
+    status_code = 200
+    headers = {
+        "Accept-Ranges": "bytes",
+        "Content-Type": content_type,
+    }
+
+    if range_header and range_header.startswith("bytes="):
+        try:
+            rng = range_header.split("=", 1)[1].strip()
+            start_str, _, end_str = rng.partition("-")
+            start = int(start_str) if start_str else 0
+            end = int(end_str) if end_str else total_size - 1
+            end = min(end, total_size - 1)
+            if start > end or start >= total_size:
+                raise ValueError
+            status_code = 206
+            headers["Content-Range"] = f"bytes {start}-{end}/{total_size}"
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE, detail="Неверный Range")
+
+    length = end - start + 1
+    headers["Content-Length"] = str(length)
+
+    def iter_chunks(chunk_size: int = 64 * 1024):
+        remaining = length
+        f = s3_service.open_stream(file_key, start=start)
+        try:
+            while remaining > 0:
+                read = f.read(min(chunk_size, remaining))
+                if not read:
+                    break
+                remaining -= len(read)
+                yield read
+        finally:
+            f.close()
+
+    return StreamingResponse(iter_chunks(), status_code=status_code, headers=headers, media_type=content_type)
+
 # Допустимые форматы файлов
 ALLOWED_AUDIO_TYPES = {
     "audio/mpeg", "audio/wav", "audio/x-wav", "audio/flac",
@@ -211,6 +280,45 @@ async def delete_transcription(
     await db.delete(transcription)
     await db.commit()
     return MessageResponse(message="Транскрипция удалена")
+
+
+@router.get("/{transcription_id}/audio-url")
+async def get_audio_url(
+    transcription_id: uuid.UUID,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Короткоживущая ссылка для <audio src>: presigned S3 или signed-токен для локального стрима."""
+    result = await db.execute(
+        select(Transcription).where(
+            Transcription.id == transcription_id,
+            Transcription.user_id == user.id,
+        )
+    )
+    transcription = result.scalar_one_or_none()
+    if transcription is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Транскрипция не найдена")
+    if not transcription.file_key:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Файл недоступен")
+
+    if s3_service is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Хранилище не настроено")
+
+    # 1) Если это S3 — выдаём прямой presigned URL (браузер тянет напрямую с S3)
+    presigned = s3_service.get_presigned_url(transcription.file_key, expires_in=3600)
+    if presigned:
+        return {"url": presigned, "content_type": transcription.content_type or "audio/mpeg"}
+
+    # 2) Локальное хранилище — выдаём signed-токен на проксирующий стрим
+    from app.services.auth import create_media_token
+
+    token = create_media_token(transcription.file_key, str(user.id), expires_in=3600)
+    base = str(request.base_url).rstrip("/")
+    return {
+        "url": f"{base}/api/transcriptions/media/stream?token={token}",
+        "content_type": transcription.content_type or "audio/mpeg",
+    }
 
 
 @router.get("/{transcription_id}/export/{format}")

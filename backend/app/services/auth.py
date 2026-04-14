@@ -43,3 +43,23 @@ def decode_token(token: str) -> dict | None:
         return payload
     except (jwt.InvalidTokenError, jwt.ExpiredSignatureError):
         return None
+
+
+def create_media_token(file_key: str, user_id: str, expires_in: int = 3600) -> str:
+    """Подписанный токен для публичного стрима аудио (<audio src>)."""
+    expire = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+    payload = {
+        "sub": user_id,
+        "fk": file_key,
+        "exp": expire,
+        "type": "media",
+    }
+    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+
+
+def decode_media_token(token: str) -> dict | None:
+    """Валидация media-токена."""
+    payload = decode_token(token)
+    if not payload or payload.get("type") != "media":
+        return None
+    return payload

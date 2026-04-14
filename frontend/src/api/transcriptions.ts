@@ -119,4 +119,7 @@ export const transcriptionApi = {
 
   getChatHistory: (id: string) =>
     api.get<ChatHistoryResponse>(`/transcriptions/${id}/chat`),
+
+  getAudioUrl: (id: string) =>
+    api.get<{ url: string; content_type: string }>(`/transcriptions/${id}/audio-url`),
 };

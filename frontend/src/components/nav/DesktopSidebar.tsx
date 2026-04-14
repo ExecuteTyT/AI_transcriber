@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, Sparkles } from "lucide-react";
 import { DESKTOP_SECTIONS } from "@/config/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { Icon } from "@/components/Icon";
 
 const planNames: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
 
@@ -21,34 +22,39 @@ export default function DesktopSidebar() {
     return location.pathname === item.to;
   };
 
-  const usagePercent = user ? Math.min(100, Math.round((user.minutes_used / user.minutes_limit) * 100)) : 0;
+  const usagePercent = user
+    ? Math.min(100, Math.round((user.minutes_used / user.minutes_limit) * 100))
+    : 0;
   const minutesLeft = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
+  const lowUsage = user ? usagePercent >= 80 : false;
+
+  const radius = 26;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (usagePercent / 100) * circumference;
 
   return (
-    <aside className="hidden md:flex w-[248px] bg-sidebar-gradient flex-col flex-shrink-0 sticky top-0 h-screen border-r border-white/[0.04]">
-      {/* Logo */}
+    <aside className="hidden md:flex w-[240px] bg-sidebar-gradient flex-col flex-shrink-0 sticky top-0 h-screen border-r border-white/[0.04]">
       <div className="h-16 flex items-center gap-2.5 px-5">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-glow-sm">
-          <span className="text-white font-bold text-sm">V</span>
+        <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-primary-400 via-primary-500 to-accent-500 flex items-center justify-center shadow-glow-sm">
+          <span className="text-white font-bold text-[13px]">V</span>
+          <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/15" />
         </div>
         <Link to="/" className="text-lg font-bold text-white tracking-tight">
           Voitra
         </Link>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 pt-4 space-y-6" aria-label="Основная навигация">
+      <nav className="flex-1 px-3 pt-3 space-y-5 overflow-y-auto scrollbar-hide" aria-label="Основная навигация">
         {DESKTOP_SECTIONS.map((section, si) => (
           <div key={si}>
             {section.label && (
-              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-500">
+              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-500/80">
                 {section.label}
               </p>
             )}
             <div className="space-y-0.5">
               {section.items.map((item) => {
                 const active = isNavActive(item);
-                const Icon = item.Icon;
                 return (
                   <Link
                     key={item.to}
@@ -56,7 +62,11 @@ export default function DesktopSidebar() {
                     className={`sidebar-nav-item ${active ? "sidebar-nav-active" : "sidebar-nav-inactive"}`}
                     aria-current={active ? "page" : undefined}
                   >
-                    <Icon className={`w-[18px] h-[18px] ${active ? "text-primary-400" : ""}`} />
+                    <Icon
+                      icon={item.Icon}
+                      size={18}
+                      className={active ? "text-primary-300" : ""}
+                    />
                     {item.label}
                     {active && (
                       <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-400 animate-glow-pulse" />
@@ -69,38 +79,57 @@ export default function DesktopSidebar() {
         ))}
       </nav>
 
-      {/* Bottom panel */}
       {user && (
         <div className="px-3 pb-4 space-y-3">
-          {/* Usage */}
-          <div className="px-3 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Лимит</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary-500/20 text-primary-300">
-                {planNames[user.plan] || user.plan}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1.5 mb-2.5">
-              <span className="text-xl font-bold text-white tabular-nums">{minutesLeft}</span>
-              <span className="text-[11px] text-gray-500">мин</span>
-            </div>
-            <div className="w-full bg-white/[0.06] rounded-full h-1">
-              <div
-                className={`h-1 rounded-full transition-all duration-700 ease-out ${
-                  usagePercent >= 90
-                    ? "bg-red-400"
-                    : usagePercent >= 70
-                    ? "bg-amber-400"
-                    : "bg-gradient-to-r from-primary-400 to-primary-300"
-                }`}
-                style={{ width: `${usagePercent}%` }}
-              />
+          <div className="relative overflow-hidden rounded-2xl bg-white/[0.04] border border-white/[0.06] p-3">
+            <div className="flex items-center gap-3">
+              <svg width="64" height="64" viewBox="0 0 64 64" className="shrink-0 -rotate-90">
+                <defs>
+                  <linearGradient id="usageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#818cf8" />
+                    <stop offset="100%" stopColor="#f97316" />
+                  </linearGradient>
+                </defs>
+                <circle cx="32" cy="32" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r={radius}
+                  fill="none"
+                  stroke={lowUsage ? "#f87171" : "url(#usageGradient)"}
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  className="transition-all duration-slow ease-out-quart"
+                />
+              </svg>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Осталось</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary-500/20 text-primary-300">
+                    {planNames[user.plan] || user.plan}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-xl font-bold text-white tabular">{minutesLeft}</span>
+                  <span className="text-[11px] text-gray-500">из {user.minutes_limit} мин</span>
+                </div>
+                {lowUsage && (
+                  <Link
+                    to="/app/pricing"
+                    className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-accent-400 hover:text-accent-300 transition-colors"
+                  >
+                    <Icon icon={Sparkles} size={12} />
+                    Добавь минуты
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* User */}
           <div className="flex items-center gap-3 px-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-glow-sm">
               {(user.name || user.email || "U")[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
@@ -108,12 +137,13 @@ export default function DesktopSidebar() {
               <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
             </div>
             <button
+              type="button"
               onClick={handleLogout}
-              className="p-2.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-white/[0.04] transition-colors duration-200"
+              className="p-2.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-white/[0.04] transition-colors duration-base"
               aria-label="Выйти"
               title="Выйти"
             >
-              <LogOut className="w-4 h-4" />
+              <Icon icon={LogOut} size={16} />
             </button>
           </div>
         </div>

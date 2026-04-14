@@ -26,6 +26,20 @@ class StorageBackend:
     def delete_file(self, file_key: str) -> None:
         raise NotImplementedError
 
+    def get_presigned_url(self, file_key: str, expires_in: int = 3600) -> str | None:
+        """Прямая ссылка на файл для <audio src>. None если бэкенд не поддерживает."""
+        return None
+
+    def open_stream(self, file_key: str, start: int = 0, end: int | None = None):
+        """Открыть поток байт для Range-запросов (локальный fallback)."""
+        raise NotImplementedError
+
+    def get_file_size(self, file_key: str) -> int:
+        raise NotImplementedError
+
+    def get_content_type(self, file_key: str) -> str:
+        return "application/octet-stream"
+
 
 class S3Service(StorageBackend):
     """S3-хранилище (Selectel / AWS)."""
@@ -63,6 +77,18 @@ class S3Service(StorageBackend):
         """Удаление файла из S3."""
         self.client.delete_object(Bucket=self.bucket, Key=file_key)
 
+    def get_presigned_url(self, file_key: str, expires_in: int = 3600) -> str | None:
+        """Короткоживущая S3 presigned URL для прямого <audio src>."""
+        try:
+            return self.client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": self.bucket, "Key": file_key},
+                ExpiresIn=expires_in,
+            )
+        except Exception as exc:
+            logger.warning("Failed to generate presigned URL: %s", exc)
+            return None
+
 
 class LocalStorage(StorageBackend):
     """Локальное файловое хранилище (для разработки без S3)."""
@@ -91,6 +117,28 @@ class LocalStorage(StorageBackend):
         file_path = self.base_dir / file_key
         if file_path.exists():
             file_path.unlink()
+
+    def open_stream(self, file_key: str, start: int = 0, end: int | None = None):
+        """Возвращает file-handle, спозиционированный на start; читать до end (включительно)."""
+        file_path = self.base_dir / file_key
+        if not file_path.exists():
+            raise FileNotFoundError(f"File not found: {file_key}")
+        f = file_path.open("rb")
+        if start:
+            f.seek(start)
+        return f
+
+    def get_file_size(self, file_key: str) -> int:
+        file_path = self.base_dir / file_key
+        if not file_path.exists():
+            raise FileNotFoundError(f"File not found: {file_key}")
+        return file_path.stat().st_size
+
+    def get_content_type(self, file_key: str) -> str:
+        import mimetypes
+
+        mime, _ = mimetypes.guess_type(str(self.base_dir / file_key))
+        return mime or "application/octet-stream"
 
 
 def _create_storage() -> StorageBackend:

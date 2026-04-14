@@ -17,7 +17,7 @@ export default function Layout() {
       <DesktopSidebar />
 
       {/* Main content area */}
-      <main className="pt-top-bar md:pt-0 md:pl-[248px] min-h-screen">
+      <main className="pt-top-bar md:pt-0 md:pl-[240px] min-h-screen">
         <div className="px-4 py-4 md:p-8 lg:p-10">
           <div className="max-w-5xl md:mx-auto">
             <AnimatePresence mode="wait">
