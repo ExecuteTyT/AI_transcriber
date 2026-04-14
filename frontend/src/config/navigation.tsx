@@ -23,6 +23,11 @@ export const PRIMARY_TABS: NavItem[] = [
     match: (p) => p === "/dashboard" || p.startsWith("/transcription/"),
   },
   {
+    to: "/app/pricing",
+    label: "Тарифы",
+    Icon: Tag,
+  },
+  {
     to: "/upload",
     label: "Загрузить",
     Icon: Upload,
@@ -36,7 +41,6 @@ export const PRIMARY_TABS: NavItem[] = [
 ];
 
 export const OVERFLOW_ITEMS: NavItem[] = [
-  { to: "/app/pricing", label: "Тарифы", Icon: Tag },
   { to: "/subscription", label: "Подписка", Icon: CreditCard },
 ];
 

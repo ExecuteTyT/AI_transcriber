@@ -42,7 +42,7 @@ export default function BottomTabBar() {
 
               if (tab.isFab) {
                 return (
-                  <li key={tab.to} className="relative flex w-16 items-start justify-center -mt-7">
+                  <li key={tab.to} className="relative flex flex-1 items-start justify-center -mt-7">
                     <motion.div whileTap={{ scale: 0.92 }} transition={springTight}>
                       <Link
                         to={tab.to}
