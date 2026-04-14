@@ -5,6 +5,7 @@ import { MoreHorizontal } from "lucide-react";
 import { PRIMARY_TABS } from "@/config/navigation";
 import { Icon } from "@/components/Icon";
 import { springTight } from "@/lib/motion";
+import { cn } from "@/lib/cn";
 import OverflowSheet from "./OverflowSheet";
 
 export default function BottomTabBar() {
@@ -21,84 +22,98 @@ export default function BottomTabBar() {
       <nav
         aria-label="Основная навигация"
         className="fixed inset-x-0 bottom-0 z-40 md:hidden pointer-events-none"
-        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))", paddingTop: "1.25rem" }}
+        style={{
+          paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+          paddingTop: "1.5rem",
+        }}
       >
+        {/* Fade-out scrim — скрывает контент под баром */}
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[calc(100%+1rem)] bg-gradient-to-t from-white via-white/85 to-transparent md:hidden"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[calc(100%+1.5rem)] -z-10 bg-gradient-to-t from-white via-white/95 to-transparent"
           aria-hidden
         />
-        <ul className="pointer-events-auto relative mx-3 flex items-center justify-between gap-1 rounded-full border border-white/80 bg-white/95 px-2 py-1.5 shadow-overlay backdrop-blur-xl ring-1 ring-gray-900/[0.04]">
-          {PRIMARY_TABS.map((tab) => {
-            const active = isActive(tab);
 
-            if (tab.isFab) {
+        <div
+          className="pointer-events-auto relative mx-3 rounded-[28px] bg-white shadow-[0_8px_32px_-8px_rgba(15,23,42,0.18),0_2px_8px_-2px_rgba(15,23,42,0.08)] ring-1 ring-gray-900/[0.06]"
+        >
+          <ul className="flex items-stretch justify-between gap-0.5 px-2 pb-1.5 pt-1">
+            {PRIMARY_TABS.map((tab) => {
+              const active = isActive(tab);
+
+              if (tab.isFab) {
+                return (
+                  <li key={tab.to} className="relative flex w-16 items-start justify-center -mt-7">
+                    <motion.div whileTap={{ scale: 0.92 }} transition={springTight}>
+                      <Link
+                        to={tab.to}
+                        aria-label={tab.label}
+                        className="group relative flex h-[60px] w-[60px] items-center justify-center rounded-full bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 text-white ring-[5px] ring-white shadow-[0_10px_24px_-6px_rgba(99,102,241,0.55)]"
+                      >
+                        <span
+                          className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary-400/35 to-accent-400/35 blur-xl -z-10 opacity-80"
+                          aria-hidden
+                        />
+                        <Icon icon={tab.Icon} size={22} strokeWidth={2.4} />
+                      </Link>
+                    </motion.div>
+                  </li>
+                );
+              }
+
               return (
-                <li key={tab.to} className="relative flex items-center justify-center -mt-5">
-                  <motion.div whileTap={{ scale: 0.92 }} transition={springTight}>
+                <li key={tab.to} className="flex-1">
+                  <motion.div whileTap={{ scale: 0.95 }} transition={springTight}>
                     <Link
                       to={tab.to}
                       aria-label={tab.label}
-                      className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 text-white shadow-floating ring-4 ring-white"
+                      aria-current={active ? "page" : undefined}
+                      className="relative flex h-14 flex-col items-center justify-center gap-0.5 touch-target"
                     >
-                      <span className="absolute inset-0 rounded-full bg-gradient-to-br from-primary-400/40 to-accent-400/40 blur-xl -z-10 opacity-80 transition-opacity duration-base group-active:opacity-100" />
-                      <Icon icon={tab.Icon} size="lg" strokeWidth={2.25} />
+                      {active && (
+                        <motion.span
+                          layoutId="tab-indicator-notch"
+                          className="absolute -top-1 left-1/2 h-1 w-7 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary-500 to-accent-500"
+                          transition={{ type: "spring", stiffness: 500, damping: 36 }}
+                        />
+                      )}
+                      <Icon
+                        icon={tab.Icon}
+                        size={22}
+                        strokeWidth={active ? 2.3 : 1.9}
+                        className={cn(
+                          "transition-colors duration-fast",
+                          active ? "text-primary-600" : "text-gray-400"
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          "text-[10.5px] font-semibold tracking-tight transition-colors duration-fast",
+                          active ? "text-primary-700" : "text-gray-500"
+                        )}
+                      >
+                        {tab.label}
+                      </span>
                     </Link>
                   </motion.div>
                 </li>
               );
-            }
+            })}
 
-            return (
-              <li key={tab.to} className="flex-1">
-                <motion.div whileTap={{ scale: 0.96 }} transition={springTight}>
-                  <Link
-                    to={tab.to}
-                    aria-label={tab.label}
-                    aria-current={active ? "page" : undefined}
-                    className="relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-full touch-target"
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="tab-indicator"
-                        className="absolute inset-0 rounded-full bg-gradient-to-br from-primary-50 to-primary-100/70"
-                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                      />
-                    )}
-                    <Icon
-                      icon={tab.Icon}
-                      size={20}
-                      strokeWidth={active ? 2.2 : 1.75}
-                      className={`relative z-10 transition-colors duration-fast ${
-                        active ? "text-primary-600" : "text-gray-500"
-                      }`}
-                    />
-                    <span
-                      className={`relative z-10 text-[10px] font-semibold tracking-wide transition-colors duration-fast ${
-                        active ? "text-primary-700" : "text-gray-500"
-                      }`}
-                    >
-                      {tab.label}
-                    </span>
-                  </Link>
-                </motion.div>
-              </li>
-            );
-          })}
-
-          <li className="flex-1">
-            <motion.div whileTap={{ scale: 0.96 }} transition={springTight}>
-              <button
-                type="button"
-                onClick={() => setOverflowOpen(true)}
-                aria-label="Ещё"
-                className="relative flex h-12 w-full flex-col items-center justify-center gap-0.5 rounded-full touch-target"
-              >
-                <Icon icon={MoreHorizontal} size={20} className="text-gray-500" />
-                <span className="text-[10px] font-semibold tracking-wide text-gray-500">Ещё</span>
-              </button>
-            </motion.div>
-          </li>
-        </ul>
+            <li className="flex-1">
+              <motion.div whileTap={{ scale: 0.95 }} transition={springTight}>
+                <button
+                  type="button"
+                  onClick={() => setOverflowOpen(true)}
+                  aria-label="Ещё"
+                  className="relative flex h-14 w-full flex-col items-center justify-center gap-0.5 touch-target"
+                >
+                  <Icon icon={MoreHorizontal} size={22} strokeWidth={1.9} className="text-gray-400" />
+                  <span className="text-[10.5px] font-semibold tracking-tight text-gray-500">Ещё</span>
+                </button>
+              </motion.div>
+            </li>
+          </ul>
+        </div>
       </nav>
 
       <OverflowSheet open={overflowOpen} onClose={() => setOverflowOpen(false)} />
