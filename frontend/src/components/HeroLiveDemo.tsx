@@ -148,7 +148,7 @@ export default function HeroLiveDemo() {
         <div className="flex items-center justify-between gap-3 px-4 md:px-6 py-3 border-b border-white/[0.06]">
           <div className="flex items-center gap-3">
             <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">V</span>
+              <span className="text-white text-[10px] font-bold">S</span>
             </div>
             <div className="flex flex-col">
               <span className="text-white text-[13px] font-medium">Совещание Q3</span>

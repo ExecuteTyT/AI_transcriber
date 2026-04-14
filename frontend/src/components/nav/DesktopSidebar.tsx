@@ -36,11 +36,11 @@ export default function DesktopSidebar() {
     <aside className="hidden md:flex w-[240px] bg-sidebar-gradient flex-col flex-shrink-0 sticky top-0 h-screen border-r border-white/[0.04]">
       <div className="h-16 flex items-center gap-2.5 px-5">
         <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-primary-400 via-primary-500 to-accent-500 flex items-center justify-center shadow-glow-sm">
-          <span className="text-white font-bold text-[13px]">V</span>
+          <span className="text-white font-bold text-[13px]">S</span>
           <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/15" />
         </div>
         <Link to="/" className="text-lg font-bold text-white tracking-tight">
-          Voitra
+          Scribi
         </Link>
       </div>
 

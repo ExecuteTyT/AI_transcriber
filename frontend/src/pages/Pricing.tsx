@@ -206,13 +206,13 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-surface-50">
       <Helmet>
-        <title>Тарифы Voitra — транскрибация от 290 ₽/мес</title>
-        <meta name="description" content="Тарифы Voitra: Free (15 мин/мес бесплатно), Старт (290 ₽/мес, 5 часов), Про (590 ₽/мес, 20 часов). AI-саммари, разметка спикеров, экспорт." />
+        <title>Тарифы Scribi — транскрибация от 290 ₽/мес</title>
+        <meta name="description" content="Тарифы Scribi: Free (15 мин/мес бесплатно), Старт (290 ₽/мес, 5 часов), Про (590 ₽/мес, 20 часов). AI-саммари, разметка спикеров, экспорт." />
         <link rel="canonical" href="https://voitra.ru/pricing" />
       </Helmet>
       <header className="border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text">Voitra</Link>
+          <Link to="/" className="text-xl font-bold gradient-text">Scribi</Link>
           <div className="flex items-center gap-3">
             <Link to="/login" className="btn-ghost text-sm">Войти</Link>
             <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5">Попробовать</Link>

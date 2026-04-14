@@ -34,7 +34,7 @@ export default function Register() {
         <div className="absolute bottom-1/3 left-1/4 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl" />
 
         <div className="relative z-10">
-          <Link to="/" className="text-2xl font-bold text-white">Voitra</Link>
+          <Link to="/" className="text-2xl font-bold text-white">Scribi</Link>
         </div>
 
         {/* Hero text */}
@@ -72,7 +72,7 @@ export default function Register() {
         <div className="w-full max-w-md animate-fade-up">
           {/* Mobile logo */}
           <Link to="/" className="flex justify-center mb-8 md:hidden">
-            <span className="text-2xl font-bold gradient-text">Voitra</span>
+            <span className="text-2xl font-bold gradient-text">Scribi</span>
           </Link>
 
           <div className="card p-8 shadow-elevated">

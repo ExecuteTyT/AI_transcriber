@@ -3,8 +3,8 @@
   <!-- Sound wave bars (left) -->
   <rect x="4" y="12" width="2" height="8" rx="1" fill="white" opacity="0.5"/>
   <rect x="8" y="9" width="2" height="14" rx="1" fill="white" opacity="0.7"/>
-  <!-- V letter -->
-  <path d="M13 8 L16.5 24 L20 8" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- S letter -->
+  <path d="M20 10 C20 8.5, 18.5 8, 16.5 8 C14.5 8, 13 8.5, 13 11 C13 13.5, 15 14, 16.5 14 C18 14, 20 14.5, 20 17 C20 19.5, 18 20, 16 20 C14 20, 13 19, 13 17.5" stroke="white" stroke-width="2.4" stroke-linecap="round" fill="none"/>
   <!-- Sound wave bars (right) -->
   <rect x="22" y="9" width="2" height="14" rx="1" fill="white" opacity="0.7"/>
   <rect x="26" y="12" width="2" height="8" rx="1" fill="white" opacity="0.5"/>

@@ -28,7 +28,7 @@ export default function ForgotPassword() {
       <div className="absolute top-1/4 right-[15%] w-72 h-72 bg-primary-400/10 rounded-full blur-3xl animate-float" />
       <div className="relative w-full max-w-md">
         <div className="text-center mb-8 animate-fade-in">
-          <Link to="/" className="text-2xl font-bold gradient-text">Voitra</Link>
+          <Link to="/" className="text-2xl font-bold gradient-text">Scribi</Link>
         </div>
 
         <div className="card p-8 shadow-elevated">
