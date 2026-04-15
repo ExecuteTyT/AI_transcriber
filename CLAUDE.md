@@ -87,6 +87,10 @@ npx tsc --noEmit                      # проверка типов
 - **Frontend**: tsc → vite build → vitest
 - **Backend**: pytest с PostgreSQL 16 (pgvector) + Redis 7. Сейчас `pytest || true` (soft fail)
 
+### QA (regression)
+- **После каждого деплоя**: `./scripts/check-prod.sh [https://voitra.pro]` — bash-smoke (SSL, HTTPS, auth enforcement, OpenAPI schema, security headers, ребрендинг, опц. SSH-healthcheck через `PROD_SSH=user@host`).
+- **Раз в спринт / перед релизом**: ручной прогон [docs/qa-checklist.md](docs/qa-checklist.md) (30-40 мин) — auth / кабинет / upload → studio → AI / playback / платежи / admin / mobile / edges.
+
 ## Правила кода
 
 - Коммиты — Conventional Commits (`feat:`, `fix:`, `docs:`, etc.)
