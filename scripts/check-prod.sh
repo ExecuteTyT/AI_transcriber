@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Smoke-проверка production-инфраструктуры Scribi после деплоя.
 # Запуск: ./scripts/check-prod.sh [HOST]
-# По умолчанию HOST=https://voitra.pro
+# По умолчанию HOST=https://dicto.pro
 
 set -uo pipefail
 
-HOST="${1:-https://voitra.pro}"
+HOST="${1:-https://dicto.pro}"
 FAIL=0
 
 ok()  { printf "\e[32m✓\e[0m %s\n" "$*"; }
