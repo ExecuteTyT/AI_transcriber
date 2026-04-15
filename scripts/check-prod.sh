@@ -46,40 +46,58 @@ DOCS=$(curl -skI "$HOST/docs" -o /dev/null -w "%{http_code}")
 # ─── 3. API auth enforcement ───
 sec "API auth"
 UNAUTH=$(curl -sk -o /dev/null -w "%{http_code}" "$HOST/api/transcriptions")
-[[ "$UNAUTH" == "401" ]] && ok "/api/transcriptions unauth → 401" \
-                         || bad "/api/transcriptions unauth → $UNAUTH (expected 401)"
+# FastAPI HTTPBearer → 403 by default, кастомные → 401; оба валидны (главное — не 200/500).
+if [[ "$UNAUTH" == "401" || "$UNAUTH" == "403" ]]; then
+  ok "/api/transcriptions requires auth (HTTP $UNAUTH)"
+else
+  bad "/api/transcriptions unauth → $UNAUTH (expected 401/403)"
+fi
 
 # ─── 4. OpenAPI schema ───
 sec "OpenAPI schema"
-SCHEMA=$(curl -sk "$HOST/openapi.json")
-if [[ -z "$SCHEMA" ]]; then
-  bad "openapi.json empty"
+
+# Подобрать python-интерпретатор (python3 / python / py).
+PY=""
+for cand in python3 python py; do
+  if command -v "$cand" >/dev/null 2>&1; then PY="$cand"; break; fi
+done
+
+REQUIRED=(
+  "/api/auth/register"
+  "/api/auth/login"
+  "/api/auth/refresh"
+  "/api/transcriptions/upload"
+  "/api/transcriptions/media/stream"
+  "/api/transcriptions/{transcription_id}/audio-url"
+  "/api/transcriptions/{transcription_id}/export/{format}"
+  "/api/payments/subscribe"
+  "/api/payments/webhook"
+)
+
+if [[ -z "$PY" ]]; then
+  bad "python not found — skipping OpenAPI check"
 else
-  REQUIRED=(
-    "/api/auth/register"
-    "/api/auth/login"
-    "/api/auth/refresh"
-    "/api/transcriptions/upload"
-    "/api/transcriptions/media/stream"
-    "/api/transcriptions/{transcription_id}/audio-url"
-    "/api/transcriptions/{transcription_id}/export/{format}"
-    "/api/payments/subscribe"
-    "/api/payments/webhook"
-  )
-  MISSING=$(python3 -c "
+  # JSON идёт через stdin — не ломается спецсимволами.
+  MISSING=$(curl -sk "$HOST/openapi.json" | "$PY" -c "
 import json, sys
-data = json.loads('''$SCHEMA''')
+try:
+    data = json.load(sys.stdin)
+except Exception as e:
+    print(f'__parse_error__: {e}')
+    sys.exit(0)
 paths = data.get('paths', {})
-for p in sys.argv[1:]:
-    if p not in paths:
-        print(p)
-" "${REQUIRED[@]}" 2>/dev/null || echo "parse-error")
-  if [[ -z "$MISSING" ]]; then
-    ok "All $(echo ${REQUIRED[@]} | wc -w) critical endpoints present"
-  elif [[ "$MISSING" == "parse-error" ]]; then
-    bad "Could not parse openapi.json (python3 required)"
+required = sys.argv[1:]
+missing = [p for p in required if p not in paths]
+for m in missing:
+    print(m)
+" "${REQUIRED[@]}" 2>/dev/null)
+
+  if [[ "$MISSING" == __parse_error__* ]]; then
+    bad "openapi.json parse failed: ${MISSING#__parse_error__: }"
+  elif [[ -z "$MISSING" ]]; then
+    ok "All ${#REQUIRED[@]} critical endpoints present"
   else
-    bad "Missing endpoints: $(echo $MISSING | tr '\n' ' ')"
+    bad "Missing: $(echo $MISSING | tr '\n' ' ')"
   fi
 fi
 
