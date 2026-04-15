@@ -8,7 +8,7 @@ export default function BlogIndex() {
       <Helmet>
         <title>Блог Scribi — статьи о транскрибации, нейросетях и продуктивности</title>
         <meta name="description" content="Полезные статьи и гайды: как транскрибировать аудио, сравнение сервисов и нейросетей, расшифровка Zoom-совещаний, субтитры для YouTube." />
-        <link rel="canonical" href="https://voitra.ru/blog" />
+        <link rel="canonical" href="https://dicto.pro/blog" />
       </Helmet>
       {/* Header */}
       <header className="glass border-b border-gray-200/50 sticky top-0 z-50">

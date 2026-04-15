@@ -369,7 +369,7 @@ export default function Pricing() {
           name="description"
           content="Тарифы Scribi: Free (15 мин/мес бесплатно), Старт (290 ₽/мес, 5 часов), Про (590 ₽/мес, 20 часов). AI-саммари, разметка спикеров, экспорт."
         />
-        <link rel="canonical" href="https://voitra.ru/pricing" />
+        <link rel="canonical" href="https://dicto.pro/pricing" />
       </Helmet>
       <header className="sticky top-0 z-30 border-b border-gray-100 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">

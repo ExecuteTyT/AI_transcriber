@@ -8,7 +8,7 @@ export default function VideoToText() {
       h1="Перевод видео в текст онлайн — расшифровка и субтитры"
       metaTitle="Перевод видео в текст онлайн — расшифровка и субтитры | Scribi"
       metaDescription="Загрузите MP4, WebM или MOV — Scribi расшифрует речь, создаст текст с таймкодами и субтитры SRT. Бесплатно 15 мин/мес."
-      canonical="https://voitra.ru/video-v-tekst"
+      canonical="https://dicto.pro/video-v-tekst"
       description="Загрузите MP4, WebM или MOV — Scribi извлечёт аудиодорожку, расшифрует речь и создаст текст с таймкодами. Готовые субтитры в формате SRT."
       cta="Расшифровать видео бесплатно"
       breadcrumb={[

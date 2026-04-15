@@ -8,7 +8,7 @@ export default function AudioToText() {
       h1="Транскрибация аудио в текст онлайн с помощью нейросети"
       metaTitle="Транскрибация аудио в текст онлайн — нейросеть Scribi"
       metaDescription="Загрузите MP3, WAV, FLAC, OGG или M4A — нейросеть Scribi переведёт речь в текст с точностью 98%. Бесплатно 15 мин/мес."
-      canonical="https://voitra.ru/audio-v-tekst"
+      canonical="https://dicto.pro/audio-v-tekst"
       description="Загрузите MP3, WAV, FLAC, OGG или M4A — нейросеть Scribi переведёт речь в текст с точностью 98%, расставит знаки препинания, разметит спикеров и создаст AI-саммари."
       cta="Транскрибировать аудио бесплатно"
       breadcrumb={[

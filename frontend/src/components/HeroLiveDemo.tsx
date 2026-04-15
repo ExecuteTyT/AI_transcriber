@@ -140,7 +140,7 @@ export default function HeroLiveDemo() {
           <div className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
           <div className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
           <div className="flex-1 flex justify-center">
-            <div className="px-4 py-0.5 bg-white/[0.06] rounded-md text-[11px] text-primary-300/70 border border-white/[0.06]">voitra.pro</div>
+            <div className="px-4 py-0.5 bg-white/[0.06] rounded-md text-[11px] text-primary-300/70 border border-white/[0.06]">dicto.pro</div>
           </div>
         </div>
 

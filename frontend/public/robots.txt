@@ -15,4 +15,4 @@ Disallow: /upload
 Disallow: /transcription/
 Disallow: /subscription
 
-Sitemap: https://voitra.ru/sitemap.xml
+Sitemap: https://dicto.pro/sitemap.xml

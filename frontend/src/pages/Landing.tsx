@@ -206,10 +206,10 @@ export default function Landing() {
       <Helmet>
         <title>Scribi — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
         <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 15 мин/мес. От 290 ₽/мес." />
-        <link rel="canonical" href="https://voitra.pro/" />
+        <link rel="canonical" href="https://dicto.pro/" />
         <meta property="og:title" content="Scribi — Транскрибация аудио и видео в текст онлайн" />
         <meta property="og:description" content="Превращайте аудио и видео в текст, саммари и ключевые тезисы с помощью ИИ. Разметка спикеров, таймкоды, экспорт. Бесплатно 15 мин/мес." />
-        <meta property="og:url" content="https://voitra.pro/" />
+        <meta property="og:url" content="https://dicto.pro/" />
       </Helmet>
 
       {/* ─── Header ─── */}

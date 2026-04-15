@@ -8,7 +8,7 @@ export default function NeuralTranscription() {
       h1="Нейросеть для транскрибации — расшифровка аудио и видео в текст"
       metaTitle="Нейросеть для транскрибации аудио в текст онлайн | Scribi"
       metaDescription="Scribi использует нейросеть Voxtral V2 для расшифровки речи в текст с точностью 98%. Пунктуация, спикеры, AI-анализ."
-      canonical="https://voitra.ru/nejroset-transkribaciya"
+      canonical="https://dicto.pro/nejroset-transkribaciya"
       description="Scribi использует нейросеть Voxtral для расшифровки речи в текст с точностью 98%. Автоматическая пунктуация, разметка спикеров, AI-анализ записи."
       cta="Попробовать нейросеть бесплатно"
       breadcrumb={[

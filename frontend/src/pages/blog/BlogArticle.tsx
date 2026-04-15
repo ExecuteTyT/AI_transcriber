@@ -108,10 +108,10 @@ export default function BlogArticle() {
       <Helmet>
         <title>{article.metaTitle}</title>
         <meta name="description" content={article.metaDescription} />
-        <link rel="canonical" href={`https://voitra.ru/blog/${article.slug}`} />
+        <link rel="canonical" href={`https://dicto.pro/blog/${article.slug}`} />
         <meta property="og:title" content={article.metaTitle} />
         <meta property="og:description" content={article.metaDescription} />
-        <meta property="og:url" content={`https://voitra.ru/blog/${article.slug}`} />
+        <meta property="og:url" content={`https://dicto.pro/blog/${article.slug}`} />
         <meta property="og:type" content="article" />
       </Helmet>
 

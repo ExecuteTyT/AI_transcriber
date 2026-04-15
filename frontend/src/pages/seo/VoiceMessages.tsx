@@ -8,7 +8,7 @@ export default function VoiceMessages() {
       h1="Расшифровка голосовых сообщений в текст онлайн"
       metaTitle="Расшифровка голосовых сообщений в текст онлайн | Scribi"
       metaDescription="Переведите голосовые из Telegram, WhatsApp в текст с нейросетью. Точность 98%, пунктуация, разметка спикеров."
-      canonical="https://voitra.ru/rasshifrovka-golosovyh"
+      canonical="https://dicto.pro/rasshifrovka-golosovyh"
       description="Переведите голосовые сообщения из Telegram, WhatsApp или диктофона в текст с помощью нейросети. Точность 98%, пунктуация, разметка спикеров."
       cta="Расшифровать голосовое бесплатно"
       breadcrumb={[
