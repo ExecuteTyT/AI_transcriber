@@ -29,7 +29,7 @@ type FeatureGroup = {
 };
 
 type Plan = {
-  id: "free" | "start" | "pro";
+  id: "free" | "start" | "pro" | "business";
   name: string;
   tagline: string;
   price: number;
@@ -43,7 +43,7 @@ const PLANS: Plan[] = [
   {
     id: "free",
     name: "Free",
-    tagline: "Попробовать без риска",
+    tagline: "Попробуйте без риска",
     price: 0,
     period: "",
     groups: [
@@ -51,17 +51,17 @@ const PLANS: Plan[] = [
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "15 минут в месяц", included: true },
-          { label: "Файлы до 10 минут", included: true },
+          { label: "30 минут в месяц", included: true },
+          { label: "Файлы до 15 минут", included: true },
         ],
       },
       {
         icon: Sparkles,
         title: "AI-анализ",
         items: [
-          { label: "3 саммари в месяц", included: true },
-          { label: "Разметка спикеров", included: false },
-          { label: "RAG-чат по записи", included: false },
+          { label: "5 саммари в месяц", included: true },
+          { label: "Разметка до 3 спикеров", included: true },
+          { label: "3 RAG-вопроса в месяц", included: true },
           { label: "Задачи (action items)", included: false },
         ],
       },
@@ -69,8 +69,8 @@ const PLANS: Plan[] = [
         icon: RefreshCw,
         title: "Экспорт",
         items: [
-          { label: "TXT", included: true },
-          { label: "SRT / DOCX", included: false },
+          { label: "TXT / SRT", included: true },
+          { label: "DOCX", included: false },
         ],
       },
     ],
@@ -79,8 +79,8 @@ const PLANS: Plan[] = [
   {
     id: "start",
     name: "Старт",
-    tagline: "Для подкастеров и бизнеса",
-    price: 290,
+    tagline: "Для подкастеров и фрилансеров",
+    price: 390,
     period: "/мес",
     highlight: "popular",
     groups: [
@@ -88,7 +88,7 @@ const PLANS: Plan[] = [
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "300 минут (5 часов)", included: true },
+          { label: "360 минут (6 часов)", included: true },
           { label: "Файлы до 2 часов", included: true },
         ],
       },
@@ -97,9 +97,9 @@ const PLANS: Plan[] = [
         title: "AI-анализ",
         items: [
           { label: "Саммари без лимита", included: true },
-          { label: "Разметка спикеров", included: true },
-          { label: "5 RAG-вопросов / запись", included: true },
-          { label: "Задачи (action items)", included: false },
+          { label: "До 10 спикеров", included: true },
+          { label: "10 RAG-вопросов / запись", included: true },
+          { label: "Задачи (action items)", included: true },
         ],
       },
       {
@@ -115,8 +115,8 @@ const PLANS: Plan[] = [
   {
     id: "pro",
     name: "Про",
-    tagline: "Для команд и продакшена",
-    price: 590,
+    tagline: "Для бизнеса и продакшена",
+    price: 790,
     period: "/мес",
     highlight: "premium",
     groups: [
@@ -124,7 +124,7 @@ const PLANS: Plan[] = [
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "1200 минут (20 часов)", included: true },
+          { label: "1 500 минут (25 часов)", included: true },
           { label: "Файлы до 3 часов", included: true },
           { label: "Приоритетная обработка", included: true },
         ],
@@ -133,9 +133,9 @@ const PLANS: Plan[] = [
         icon: Sparkles,
         title: "AI-анализ",
         items: [
-          { label: "Саммари без лимита", included: true },
-          { label: "Разметка спикеров", included: true },
-          { label: "RAG-чат без лимита", included: true },
+          { label: "Всё без лимита", included: true },
+          { label: "Спикеры без ограничений", included: true },
+          { label: "RAG-чат безлимит", included: true },
           { label: "Задачи (action items)", included: true },
         ],
       },
@@ -148,6 +148,43 @@ const PLANS: Plan[] = [
       },
     ],
     ctaLabel: "Оформить Про",
+  },
+  {
+    id: "business",
+    name: "Бизнес",
+    tagline: "Для команд до 5 человек",
+    price: 1990,
+    period: "/мес",
+    groups: [
+      {
+        icon: Clock,
+        title: "Минуты",
+        items: [
+          { label: "4 000 минут (66 часов)", included: true },
+          { label: "Файлы до 4 часов", included: true },
+          { label: "Приоритетная обработка", included: true },
+        ],
+      },
+      {
+        icon: Sparkles,
+        title: "AI-анализ",
+        items: [
+          { label: "Всё без лимита", included: true },
+          { label: "Спикеры без ограничений", included: true },
+          { label: "RAG-чат безлимит", included: true },
+          { label: "Задачи (action items)", included: true },
+        ],
+      },
+      {
+        icon: RefreshCw,
+        title: "Экспорт",
+        items: [
+          { label: "TXT / SRT / DOCX", included: true },
+          { label: "До 5 пользователей", included: true },
+        ],
+      },
+    ],
+    ctaLabel: "Оформить Бизнес",
   },
 ];
 
@@ -200,7 +237,7 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
   },
 ];
 
-const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
+const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес" };
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -277,7 +314,7 @@ export default function Pricing() {
 
       <motion.div
         variants={fadeUp}
-        className="grid gap-5 md:grid-cols-3 md:items-stretch md:gap-6"
+        className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 md:items-stretch md:gap-4"
       >
         {PLANS.map((plan) => (
           <PlanCard
