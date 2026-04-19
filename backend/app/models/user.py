@@ -26,5 +26,9 @@ class User(Base, UUIDMixin, TimestampMixin):
     password_reset_token_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_reset_expires_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # 152-ФЗ: фиксация согласий пользователя (дата даёт доказательство)
+    consent_terms_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    consent_cross_border_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     transcriptions = relationship("Transcription", back_populates="user", lazy="selectin")
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")

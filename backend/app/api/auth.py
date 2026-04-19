@@ -59,10 +59,14 @@ async def register(request: Request, data: RegisterRequest, db: AsyncSession = D
             detail="Пользователь с таким email уже существует",
         )
 
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
     user = User(
         email=data.email,
         password_hash=hash_password(data.password),
         name=data.name,
+        consent_terms_at=now if data.consent_terms else None,
+        consent_cross_border_at=now if data.consent_cross_border else None,
     )
     db.add(user)
     await db.commit()

@@ -569,6 +569,11 @@ export default function Landing() {
               <Link to="/pricing" className="hover:text-white transition">Тарифы</Link>
             </div>
           </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center md:justify-end gap-5 text-xs text-gray-500">
+            <Link to="/privacy" className="hover:text-white transition">Политика конфиденциальности</Link>
+            <Link to="/terms" className="hover:text-white transition">Пользовательское соглашение</Link>
+            <a href="mailto:support@dicto.pro" className="hover:text-white transition">support@dicto.pro</a>
+          </div>
         </div>
       </footer>
 

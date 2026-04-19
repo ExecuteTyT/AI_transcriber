@@ -7,6 +7,8 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
 import Pricing from "@/pages/Pricing";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 import Profile from "@/pages/Profile";
 import Register from "@/pages/Register";
 import ResetPassword from "@/pages/ResetPassword";
@@ -64,6 +66,8 @@ export default function App() {
       <Route path="/blog/:slug" element={<BlogArticle />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
 
       {/* Protected pages */}
       <Route

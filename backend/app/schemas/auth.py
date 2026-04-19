@@ -10,6 +10,10 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
     name: str = ""
+    # 152-ФЗ: согласия с фронта. Не валидируем на обязательность здесь —
+    # юридический контроль на UI; на бэке фиксируем timestamp для доказательной базы.
+    consent_terms: bool = False
+    consent_cross_border: bool = False
 
 
 class LoginRequest(BaseModel):

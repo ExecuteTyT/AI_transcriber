@@ -6,6 +6,8 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [consentMain, setConsentMain] = useState(false);
+  const [consentCrossBorder, setConsentCrossBorder] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +16,14 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!consentMain) {
+      setError("Необходимо принять политику конфиденциальности и пользовательское соглашение.");
+      return;
+    }
+    if (!consentCrossBorder) {
+      setError("Без согласия на трансграничную передачу мы не сможем запустить AI-обработку.");
+      return;
+    }
     setError("");
     setLoading(true);
     try {
@@ -134,6 +144,39 @@ export default function Register() {
                   </button>
                 </div>
               </div>
+              <div className="space-y-2.5 pt-1">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={consentMain}
+                    onChange={(e) => setConsentMain(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-[12px] leading-relaxed text-gray-600">
+                    Принимаю{" "}
+                    <Link to="/terms" target="_blank" className="font-semibold text-primary-700 underline underline-offset-2">
+                      пользовательское соглашение
+                    </Link>{" "}
+                    и{" "}
+                    <Link to="/privacy" target="_blank" className="font-semibold text-primary-700 underline underline-offset-2">
+                      политику обработки ПДн
+                    </Link>
+                    .
+                  </span>
+                </label>
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={consentCrossBorder}
+                    onChange={(e) => setConsentCrossBorder(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-[12px] leading-relaxed text-gray-600">
+                    Согласен на трансграничную передачу данных обработчикам AI (Mistral, Google, OpenAI) для транскрибации и AI-анализа, ст. 12 152-ФЗ.
+                  </span>
+                </label>
+              </div>
+
               <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading ? "Регистрация..." : "Создать аккаунт"}
               </button>

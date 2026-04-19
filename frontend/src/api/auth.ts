@@ -23,8 +23,21 @@ export interface MessageResponse {
 }
 
 export const authApi = {
-  register: (email: string, password: string, name: string) =>
-    api.post<TokenResponse>("/auth/register", { email, password, name }),
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    consents: { consent_terms: boolean; consent_cross_border: boolean } = {
+      consent_terms: true,
+      consent_cross_border: true,
+    }
+  ) =>
+    api.post<TokenResponse>("/auth/register", {
+      email,
+      password,
+      name,
+      ...consents,
+    }),
 
   login: (email: string, password: string) =>
     api.post<TokenResponse>("/auth/login", { email, password }),
