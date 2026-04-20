@@ -26,8 +26,8 @@ boto3==1.36.2
 # HTTP client
 httpx==0.28.1
 
-# AI/LLM
-openai==1.59.5
+# AI/LLM — Mistral (Voxtral transcription + mistral-embed embeddings)
+# + Google Gemini для саммари/тезисов/задач и RAG-генерации ответов.
 mistralai==1.3.1
 
 # FFmpeg

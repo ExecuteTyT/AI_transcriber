@@ -65,7 +65,7 @@ async def send_chat_message(
                 "Перейдите на тариф Про для безлимитного чата.",
             )
 
-    if not settings.OPENAI_API_KEY:
+    if not settings.MISTRAL_API_KEY:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="RAG-чат временно недоступен: не настроен сервис embeddings.",

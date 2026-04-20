@@ -110,12 +110,12 @@ def _chunk_plain_text(text: str) -> list[dict[str, Any]]:
 
 
 async def _generate_embeddings(texts: list[str]) -> list[list[float]]:
-    """Батч-генерация embeddings через OpenAI API."""
+    """Батч-генерация embeddings через Mistral API (mistral-embed, 1024d)."""
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "https://api.openai.com/v1/embeddings",
+            "https://api.mistral.ai/v1/embeddings",
             headers={
-                "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+                "Authorization": f"Bearer {settings.MISTRAL_API_KEY}",
                 "Content-Type": "application/json",
             },
             json={

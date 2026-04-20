@@ -103,6 +103,6 @@ npx tsc --noEmit                      # проверка типов
 - Tailwind CSS для стилей
 
 ## Контекст для решений
-- Себестоимость 1 часа аудио: ~19 ₽ (Voxtral 17 + LLM 1.5 + embeddings 0.03)
-- AI-анализ: Gemini 2.5-flash (актуальная модель в `services/ai_analysis.py`), embeddings: OpenAI text-embedding-3-small
+- Себестоимость 1 часа аудио: ~5.24 ₽ (Voxtral 4.80 + AI-анализ 0.42 + embeddings 0.02)
+- AI-анализ: Gemini 2.5-flash (актуальная модель в `services/ai_analysis.py`), embeddings: Mistral mistral-embed (1024d)
 - Задачи проекта: `docs/tasks_v2.md`

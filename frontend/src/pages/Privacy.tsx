@@ -97,20 +97,14 @@ export default function Privacy() {
                   <tr>
                     <td className="py-2 pr-4">Mistral AI</td>
                     <td className="py-2 pr-4">Франция (ЕС)</td>
-                    <td className="py-2 pr-4">Аудио-файл</td>
-                    <td className="py-2">Транскрибация</td>
+                    <td className="py-2 pr-4">Аудио-файл, фрагменты текста</td>
+                    <td className="py-2">Транскрибация, векторный поиск</td>
                   </tr>
                   <tr>
                     <td className="py-2 pr-4">Google LLC</td>
                     <td className="py-2 pr-4">США</td>
                     <td className="py-2 pr-4">Текст транскрипции</td>
                     <td className="py-2">AI-саммари, чат</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 pr-4">OpenAI</td>
-                    <td className="py-2 pr-4">США</td>
-                    <td className="py-2 pr-4">Фрагменты текста</td>
-                    <td className="py-2">Векторный поиск</td>
                   </tr>
                   <tr>
                     <td className="py-2 pr-4">ООО «Селектел»</td>

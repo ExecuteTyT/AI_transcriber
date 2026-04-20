@@ -16,20 +16,19 @@ class Settings(BaseSettings):
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     JWT_ALGORITHM: str = "HS256"
 
-    # Voxtral (Mistral AI)
+    # Voxtral + embeddings (Mistral AI — единственный провайдер для аудио и векторов)
     MISTRAL_API_KEY: str = ""
     TRANSCRIPTION_PROVIDER: str = "voxtral"
-
-    # OpenAI (embeddings)
-    OPENAI_API_KEY: str = ""
 
     # Google Gemini (LLM — analysis & chat)
     GOOGLE_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.5-flash"
 
-    # Embeddings
-    EMBEDDING_MODEL: str = "text-embedding-3-small"
-    EMBEDDING_DIMENSION: int = 1536
+    # Embeddings — через Mistral (mistral-embed, 1024d).
+    # Мигрировали с OpenAI text-embedding-3-small (1536d) для упрощения compliance
+    # и сокращения числа трансграничных обработчиков (один провайдер → один DPA).
+    EMBEDDING_MODEL: str = "mistral-embed"
+    EMBEDDING_DIMENSION: int = 1024
 
     # S3 (Selectel) — если S3_ACCESS_KEY пуст, используется локальное хранилище
     S3_ENDPOINT_URL: str = "https://s3.storage.selcloud.ru"

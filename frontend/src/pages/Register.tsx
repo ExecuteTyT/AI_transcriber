@@ -174,7 +174,7 @@ export default function Register() {
                     className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                   <span className="text-[12px] leading-relaxed text-gray-600">
-                    Согласен на трансграничную передачу данных обработчикам AI (Mistral, Google, OpenAI) для транскрибации и AI-анализа, ст. 12 152-ФЗ.
+                    Согласен на трансграничную передачу данных обработчикам AI (Mistral, Google) для транскрибации и AI-анализа, ст. 12 152-ФЗ.
                   </span>
                 </label>
               </div>
