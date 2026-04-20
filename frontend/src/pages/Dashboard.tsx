@@ -16,7 +16,7 @@ import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
 import { cn } from "@/lib/cn";
 
-const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес" };
+const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес", premium: "Премиум" };
 
 type FilterKey = "all" | "active" | "completed";
 

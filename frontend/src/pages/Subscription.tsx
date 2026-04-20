@@ -8,7 +8,7 @@ import { ErrorState } from "@/components/states/ErrorState";
 import { fadeUp, staggerChildren } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 
-const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
+const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес", premium: "Премиум" };
 
 const PLAN_FEATURES: Record<string, string[]> = {
   free: ["15 минут в месяц", "Базовое саммари", "Экспорт TXT"],

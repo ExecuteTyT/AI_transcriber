@@ -19,7 +19,7 @@ import { fadeUp, staggerChildren } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { LANGUAGES } from "@/lib/languages";
 
-const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес" };
+const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес", premium: "Премиум" };
 
 function pluralizeDays(n: number): string {
   const a = Math.abs(n) % 100;

@@ -29,7 +29,7 @@ type FeatureGroup = {
 };
 
 type Plan = {
-  id: "free" | "start" | "pro" | "business";
+  id: "free" | "start" | "pro" | "business" | "premium";
   name: string;
   tagline: string;
   price: number;
@@ -81,15 +81,14 @@ const PLANS: Plan[] = [
     id: "start",
     name: "Старт",
     tagline: "Для подкастеров и фрилансеров",
-    price: 390,
+    price: 500,
     period: "/мес",
-    highlight: "popular",
     groups: [
       {
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "360 минут (6 часов)", included: true },
+          { label: "600 минут (10 часов)", included: true },
           { label: "Файлы до 2 часов", included: true },
         ],
       },
@@ -117,9 +116,9 @@ const PLANS: Plan[] = [
     id: "pro",
     name: "Про",
     tagline: "Для бизнеса и продакшена",
-    price: 790,
+    price: 820,
     period: "/мес",
-    highlight: "premium",
+    highlight: "popular",
     groups: [
       {
         icon: Clock,
@@ -154,14 +153,14 @@ const PLANS: Plan[] = [
     id: "business",
     name: "Бизнес",
     tagline: "Для команд до 5 человек",
-    price: 1990,
+    price: 2300,
     period: "/мес",
     groups: [
       {
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "4 000 минут (66 часов)", included: true },
+          { label: "3 600 минут (60 часов)", included: true },
           { label: "Файлы до 4 часов", included: true },
           { label: "Приоритетная обработка", included: true },
         ],
@@ -186,6 +185,44 @@ const PLANS: Plan[] = [
       },
     ],
     ctaLabel: "Оформить Бизнес",
+  },
+  {
+    id: "premium",
+    name: "Премиум",
+    tagline: "Для студий и агентств",
+    price: 4600,
+    period: "/мес",
+    highlight: "premium",
+    groups: [
+      {
+        icon: Clock,
+        title: "Минуты",
+        items: [
+          { label: "7 200 минут (120 часов)", included: true },
+          { label: "Файлы до 6 часов", included: true },
+          { label: "Приоритетная обработка", included: true },
+        ],
+      },
+      {
+        icon: Sparkles,
+        title: "AI-анализ",
+        items: [
+          { label: "Всё без лимита", included: true },
+          { label: "Спикеры без ограничений", included: true },
+          { label: "RAG-чат безлимит", included: true },
+          { label: "Задачи (action items)", included: true },
+        ],
+      },
+      {
+        icon: RefreshCw,
+        title: "Экспорт",
+        items: [
+          { label: "TXT / SRT / DOCX", included: true },
+          { label: "До 10 пользователей", included: true },
+        ],
+      },
+    ],
+    ctaLabel: "Оформить Премиум",
   },
 ];
 
@@ -238,7 +275,7 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
   },
 ];
 
-const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес" };
+const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес", premium: "Премиум" };
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -315,7 +352,7 @@ export default function Pricing() {
 
       <motion.div
         variants={fadeUp}
-        className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 md:items-stretch md:gap-4"
+        className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:items-stretch md:gap-4"
       >
         {PLANS.map((plan) => (
           <PlanCard

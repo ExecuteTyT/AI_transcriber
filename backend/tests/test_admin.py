@@ -133,10 +133,10 @@ async def test_admin_update_user_plan(client: AsyncClient, db_session: AsyncSess
     me = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {reg.json()['access_token']}"})
     user_id = me.json()["id"]
 
-    resp = await client.patch(f"/api/admin/users/{user_id}", headers=_h(token), json={"plan": "pro", "minutes_limit": 1200})
+    resp = await client.patch(f"/api/admin/users/{user_id}", headers=_h(token), json={"plan": "pro", "minutes_limit": 1500})
     assert resp.status_code == 200
     assert resp.json()["plan"] == "pro"
-    assert resp.json()["minutes_limit"] == 1200
+    assert resp.json()["minutes_limit"] == 1500
 
 
 @pytest.mark.asyncio

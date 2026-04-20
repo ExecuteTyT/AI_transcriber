@@ -16,15 +16,19 @@ from app.services.plans import PLANS, get_plan
 
 logger = logging.getLogger(__name__)
 
-# Цены в копейках для ЮKassa
-PLAN_PRICES = {
-    "start": "290.00",
-    "pro": "590.00",
+# Цены — источник истины app.services.plans.PLANS.
+# Здесь формируем формат который нужен ЮKassa (string с 2 знаками после запятой).
+PLAN_PRICES: dict[str, str] = {
+    code: f"{cfg.price_rub:.2f}"
+    for code, cfg in PLANS.items()
+    if cfg.price_rub > 0
 }
 
-PLAN_DESCRIPTIONS = {
-    "start": "AI Voice — тариф Старт (300 мин/мес)",
-    "pro": "AI Voice — тариф Про (1200 мин/мес)",
+PLAN_DESCRIPTIONS: dict[str, str] = {
+    "start": "Scribi — тариф Старт (10 часов / мес)",
+    "pro": "Scribi — тариф Про (25 часов / мес)",
+    "business": "Scribi — тариф Бизнес (60 часов / мес)",
+    "premium": "Scribi — тариф Премиум (120 часов / мес)",
 }
 
 

@@ -121,4 +121,4 @@ async def test_webhook_payment_succeeded(client: AsyncClient, db_session):
     data = sub_resp.json()
     assert data["plan"] == "start"
     assert data["status"] == "active"
-    assert data["minutes_limit"] == 300
+    assert data["minutes_limit"] == 600
