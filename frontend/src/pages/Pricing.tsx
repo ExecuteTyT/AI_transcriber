@@ -11,7 +11,6 @@ import {
   RefreshCw,
   Shield,
   Sparkles,
-  X,
   Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -328,16 +327,13 @@ export default function Pricing() {
       )}
 
       {isStandalone && (
-        <motion.header variants={fadeUp} className="text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-primary-700 ring-1 ring-primary-100">
-            <Icon icon={Sparkles} size={12} />
-            Тарифы
-          </span>
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight md:text-5xl">
-            Простые и прозрачные
+        <motion.header variants={fadeUp} className="max-w-3xl">
+          <p className="eyebrow mb-4">Тарифы</p>
+          <h1 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
+            Простые <em className="italic text-acid-300">и прозрачные</em>
           </h1>
-          <p className="mx-auto mt-3 max-w-md text-[15px] text-gray-500">
-            Начните бесплатно. Переходите, когда понадобится больше минут.
+          <p className="mt-5 max-w-[44ch] text-[15px] text-[var(--fg-muted)] leading-[1.55]">
+            Начните бесплатно. Переходите, когда понадобится больше минут. Без скрытых платежей и без карты.
           </p>
         </motion.header>
       )}
@@ -366,18 +362,18 @@ export default function Pricing() {
         ))}
       </motion.div>
 
-      <motion.div variants={fadeUp} className="grid gap-3 sm:grid-cols-3">
+      <motion.div variants={fadeUp} className="grid gap-px sm:grid-cols-3 border border-[var(--border)] rounded-2xl overflow-hidden bg-[var(--border)]">
         {TRUST_ITEMS.map((item) => (
           <div
             key={item.title}
-            className="flex items-start gap-3 rounded-2xl border border-gray-200/70 bg-white p-4"
+            className="flex items-start gap-3 bg-[var(--bg-elevated)] p-5"
           >
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
-              <Icon icon={item.icon} size={18} strokeWidth={2} />
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-acid-300/10 text-acid-300 border border-acid-300/20">
+              <Icon icon={item.icon} size={16} strokeWidth={1.75} />
             </div>
             <div>
-              <p className="text-[13px] font-bold text-gray-900">{item.title}</p>
-              <p className="mt-0.5 text-[12px] leading-relaxed text-gray-500">
+              <p className="text-[13px] font-semibold text-[var(--fg)]">{item.title}</p>
+              <p className="mt-1 text-[12px] leading-relaxed text-[var(--fg-muted)]">
                 {item.description}
               </p>
             </div>
@@ -385,17 +381,22 @@ export default function Pricing() {
         ))}
       </motion.div>
 
-      <motion.section variants={fadeUp} className="space-y-3">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-bold tracking-tight md:text-2xl">Частые вопросы</h2>
+      <motion.section variants={fadeUp} className="pt-4">
+        <div className="flex items-baseline justify-between mb-8">
+          <div>
+            <p className="eyebrow mb-3">FAQ</p>
+            <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
+              Частые <em className="italic text-acid-300">вопросы</em>
+            </h2>
+          </div>
           <a
             href="mailto:support@dicto.pro"
-            className="text-sm font-semibold text-primary-700 hover:text-primary-600"
+            className="hidden md:inline font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] hover:text-[var(--fg)] transition-colors"
           >
-            Нужна помощь?
+            Нужна помощь? →
           </a>
         </div>
-        <div className="divide-y divide-gray-200/60 overflow-hidden rounded-2xl border border-gray-200/60 bg-white">
+        <div className="border-t border-[var(--border)]">
           {FAQ.map((item, i) => (
             <FaqRow
               key={i}
@@ -409,24 +410,19 @@ export default function Pricing() {
       </motion.section>
 
       <motion.section variants={fadeUp}>
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-primary-700 to-accent-600 px-6 py-8 text-center md:px-10 md:py-10">
-          <div
-            className="pointer-events-none absolute inset-0 bg-grid opacity-20"
-            aria-hidden
-          />
-          <div className="relative">
-            <h3 className="text-xl font-extrabold tracking-tight text-white md:text-2xl">
-              Готовы сэкономить часы?
+        <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] px-6 py-12 md:px-12 md:py-16">
+          <div className="max-w-2xl">
+            <h3 className="font-display text-4xl md:text-6xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-4">
+              Готовы <em className="italic text-acid-300">сэкономить</em> часы?
             </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-white/85">
-              15 минут бесплатной транскрибации. Регистрация занимает 30 секунд.
+            <p className="text-[15px] text-[var(--fg-muted)] leading-[1.55] mb-8 max-w-[44ch]">
+              30 минут + 180 бонусных при регистрации. Без карты, без подписки на пробный период.
             </p>
             <Link
               to={user ? "/upload" : "/register"}
-              className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-white px-6 py-3 text-sm font-bold text-primary-700 shadow-raised hover:bg-surface-50 transition-colors duration-base press"
+              className="btn-accent !py-4 !px-7 !text-[15px]"
             >
-              <Icon icon={Sparkles} size={14} strokeWidth={2.25} />
-              {user ? "Загрузить запись" : "Попробовать бесплатно"}
+              {user ? "Загрузить запись" : "Попробовать бесплатно"} <span aria-hidden>→</span>
             </Link>
           </div>
         </div>
@@ -545,93 +541,92 @@ function PlanCard({
   const isPremium = plan.highlight === "premium";
   const isPopular = plan.highlight === "popular";
 
+  // Acid-on-ink для популярного плана; ink-серый gradient для премиум; обычный elevated для остальных.
+  const cardStyle = isPopular
+    ? "bg-acid-300 text-ink-900 border-acid-300"
+    : isPremium
+    ? "bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 text-[var(--fg)] border-[var(--border-strong)]"
+    : "bg-[var(--bg-elevated)] text-[var(--fg)] border-[var(--border)]";
+
   return (
     <motion.article
       whileHover={{ y: -2 }}
       transition={springTight}
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-3xl p-6 md:p-7",
-        isPremium
-          ? "bg-gradient-to-br from-gray-900 via-dark-100 to-primary-950 text-white shadow-elevated"
-          : isPopular
-          ? "bg-white shadow-raised ring-2 ring-primary-400/70"
-          : "bg-white shadow-card ring-1 ring-gray-200/70"
+        "relative flex flex-col overflow-hidden rounded-3xl p-6 md:p-7 border",
+        cardStyle
       )}
     >
-      {/* Decorative bg for Pro */}
-      {isPremium && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(80% 60% at 20% 0%, rgba(99,102,241,0.22) 0%, transparent 55%), radial-gradient(80% 60% at 100% 100%, rgba(249,115,22,0.18) 0%, transparent 55%)",
-          }}
-        />
-      )}
-
-      {/* Popular badge */}
       {isPopular && !isCurrent && (
-        <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary-600 to-accent-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-glow-sm">
+        <span className="absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-900/70">
           Популярный
+        </span>
+      )}
+      {isPremium && !isCurrent && (
+        <span className="absolute top-5 right-5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-acid-300">
+          <Icon icon={Crown} size={10} />
+          Премиум
         </span>
       )}
       {isCurrent && (
         <span
           className={cn(
-            "absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider",
-            isPremium
-              ? "bg-white text-primary-700 shadow-glow-sm"
-              : "bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-glow-sm"
+            "absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em]",
+            isPopular ? "text-ink-900" : "text-acid-300"
           )}
         >
-          Текущий
+          ✓ Текущий
         </span>
       )}
 
       <div className="relative flex flex-1 flex-col">
-        <header className="flex items-center gap-2">
-          <h3
-            className={cn(
-              "text-lg font-bold tracking-tight md:text-xl",
-              isPremium ? "text-white" : "text-gray-900"
-            )}
-          >
-            {plan.name}
-          </h3>
-          {isPremium && <Icon icon={Crown} size={16} className="text-amber-300" />}
-        </header>
         <p
           className={cn(
-            "mt-1 text-xs",
-            isPremium ? "text-white/70" : "text-gray-500"
+            "font-mono text-[10px] uppercase tracking-[0.2em] mb-4",
+            isPopular ? "text-ink-900/70" : "text-[var(--fg-subtle)]"
+          )}
+        >
+          /{plan.id}
+        </p>
+        <h3
+          className={cn(
+            "font-display text-3xl md:text-4xl leading-none tracking-[-0.01em]",
+            isPopular ? "text-ink-900" : "text-[var(--fg)]"
+          )}
+        >
+          {plan.name}
+        </h3>
+        <p
+          className={cn(
+            "mt-2 text-[12px]",
+            isPopular ? "text-ink-900/70" : "text-[var(--fg-muted)]"
           )}
         >
           {plan.tagline}
         </p>
 
-        <div className="mt-5 flex items-baseline gap-1">
+        <div className="mt-6 flex items-baseline gap-1.5">
           <span
             className={cn(
-              "text-4xl font-extrabold tracking-tight tabular md:text-5xl",
-              isPremium ? "text-white" : "text-gray-900"
+              "font-display text-5xl md:text-6xl leading-none tabular tracking-[-0.02em]",
+              isPopular ? "text-ink-900" : "text-[var(--fg)]"
             )}
           >
             {plan.price === 0 ? "0" : plan.price.toLocaleString("ru-RU")}
           </span>
           <span
             className={cn(
-              "text-sm font-medium",
-              isPremium ? "text-white/70" : "text-gray-500"
+              "font-mono text-[12px]",
+              isPopular ? "text-ink-900/70" : "text-[var(--fg-muted)]"
             )}
           >
             ₽{plan.period}
           </span>
         </div>
 
-        <div className="mt-6 flex-1 space-y-4">
+        <div className="mt-7 flex-1 space-y-5">
           {plan.groups.map((group) => (
-            <FeatureGroupBlock key={group.title} group={group} premium={isPremium} />
+            <FeatureGroupBlock key={group.title} group={group} popular={isPopular} />
           ))}
         </div>
 
@@ -640,16 +635,16 @@ function PlanCard({
           onClick={onSelect}
           disabled={isCurrent || disabled}
           className={cn(
-            "mt-7 inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-5 py-3 text-sm font-bold transition-all duration-base press",
+            "mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-[13px] font-semibold transition-colors duration-base",
             isCurrent
-              ? isPremium
-                ? "bg-white/10 text-white/70 cursor-default"
-                : "bg-primary-50 text-primary-600 cursor-default"
-              : isPremium
-              ? "bg-white text-primary-700 hover:bg-surface-50 shadow-raised"
+              ? isPopular
+                ? "bg-ink-900/10 text-ink-900/60 cursor-default"
+                : "bg-[var(--border)] text-[var(--fg-subtle)] cursor-default"
               : isPopular
-              ? "btn-primary !shadow-md"
-              : "border-2 border-primary-500 text-primary-700 hover:bg-primary-50",
+              ? "bg-ink-900 text-acid-300 hover:bg-ink-800"
+              : isPremium
+              ? "bg-acid-300 text-ink-900 hover:bg-acid-200"
+              : "border border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--bg-muted)]",
             disabled && !isCurrent && "opacity-60 cursor-wait"
           )}
         >
@@ -662,10 +657,7 @@ function PlanCard({
             </>
           ) : (
             <>
-              {plan.ctaLabel}
-              {!isPremium && !isPopular && (
-                <Icon icon={Sparkles} size={12} strokeWidth={2.25} />
-              )}
+              {plan.ctaLabel} <span aria-hidden>→</span>
             </>
           )}
         </button>
@@ -674,46 +666,42 @@ function PlanCard({
   );
 }
 
-function FeatureGroupBlock({ group, premium }: { group: FeatureGroup; premium: boolean }) {
+function FeatureGroupBlock({ group, popular }: { group: FeatureGroup; popular: boolean }) {
   return (
     <div>
       <div
         className={cn(
-          "mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]",
-          premium ? "text-white/60" : "text-gray-400"
+          "mb-2.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em]",
+          popular ? "text-ink-900/65" : "text-[var(--fg-subtle)]"
         )}
       >
-        <Icon icon={group.icon} size={12} />
+        <Icon icon={group.icon} size={11} />
         {group.title}
       </div>
-      <ul className="space-y-1.5">
+      <ul className="space-y-2">
         {group.items.map((item) => (
           <li
             key={item.label}
             className={cn(
-              "flex items-start gap-2 text-[13.5px] leading-snug",
-              !item.included && "opacity-50"
+              "flex items-start gap-2 text-[13px] leading-snug",
+              !item.included && "opacity-45"
             )}
           >
             <span
               className={cn(
-                "mt-[3px] flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full",
+                "mt-[2px] flex-shrink-0",
                 item.included
-                  ? premium
-                    ? "bg-emerald-400/15 text-emerald-300"
-                    : "bg-emerald-50 text-emerald-500"
-                  : premium
-                  ? "bg-white/5 text-white/40"
-                  : "bg-gray-100 text-gray-400"
+                  ? popular
+                    ? "text-ink-900"
+                    : "text-acid-300"
+                  : popular
+                  ? "text-ink-900/40"
+                  : "text-[var(--fg-subtle)]"
               )}
             >
-              <Icon
-                icon={item.included ? Check : X}
-                size={10}
-                strokeWidth={item.included ? 3 : 2}
-              />
+              {item.included ? "✓" : "✕"}
             </span>
-            <span className={cn(premium ? "text-white/90" : "text-gray-700")}>
+            <span className={cn(popular ? "text-ink-900/85" : "text-[var(--fg-muted)]")}>
               {item.label}
             </span>
           </li>
@@ -735,19 +723,29 @@ function FaqRow({
   onToggle: () => void;
 }) {
   return (
-    <div>
+    <div className="border-b border-[var(--border)]">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors duration-fast hover:bg-surface-50"
+        className="flex w-full items-start justify-between gap-6 py-6 text-left group"
       >
-        <span className="text-[15px] font-semibold text-gray-900">{question}</span>
+        <div className="flex items-start gap-5 flex-1 min-w-0">
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] pt-1.5">
+            Q
+          </span>
+          <span className="font-display text-xl md:text-2xl leading-[1.15] text-[var(--fg)] text-left">
+            {question}
+          </span>
+        </div>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.22 }}
-          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-surface-100 text-gray-500"
+          className={cn(
+            "mt-2 flex-shrink-0",
+            open ? "text-acid-300" : "text-[var(--fg-subtle)] group-hover:text-[var(--fg)]"
+          )}
         >
-          <Icon icon={ChevronDown} size={14} strokeWidth={2} />
+          <Icon icon={ChevronDown} size={18} strokeWidth={1.5} />
         </motion.span>
       </button>
       <AnimatePresence initial={false}>
@@ -760,7 +758,7 @@ function FaqRow({
             transition={{ duration: 0.28, ease: [0.25, 1, 0.5, 1] }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-4 text-[14px] leading-relaxed text-gray-600">
+            <div className="pl-[3rem] md:pl-[3.5rem] pb-6 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
               {answer}
             </div>
           </motion.div>
