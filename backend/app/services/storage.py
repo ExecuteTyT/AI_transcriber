@@ -54,7 +54,12 @@ class S3Service(StorageBackend):
             aws_access_key_id=settings.S3_ACCESS_KEY,
             aws_secret_access_key=settings.S3_SECRET_KEY,
             region_name=settings.S3_REGION,
-            config=BotoConfig(signature_version="s3v4"),
+            config=BotoConfig(
+                signature_version="s3v4",
+                # vHosted-style (bucket.endpoint). Path-style deprecated у AWS и
+                # у Selectel (см. их рекомендацию при создании бакета).
+                s3={"addressing_style": "virtual"},
+            ),
         )
         self.bucket = settings.S3_BUCKET_NAME
 
