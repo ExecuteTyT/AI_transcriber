@@ -364,52 +364,42 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Bento-grid Features (dark) ─── */}
-      <section id="features" className="py-20 bg-dark-100">
+      {/* ─── Bento-grid Features (editorial dark) ─── */}
+      <section id="features" className="py-24 md:py-32 bg-[var(--bg)] border-t border-[var(--border)]">
         <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-primary-400 tracking-wide uppercase mb-3">Возможности</p>
-            <h2 className="section-heading text-white">
-              Не просто текст —<br />
-              <span className="gradient-text">структурированные инсайты</span>
+          <div className="mb-16 md:mb-20 max-w-3xl">
+            <p className="eyebrow mb-4">Возможности</p>
+            <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
+              Не просто текст&nbsp;— <em className="italic text-acid-300">структурированные инсайты</em>
             </h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4 md:gap-5">
             {features.map((f, i) => (
-              <div key={f.title} className={`group relative overflow-hidden backdrop-blur-sm rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgba(79,70,229,0.1)] ${i === 0 ? "md:row-span-2 bg-gradient-to-br from-primary-500/10 to-white/[0.03] border-white/[0.08] hover:border-primary-500/30" : "bg-white/[0.04] border-white/[0.06] hover:border-primary-500/30 hover:bg-white/[0.07]"}`}>
-                {/* Unique visual element per card */}
-                {i === 0 && (
-                  <div className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" /></svg>
-                  </div>
-                )}
-                {i === 1 && (
-                  <div className="absolute top-4 right-4 flex gap-1">
-                    <div className="w-3 h-3 rounded-full bg-blue-400/30" />
-                    <div className="w-3 h-3 rounded-full bg-violet-400/30" />
-                    <div className="w-3 h-3 rounded-full bg-amber-400/30" />
-                  </div>
-                )}
-                {i === 2 && (
-                  <div className="absolute top-4 right-4">
-                    <svg className="w-5 h-5 text-amber-400/30 animate-pulse-slow" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                    </svg>
-                  </div>
-                )}
-                {i === 3 && (
-                  <div className="absolute top-4 right-4 flex gap-1.5">
-                    <span className="text-[10px] font-mono bg-white/10 text-gray-400 px-1.5 py-0.5 rounded">TXT</span>
-                    <span className="text-[10px] font-mono bg-white/10 text-gray-400 px-1.5 py-0.5 rounded">SRT</span>
-                  </div>
-                )}
+              <div
+                key={f.title}
+                className={`group relative overflow-hidden rounded-2xl p-7 md:p-8 border border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] transition-colors duration-300 ${i === 0 ? "md:row-span-2" : ""}`}
+              >
+                {/* Top-right chip */}
+                <div className="absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)]">
+                  /0{i + 1}
+                </div>
 
-                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <div className="w-10 h-10 rounded-xl bg-acid-300/10 border border-acid-300/20 flex items-center justify-center text-acid-300 mb-6 group-hover:bg-acid-300/15 transition-colors">
                   {f.icon}
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">{f.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
+                <h3 className="font-display text-2xl md:text-3xl leading-tight text-[var(--fg)] mb-3">
+                  {f.title}
+                </h3>
+                <p className="text-[15px] text-[var(--fg-muted)] leading-[1.55] max-w-prose">{f.desc}</p>
+
+                {/* Visual accent on featured card */}
+                {i === 0 && (
+                  <div className="mt-8 pt-6 border-t border-[var(--border)] flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+                    <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 animate-pulse" aria-hidden />
+                    Voxtral V2 · Mistral AI
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -467,74 +457,102 @@ export default function Landing() {
         </FadeInOnScroll>
       </section>
 
-      {/* ─── Pricing (dark) ─── */}
-      <section id="pricing" className="py-20 md:py-24 bg-dark-50 bg-grid">
+      {/* ─── Pricing (editorial ink) ─── */}
+      <section id="pricing" className="py-24 md:py-32 bg-[var(--bg)] border-t border-[var(--border)]">
         <FadeInOnScroll>
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-primary-400 tracking-wide uppercase mb-3">Тарифы</p>
-            <h2 className="section-heading text-white mb-4">Простые и прозрачные</h2>
-            <p className="text-gray-400">Начните бесплатно. Без скрытых платежей.</p>
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-16 md:mb-20 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="eyebrow mb-4">Тарифы</p>
+              <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
+                Простые <em className="italic text-acid-300">и прозрачные</em>
+              </h2>
+            </div>
+            <p className="text-[15px] text-[var(--fg-muted)] md:text-right md:max-w-[28ch]">
+              Без скрытых платежей, без карты.<br />
+              Переходите между тарифами в один клик.
+            </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+
+          <div className="grid md:grid-cols-3 border border-[var(--border)] rounded-3xl overflow-hidden">
             {/* Free */}
-            <div className="bg-white/[0.05] border border-white/[0.08] rounded-2xl p-8">
-              <h3 className="font-bold text-lg text-white">Free</h3>
-              <p className="text-xs text-gray-500 mt-1">Для знакомства</p>
-              <div className="mt-4 mb-6">
-                <span className="text-4xl font-extrabold text-white">0 ₽</span>
+            <div className="relative p-8 md:p-10 border-b md:border-b-0 md:border-r border-[var(--border)] bg-[var(--bg-elevated)]">
+              <div className="flex items-center gap-2 mb-6">
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">/free</span>
               </div>
-              <ul className="space-y-3 text-sm text-gray-300 mb-8">
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 30 мин/мес + 180 бонус</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 5 AI-саммари</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Спикеры до 3</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Экспорт TXT / SRT</li>
+              <div className="mb-8">
+                <div className="font-display text-6xl leading-none text-[var(--fg)] mb-2">0&nbsp;₽</div>
+                <p className="text-[13px] text-[var(--fg-muted)]">для знакомства</p>
+              </div>
+              <ul className="space-y-3 text-[14px] text-[var(--fg-muted)] mb-8">
+                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>30 мин/мес + 180 бонус</li>
+                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>5 AI-саммари</li>
+                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>Спикеры до 3</li>
+                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>Экспорт TXT / SRT</li>
               </ul>
-              <Link to="/register" className="w-full text-center block border-2 border-primary-400 text-primary-300 hover:bg-primary-500/20 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200">Начать бесплатно</Link>
+              <Link to="/register" onClick={() => play("tick")} className="btn-editorial-ghost w-full justify-center">
+                Начать бесплатно
+              </Link>
             </div>
+
             {/* Start */}
-            <div className="bg-white/[0.05] border border-white/[0.08] rounded-2xl p-8">
-              <h3 className="font-bold text-lg text-white">Старт</h3>
-              <p className="text-xs text-gray-500 mt-1">Для подкастеров и фрилансеров</p>
-              <div className="mt-4 mb-6">
-                <span className="text-4xl font-extrabold text-white">500 ₽</span>
-                <span className="text-gray-400 text-sm">/мес</span>
+            <div className="relative p-8 md:p-10 border-b md:border-b-0 md:border-r border-[var(--border)] bg-[var(--bg-elevated)]">
+              <div className="flex items-center gap-2 mb-6">
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">/start</span>
               </div>
-              <ul className="space-y-3 text-sm text-gray-300 mb-8">
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 600 мин (10 часов)</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> AI-саммари безлимит</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Разметка до 10 спикеров</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> TXT / SRT / DOCX</li>
+              <div className="mb-8">
+                <div className="font-display text-6xl leading-none text-[var(--fg)] mb-2">500&nbsp;₽</div>
+                <p className="text-[13px] text-[var(--fg-muted)]">для подкастеров и фрилансеров</p>
+              </div>
+              <ul className="space-y-3 text-[14px] text-[var(--fg-muted)] mb-8">
+                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>600 мин (10 часов)</li>
+                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>AI-саммари без лимита</li>
+                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>Разметка до 10 спикеров</li>
+                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>TXT / SRT / DOCX</li>
               </ul>
-              <Link to="/register" className="w-full text-center block border-2 border-primary-400 text-primary-300 hover:bg-primary-500/20 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200">Попробовать Старт</Link>
+              <Link to="/register" onClick={() => play("tick")} className="btn-editorial-ghost w-full justify-center">
+                Оформить Старт
+              </Link>
             </div>
-            {/* Pro — popular */}
-            <div className="relative gradient-border shadow-glow-lg md:scale-[1.02]">
-              <div className="bg-dark-100 rounded-2xl p-8 h-full">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-primary-600 to-accent-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
-                    Популярный
-                  </span>
-                </div>
-                <h3 className="font-bold text-lg text-white">Про</h3>
-                <p className="text-xs text-accent-500 font-medium mt-1">Для бизнеса и продакшена</p>
-                <div className="mt-4 mb-6">
-                  <span className="text-4xl font-extrabold text-white">820 ₽</span>
-                  <span className="text-gray-400 text-sm">/мес</span>
-                </div>
-                <ul className="space-y-3 text-sm text-gray-300 mb-8">
-                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 1 500 мин (25 часов)</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Спикеры без лимита</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> RAG-чат безлимит</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Action items</li>
-                </ul>
-                <Link to="/register" className="btn-primary w-full text-center block">Попробовать Про</Link>
+
+            {/* Pro — popular, acid highlight */}
+            <div className="relative p-8 md:p-10 bg-acid-300 text-ink-900">
+              <div className="absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-900/70">
+                Популярный
               </div>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-900/70">/pro</span>
+              </div>
+              <div className="mb-8">
+                <div className="font-display text-6xl leading-none mb-2">820&nbsp;₽</div>
+                <p className="text-[13px] text-ink-900/70">для бизнеса и продакшена</p>
+              </div>
+              <ul className="space-y-3 text-[14px] text-ink-900/85 mb-8">
+                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-ink-900">✓</span>1 500 мин (25 часов)</li>
+                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-ink-900">✓</span>Спикеры без лимита</li>
+                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-ink-900">✓</span>RAG-чат без лимита</li>
+                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-ink-900">✓</span>Action items</li>
+              </ul>
+              <Link
+                to="/register"
+                onClick={() => play("confirm")}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-5 py-3 text-[14px] font-semibold text-acid-300 hover:bg-ink-800 transition-colors"
+              >
+                Попробовать Про <span aria-hidden>→</span>
+              </Link>
             </div>
           </div>
-          <div className="text-center mt-8">
-            <Link to="/pricing" className="text-sm text-primary-300 hover:text-white transition underline underline-offset-4">
-              Бизнес 2 300 ₽ и Премиум 4 600 ₽ — все тарифы →
+
+          <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+              + Бизнес 2 300&nbsp;₽ · Премиум 4 600&nbsp;₽ — для команд и студий
+            </p>
+            <Link
+              to="/pricing"
+              className="inline-flex items-center gap-2 text-[14px] text-[var(--fg)] hover:text-acid-300 transition-colors group"
+            >
+              Все тарифы
+              <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
             </Link>
           </div>
         </div>
