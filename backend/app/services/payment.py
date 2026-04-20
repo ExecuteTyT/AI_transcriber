@@ -25,10 +25,10 @@ PLAN_PRICES: dict[str, str] = {
 }
 
 PLAN_DESCRIPTIONS: dict[str, str] = {
-    "start": "Scribi — тариф Старт (10 часов / мес)",
-    "pro": "Scribi — тариф Про (25 часов / мес)",
-    "business": "Scribi — тариф Бизнес (60 часов / мес)",
-    "premium": "Scribi — тариф Премиум (120 часов / мес)",
+    "start": "Dicto — тариф Старт (10 часов / мес)",
+    "pro": "Dicto — тариф Про (25 часов / мес)",
+    "business": "Dicto — тариф Бизнес (60 часов / мес)",
+    "premium": "Dicto — тариф Премиум (120 часов / мес)",
 }
 
 

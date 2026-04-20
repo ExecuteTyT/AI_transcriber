@@ -389,7 +389,7 @@ export default function Pricing() {
         <div className="flex items-baseline justify-between">
           <h2 className="text-xl font-bold tracking-tight md:text-2xl">Частые вопросы</h2>
           <a
-            href="mailto:support@scribi.ai"
+            href="mailto:support@dicto.pro"
             className="text-sm font-semibold text-primary-700 hover:text-primary-600"
           >
             Нужна помощь?
@@ -439,17 +439,17 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-surface-50">
       <Helmet>
-        <title>Тарифы Scribi — транскрибация от 290 ₽/мес</title>
+        <title>Тарифы Dicto — транскрибация от 290 ₽/мес</title>
         <meta
           name="description"
-          content="Тарифы Scribi: Free (15 мин/мес бесплатно), Старт (290 ₽/мес, 5 часов), Про (590 ₽/мес, 20 часов). AI-саммари, разметка спикеров, экспорт."
+          content="Тарифы Dicto: Free (15 мин/мес бесплатно), Старт (290 ₽/мес, 5 часов), Про (590 ₽/мес, 20 часов). AI-саммари, разметка спикеров, экспорт."
         />
         <link rel="canonical" href="https://dicto.pro/pricing" />
       </Helmet>
       <header className="sticky top-0 z-30 border-b border-gray-100 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link to="/" className="text-xl font-bold gradient-text">
-            Scribi
+            Dicto
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/login" className="btn-ghost text-sm">

@@ -57,8 +57,8 @@
 # 3. Настроить окружение
 ssh root@<new-ip>
 apt update && apt install -y docker.io docker-compose-plugin git
-git clone https://github.com/ExecuteTyT/AI_transcriber.git /opt/scribi
-cd /opt/scribi
+git clone https://github.com/ExecuteTyT/AI_transcriber.git /opt/dicto
+cd /opt/dicto
 cp .env.example .env
 # Отредактировать .env — те же ключи что и на текущем проде
 ```
@@ -84,7 +84,7 @@ scp root@<old-ip>:/tmp/db.sql.gz /tmp/
 scp /tmp/db.sql.gz root@<new-ip>:/tmp/
 
 # 2. Восстановление на новом
-ssh root@<new-ip> "cd /opt/scribi && gunzip -c /tmp/db.sql.gz | docker compose -f docker-compose.prod.yml exec -T db psql -U aivoice aivoice"
+ssh root@<new-ip> "cd /opt/dicto && gunzip -c /tmp/db.sql.gz | docker compose -f docker-compose.prod.yml exec -T db psql -U aivoice aivoice"
 
 # 3. S3-bucket НЕ переносим — он уже в РФ (Selectel)
 
@@ -106,7 +106,7 @@ dig dicto.pro +short      # должен вернуть <new-ip>
 
 ```bash
 ssh root@<new-ip>
-cd /opt/scribi
+cd /opt/dicto
 docker compose -f docker-compose.prod.yml run --rm certbot certonly \
   --webroot -w /var/www/certbot \
   -d dicto.pro -d www.dicto.pro \

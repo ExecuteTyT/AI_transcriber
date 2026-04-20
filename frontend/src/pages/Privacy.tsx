@@ -7,10 +7,10 @@ export default function Privacy() {
   return (
     <div className="min-h-screen bg-surface-50">
       <Helmet>
-        <title>Политика конфиденциальности — Scribi</title>
+        <title>Политика конфиденциальности — Dicto</title>
         <meta
           name="description"
-          content="Политика обработки персональных данных Scribi — соответствие 152-ФЗ, используемые сервисы, права субъекта данных."
+          content="Политика обработки персональных данных Dicto — соответствие 152-ФЗ, используемые сервисы, права субъекта данных."
         />
         <link rel="canonical" href="https://dicto.pro/privacy" />
       </Helmet>
@@ -22,7 +22,7 @@ export default function Privacy() {
             На главную
           </Link>
           <Link to="/" className="text-xl font-bold gradient-text">
-            Scribi
+            Dicto
           </Link>
         </div>
       </header>
@@ -43,7 +43,7 @@ export default function Privacy() {
             <h2 className="text-xl font-bold tracking-tight text-gray-900">1. Общие положения</h2>
             <p>
               Настоящая политика регулирует обработку персональных данных оператором
-              <strong> ИП Сабирзянов Ислам</strong> (далее — «Оператор», «Scribi»,
+              <strong> ИП Сабирзянов Ислам</strong> (далее — «Оператор», «Dicto»,
               «мы») пользователей сервиса транскрибации аудио и видео, размещённого по
               адресу <code>dicto.pro</code> (далее — «Сервис»).
             </p>

@@ -144,7 +144,7 @@ const socialProof = [
     value: 500,
     suffix: "+",
     label: "пользователей",
-    desc: "Доверяют Scribi транскрибацию своих записей",
+    desc: "Доверяют Dicto транскрибацию своих записей",
     icon: (
       <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
@@ -204,10 +204,10 @@ export default function Landing() {
   return (
     <div className="min-h-screen overflow-hidden">
       <Helmet>
-        <title>Scribi — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
+        <title>Dicto — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
         <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 15 мин/мес. От 290 ₽/мес." />
         <link rel="canonical" href="https://dicto.pro/" />
-        <meta property="og:title" content="Scribi — Транскрибация аудио и видео в текст онлайн" />
+        <meta property="og:title" content="Dicto — Транскрибация аудио и видео в текст онлайн" />
         <meta property="og:description" content="Превращайте аудио и видео в текст, саммари и ключевые тезисы с помощью ИИ. Разметка спикеров, таймкоды, экспорт. Бесплатно 15 мин/мес." />
         <meta property="og:url" content="https://dicto.pro/" />
       </Helmet>
@@ -215,7 +215,7 @@ export default function Landing() {
       {/* ─── Header ─── */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/90 backdrop-blur-2xl border-b border-gray-200/40 shadow-sm" : "bg-transparent"}`}>
         <div className={`max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between transition-all duration-300 ${scrolled ? "h-14" : "h-16"}`}>
-          <Link to="/" className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${scrolled ? "text-gray-900" : "text-white"}`}>Scribi</Link>
+          <Link to="/" className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${scrolled ? "text-gray-900" : "text-white"}`}>Dicto</Link>
           <nav className={`hidden md:flex items-center gap-8 text-sm font-medium transition-colors duration-300 ${scrolled ? "text-gray-600" : "text-white/70"}`}>
             <a href="#features" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Возможности</a>
             <a href="#use-cases" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Кому</a>
@@ -395,7 +395,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Аудитория</p>
-            <h2 className="section-heading">Кому подходит Scribi</h2>
+            <h2 className="section-heading">Кому подходит Dicto</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
             {useCases.map((uc) => (
@@ -557,7 +557,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <span className="font-extrabold text-white text-lg tracking-tight">Scribi</span>
+              <span className="font-extrabold text-white text-lg tracking-tight">Dicto</span>
               <span className="text-sm text-gray-500">&copy; 2026</span>
             </div>
             <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">

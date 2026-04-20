@@ -1,4 +1,4 @@
-# Scribi — QA regression checklist
+# Dicto — QA regression checklist
 
 Полный ручной regression-прогон для QA-инженера. Время прохождения: **30-40 минут**.
 
@@ -20,9 +20,9 @@
 - [ ] SSH на прод-сервер (для `docker compose logs`)
 
 ### Тестовые аккаунты
-- [ ] `qa-free@scribi.test` — план Free
-- [ ] `qa-start@scribi.test` — план Старт
-- [ ] `qa-admin@scribi.test` — `is_admin=true`
+- [ ] `qa-free@dicto.test` — план Free
+- [ ] `qa-start@dicto.test` — план Старт
+- [ ] `qa-admin@dicto.test` — `is_admin=true`
 
 ### Тестовые файлы (`qa-assets/`)
 - [ ] `short-audio.mp3` (30 сек, рус)
@@ -36,7 +36,7 @@
 ## Phase 2 — Auth & Account
 
 ### 2.1 Register
-- [ ] `/register` грузится, title «Регистрация \| Scribi»
+- [ ] `/register` грузится, title «Регистрация \| Dicto»
 - [ ] Пустой submit → HTML5-валидация
 - [ ] Password 5 символов → inline-ошибка «минимум 8»
 - [ ] Существующий email → toast 409

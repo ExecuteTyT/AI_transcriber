@@ -69,7 +69,7 @@ export function getRouteMeta(pathname: string): RouteMeta {
   if (pathname === "/subscription") return { title: "Подписка", showBack: true, backTo: "/dashboard" };
   if (pathname === "/app/pricing") return { title: "Тарифы", showBack: true, backTo: "/dashboard" };
   if (pathname === "/admin") return { title: "Админ", showBack: true, backTo: "/dashboard" };
-  return { title: "Scribi" };
+  return { title: "Dicto" };
 }
 
 export { MoreHorizontal, LogOut };

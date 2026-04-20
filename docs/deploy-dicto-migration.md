@@ -112,12 +112,12 @@ curl -skI https://dicto.pro/docs | head -3     # → HTTP/2 200
 
 ## 4. Grafana — проверить дашборд
 
-Новый компонент в этом PR — **provisioned-дашборд `Scribi — API Overview`**.
+Новый компонент в этом PR — **provisioned-дашборд `Dicto — API Overview`**.
 
 ```bash
 # Пересобрать grafana уже сделали в шаге 3
 # Проверить:
-ssh root@vm15706566 "curl -s http://localhost:3001/api/dashboards/uid/scribi-api-overview | head -50"
+ssh root@vm15706566 "curl -s http://localhost:3001/api/dashboards/uid/dicto-api-overview | head -50"
 ```
 
 Или в браузере: `http://<server-ip>:3001` (admin / пароль из `GRAFANA_PASSWORD` в `.env`).
@@ -134,7 +134,7 @@ ssh root@vm15706566 "curl -s http://localhost:3001/api/dashboards/uid/scribi-api
 Если дашборд не появился — проверить:
 ```bash
 docker compose -f docker-compose.prod.yml logs grafana | grep -i provision
-# Должно быть "Dashboard provisioned: scribi-api-overview"
+# Должно быть "Dashboard provisioned: dicto-api-overview"
 ```
 
 ---
@@ -187,7 +187,7 @@ server {
 - [ ] `curl -skI https://dicto.pro/` → 200
 - [ ] `./scripts/check-prod.sh https://dicto.pro` → ALL PASSED
 - [ ] Открыть `https://dicto.pro` в браузере — логин, загрузка файла, транскрипция работают
-- [ ] Grafana `http://<server-ip>:3001` → дашборд «Scribi — API Overview» виден
+- [ ] Grafana `http://<server-ip>:3001` → дашборд «Dicto — API Overview» виден
 - [ ] voitra.pro редиректит (если настроил в шаге 5)
 - [ ] YooKassa test-оплата проходит (return_url корректный)
 - [ ] Email-шаблоны содержат ссылки на dicto.pro

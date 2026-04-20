@@ -7,10 +7,10 @@ export default function Terms() {
   return (
     <div className="min-h-screen bg-surface-50">
       <Helmet>
-        <title>Пользовательское соглашение — Scribi</title>
+        <title>Пользовательское соглашение — Dicto</title>
         <meta
           name="description"
-          content="Публичная оферта сервиса транскрибации Scribi — условия использования, тарифы, ответственность сторон."
+          content="Публичная оферта сервиса транскрибации Dicto — условия использования, тарифы, ответственность сторон."
         />
         <link rel="canonical" href="https://dicto.pro/terms" />
       </Helmet>
@@ -22,7 +22,7 @@ export default function Terms() {
             На главную
           </Link>
           <Link to="/" className="text-xl font-bold gradient-text">
-            Scribi
+            Dicto
           </Link>
         </div>
       </header>
@@ -100,7 +100,7 @@ export default function Terms() {
             <ul className="list-inside list-disc space-y-1.5 pl-1">
               <li>Контент, загружаемый Пользователем, остаётся его собственностью.</li>
               <li>Оператор не использует контент для обучения моделей и не передаёт его третьим лицам, кроме указанных в <Link to="/privacy" className="font-semibold text-primary-700 underline">политике конфиденциальности</Link>.</li>
-              <li>Исходный код, дизайн и бренд Scribi принадлежат Оператору.</li>
+              <li>Исходный код, дизайн и бренд Dicto принадлежат Оператору.</li>
             </ul>
 
             <h2 className="text-xl font-bold tracking-tight text-gray-900">8. Ответственность</h2>

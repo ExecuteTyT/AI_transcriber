@@ -1,4 +1,4 @@
-"""Константы тарифных планов Scribi (dicto.pro).
+"""Константы тарифных планов Dicto (dicto.pro).
 
 Цены согласованы с frontend/src/pages/Pricing.tsx. Обновление — в двух местах.
 

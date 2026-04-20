@@ -33,7 +33,7 @@ export default function Login() {
         <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-accent-400/10 rounded-full blur-3xl" />
 
         <div className="relative z-10">
-          <Link to="/" className="text-2xl font-bold text-white">Scribi</Link>
+          <Link to="/" className="text-2xl font-bold text-white">Dicto</Link>
         </div>
 
         {/* Hero text */}
@@ -62,7 +62,7 @@ export default function Login() {
               </div>
             ))}
           </div>
-          <p className="text-primary-200/60 text-sm">4 часа расшифровки → 2 минуты с Scribi</p>
+          <p className="text-primary-200/60 text-sm">4 часа расшифровки → 2 минуты с Dicto</p>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ export default function Login() {
         <div className="w-full max-w-md animate-fade-up">
           {/* Mobile logo */}
           <Link to="/" className="flex justify-center mb-8 md:hidden">
-            <span className="text-2xl font-bold gradient-text">Scribi</span>
+            <span className="text-2xl font-bold gradient-text">Dicto</span>
           </Link>
 
           <div className="card p-8 shadow-elevated">

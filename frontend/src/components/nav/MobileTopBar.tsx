@@ -40,7 +40,7 @@ export default function MobileTopBar() {
             <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 flex items-center justify-center shadow-glow-sm">
               <span className="text-white font-bold text-[12px]">S</span>
             </div>
-            <span className="text-[15px] font-bold tracking-tight gradient-text">Scribi</span>
+            <span className="text-[15px] font-bold tracking-tight gradient-text">Dicto</span>
           </div>
         )}
         <AnimatePresence mode="wait">

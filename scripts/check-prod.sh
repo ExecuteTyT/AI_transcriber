@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Smoke-проверка production-инфраструктуры Scribi после деплоя.
+# Smoke-проверка production-инфраструктуры Dicto после деплоя.
 # Запуск: ./scripts/check-prod.sh [HOST]
 # По умолчанию HOST=https://dicto.pro
 
@@ -115,15 +115,15 @@ fi
 # ─── 6. Frontend branding ───
 sec "Frontend"
 HTML=$(curl -sk "$HOST/")
-if echo "$HTML" | grep -q "Scribi"; then
-  ok "Frontend carries 'Scribi' branding"
+if echo "$HTML" | grep -q "Dicto"; then
+  ok "Frontend carries 'Dicto' branding"
 else
-  bad "Frontend does not show 'Scribi' brand — stale deploy?"
+  bad "Frontend does not show 'Dicto' brand — stale deploy?"
 fi
-if echo "$HTML" | grep -q "Voitra"; then
-  bad "Frontend still has 'Voitra' references — brand rename incomplete"
+if echo "$HTML" | grep -qE "Voitra|Scribi"; then
+  bad "Frontend still has 'Voitra'/'Scribi' references — brand rename incomplete"
 else
-  ok "No 'Voitra' residue in index.html"
+  ok "No 'Voitra'/'Scribi' residue in index.html"
 fi
 
 # ─── 7. Response headers ───

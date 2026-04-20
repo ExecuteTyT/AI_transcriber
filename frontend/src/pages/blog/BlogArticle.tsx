@@ -86,7 +86,7 @@ export default function BlogArticle() {
       {/* Header */}
       <header className="glass border-b border-gray-200/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text">Scribi</Link>
+          <Link to="/" className="text-xl font-bold gradient-text">Dicto</Link>
           <div className="flex items-center gap-3">
             <Link to="/blog" className="btn-ghost text-sm">Блог</Link>
             <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5">Попробовать</Link>
@@ -137,7 +137,7 @@ export default function BlogArticle() {
         <div className="mt-16 rounded-2xl p-8 text-center bg-primary-950 bg-grid relative overflow-hidden">
           <div className="absolute top-0 right-0 w-40 h-40 bg-primary-500/20 rounded-full blur-3xl" />
           <div className="relative">
-            <h3 className="text-xl font-bold mb-2 text-white">Попробуйте Scribi бесплатно</h3>
+            <h3 className="text-xl font-bold mb-2 text-white">Попробуйте Dicto бесплатно</h3>
             <p className="text-primary-200/80 text-sm mb-6">15 минут транскрибации, AI-саммари и разметка спикеров — без карты.</p>
             <Link to="/register" className="inline-block bg-white text-primary-950 px-6 py-3 rounded-xl font-medium hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5">Начать бесплатно</Link>
           </div>
@@ -169,8 +169,8 @@ export default function BlogArticle() {
             headline: article.title,
             description: article.metaDescription,
             datePublished: article.date,
-            author: { "@type": "Organization", name: "Scribi" },
-            publisher: { "@type": "Organization", name: "Scribi" },
+            author: { "@type": "Organization", name: "Dicto" },
+            publisher: { "@type": "Organization", name: "Dicto" },
           }),
         }}
       />

@@ -45,7 +45,7 @@ export default function ResetPassword() {
       <div className="absolute bottom-1/3 left-[10%] w-80 h-80 bg-accent-400/10 rounded-full blur-3xl animate-float" />
       <div className="relative w-full max-w-md">
         <div className="text-center mb-8 animate-fade-in">
-          <Link to="/" className="text-2xl font-bold gradient-text">Scribi</Link>
+          <Link to="/" className="text-2xl font-bold gradient-text">Dicto</Link>
         </div>
 
         <div className="card p-8 shadow-elevated">

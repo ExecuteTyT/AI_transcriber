@@ -40,7 +40,7 @@ export default function DesktopSidebar() {
           <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/15" />
         </div>
         <Link to="/" className="text-lg font-bold text-white tracking-tight">
-          Scribi
+          Dicto
         </Link>
       </div>
 
