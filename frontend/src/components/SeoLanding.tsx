@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import ThemeToggle from "@/components/ui/ThemeToggle";
+import SoundToggle from "@/components/ui/SoundToggle";
 
 interface FAQ {
   q: string;
@@ -35,7 +37,7 @@ export default function SeoLanding({
   breadcrumb,
 }: SeoLandingProps) {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <Helmet>
         <title>{metaTitle || h1 + " | Dicto"}</title>
         <meta name="description" content={metaDescription || description} />
@@ -44,147 +46,182 @@ export default function SeoLanding({
         <meta property="og:description" content={metaDescription || description} />
         {canonical && <meta property="og:url" content={canonical} />}
       </Helmet>
-      {/* Header */}
-      <header className="glass border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text">
+
+      {/* ─── Header ─── */}
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
+            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(212,255,61,0.55)]" aria-hidden />
             Dicto
           </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900">Войти</Link>
-            <Link to="/register" className="text-sm bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition">
-              Попробовать бесплатно
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1.5">
+              <SoundToggle />
+              <ThemeToggle />
+            </div>
+            <Link to="/login" className="text-[13px] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors hidden sm:inline-flex px-3 py-2">
+              Войти
+            </Link>
+            <Link to="/register" className="btn-accent !py-2.5 !px-5 !text-[13px]">
+              Попробовать
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Breadcrumbs */}
-      <nav className="max-w-6xl mx-auto px-4 py-3" aria-label="Навигация">
-        <ol className="flex items-center gap-2 text-sm text-gray-400">
+      {/* ─── Breadcrumbs ─── */}
+      <nav className="max-w-6xl mx-auto px-5 md:px-8 py-5" aria-label="Навигация">
+        <ol className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
           {breadcrumb.map((item, i) => (
             <li key={item.href} className="flex items-center gap-2">
-              {i > 0 && <span>/</span>}
+              {i > 0 && <span aria-hidden>/</span>}
               {i === breadcrumb.length - 1 ? (
-                <span className="text-gray-600">{item.label}</span>
+                <span className="text-[var(--fg-muted)]">{item.label}</span>
               ) : (
-                <Link to={item.href} className="hover:text-gray-600">{item.label}</Link>
+                <Link to={item.href} className="hover:text-[var(--fg)] transition-colors">{item.label}</Link>
               )}
             </li>
           ))}
         </ol>
       </nav>
 
-      {/* Hero */}
-      <section className="max-w-4xl mx-auto px-4 py-16 text-center bg-dots">
-        <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight"><span className="gradient-text">{h1}</span></h1>
-        <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-8">{description}</p>
-        <Link
-          to="/register"
-          className="inline-block bg-primary-500 text-white px-8 py-3.5 rounded-xl text-lg font-medium hover:bg-primary-600 transition shadow-lg shadow-primary-200"
-        >
-          {cta}
+      {/* ─── Hero ─── */}
+      <section className="max-w-5xl mx-auto px-5 md:px-8 pt-8 md:pt-16 pb-16 md:pb-24">
+        <p className="eyebrow mb-6">
+          <span className="inline-block w-2 h-2 rounded-full bg-acid-300 align-middle mr-2 shadow-[0_0_10px_rgba(212,255,61,0.6)]" aria-hidden />
+          {breadcrumb[breadcrumb.length - 1]?.label}
+        </p>
+        <h1 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] max-w-[18ch] mb-8">
+          {h1}
+        </h1>
+        <p className="text-[15px] md:text-lg text-[var(--fg-muted)] max-w-[55ch] leading-[1.55] mb-10">
+          {description}
+        </p>
+        <Link to="/register" className="btn-accent">
+          {cta} <span aria-hidden>→</span>
         </Link>
-        <p className="text-xs text-gray-400 mt-3">Бесплатно 15 мин/мес. Без карты.</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mt-5">
+          Без карты · 30 мин + 180 бонусных при регистрации
+        </p>
       </section>
 
-      {/* How it works */}
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-10">Как это работает</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+      {/* ─── How it works ─── */}
+      <section className="bg-[var(--bg-elevated)] border-y border-[var(--border)] py-20 md:py-24">
+        <div className="max-w-5xl mx-auto px-5 md:px-8">
+          <p className="eyebrow mb-4">Процесс</p>
+          <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-12 max-w-[20ch]">
+            Как это <em className="italic text-acid-300">работает</em>
+          </h2>
+          <div className="grid md:grid-cols-3 gap-10 md:gap-12">
             {steps.map((step, i) => (
-              <div key={step.title} className="text-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 text-white rounded-full shadow-lg shadow-primary-500/25 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
-                  {i + 1}
-                </div>
-                <h3 className="font-semibold mb-2">{step.title}</h3>
-                <p className="text-sm text-gray-500">{step.desc}</p>
+              <div key={step.title}>
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mb-4">
+                  /0{i + 1}
+                </p>
+                <h3 className="font-display text-2xl md:text-3xl text-[var(--fg)] mb-3 leading-tight">{step.title}</h3>
+                <p className="text-[14px] text-[var(--fg-muted)] leading-[1.55]">{step.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits */}
-      <section className="max-w-4xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-center mb-10">Преимущества Dicto</h2>
-        <div className="grid md:grid-cols-2 gap-4">
+      {/* ─── Benefits ─── */}
+      <section className="max-w-5xl mx-auto px-5 md:px-8 py-20 md:py-24">
+        <p className="eyebrow mb-4">Преимущества</p>
+        <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-12 max-w-[20ch]">
+          Что вы <em className="italic text-acid-300">получаете</em>
+        </h2>
+        <div className="grid md:grid-cols-2 gap-x-8 gap-y-1 border-t border-[var(--border)]">
           {benefits.map((b) => (
-            <div key={b} className="bento-card flex items-start gap-3 hover:glow-ring">
-              <span className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-green-500 text-xs">&#10003;</span>
-              </span>
-              <span className="text-gray-700">{b}</span>
+            <div key={b} className="flex items-start gap-3 py-4 border-b border-[var(--border)]">
+              <span className="text-acid-300 mt-1 flex-shrink-0">✓</span>
+              <span className="text-[14px] text-[var(--fg-muted)] leading-[1.5]">{b}</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Pricing mini */}
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-4">Тарифы</h2>
-          <p className="text-gray-500 mb-8">Начните бесплатно, переходите когда нужно больше.</p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <div className="bg-white rounded-xl border border-gray-200 p-5 flex-1 max-w-xs mx-auto md:mx-0">
-              <div className="font-bold mb-1">Free</div>
-              <div className="text-2xl font-bold mb-2">0 ₽</div>
-              <div className="text-sm text-gray-500">30 мин/мес + 180 бонус</div>
+      {/* ─── Pricing mini ─── */}
+      <section className="bg-[var(--bg-elevated)] border-y border-[var(--border)] py-20 md:py-24">
+        <div className="max-w-5xl mx-auto px-5 md:px-8">
+          <p className="eyebrow mb-4">Тарифы</p>
+          <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-3">
+            Простые <em className="italic text-acid-300">и прозрачные</em>
+          </h2>
+          <p className="text-[14px] text-[var(--fg-muted)] mb-10 max-w-[40ch]">
+            Начните бесплатно. Переходите когда нужно больше минут.
+          </p>
+          <div className="grid md:grid-cols-3 border border-[var(--border)] rounded-2xl overflow-hidden">
+            <div className="p-7 border-b md:border-b-0 md:border-r border-[var(--border)] bg-[var(--bg)]">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-4">/free</p>
+              <div className="font-display text-5xl text-[var(--fg)] leading-none mb-2">0&nbsp;₽</div>
+              <p className="text-[12px] text-[var(--fg-muted)]">30 мин/мес + 180 бонус</p>
             </div>
-            <div className="bg-white rounded-xl border-2 border-primary-500 p-5 flex-1 max-w-xs mx-auto md:mx-0 shadow-lg">
-              <div className="font-bold mb-1">Старт</div>
-              <div className="text-2xl font-bold mb-2">500 ₽<span className="text-sm font-normal text-gray-500">/мес</span></div>
-              <div className="text-sm text-gray-500">10 часов, спикеры</div>
+            <div className="p-7 bg-acid-300 text-ink-900">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-900/70 mb-4">/start</p>
+              <div className="font-display text-5xl leading-none mb-2">500&nbsp;₽<span className="font-mono text-[14px] text-ink-900/65 ml-1">/мес</span></div>
+              <p className="text-[12px] text-ink-900/75">10 часов, спикеры, AI-инсайты</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 flex-1 max-w-xs mx-auto md:mx-0">
-              <div className="font-bold mb-1">Про</div>
-              <div className="text-2xl font-bold mb-2">820 ₽<span className="text-sm font-normal text-gray-500">/мес</span></div>
-              <div className="text-sm text-gray-500">25 часов, RAG-чат</div>
+            <div className="p-7 border-t md:border-t-0 md:border-l border-[var(--border)] bg-[var(--bg)]">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-4">/pro</p>
+              <div className="font-display text-5xl text-[var(--fg)] leading-none mb-2">820&nbsp;₽<span className="font-mono text-[14px] text-[var(--fg-muted)] ml-1">/мес</span></div>
+              <p className="text-[12px] text-[var(--fg-muted)]">25 часов, RAG-чат</p>
             </div>
           </div>
-          <Link to="/pricing" className="inline-block mt-6 text-primary-500 hover:underline text-sm">
-            Подробнее о тарифах
+          <Link to="/pricing" className="inline-flex items-center gap-2 mt-6 text-[13px] text-[var(--fg)] hover:text-acid-300 transition-colors">
+            Все тарифы <span aria-hidden>→</span>
           </Link>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="max-w-3xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-center mb-10">Частые вопросы</h2>
-        <div className="space-y-3">
+      {/* ─── FAQ ─── */}
+      <section className="max-w-3xl mx-auto px-5 md:px-8 py-20 md:py-24">
+        <p className="eyebrow mb-4">FAQ</p>
+        <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-10">
+          Частые <em className="italic text-acid-300">вопросы</em>
+        </h2>
+        <div className="border-t border-[var(--border)]">
           {faqs.map((faq) => (
-            <details key={faq.q} className="bg-gray-50 rounded-xl p-5 group">
-              <summary className="font-medium cursor-pointer list-none flex items-center justify-between">
-                {faq.q}
-                <span className="text-gray-400 group-open:rotate-180 transition-transform">&#9660;</span>
+            <details key={faq.q} className="border-b border-[var(--border)] py-6 group">
+              <summary className="flex items-start justify-between gap-6 cursor-pointer list-none">
+                <div className="flex items-start gap-5 flex-1">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] pt-1.5">Q</span>
+                  <span className="font-display text-xl md:text-2xl leading-[1.15] text-[var(--fg)]">{faq.q}</span>
+                </div>
+                <span className="text-[var(--fg-subtle)] group-open:text-acid-300 group-open:rotate-180 transition-all mt-2 flex-shrink-0">▾</span>
               </summary>
-              <p className="text-sm text-gray-500 mt-3 leading-relaxed">{faq.a}</p>
+              <p className="mt-4 pl-[3rem] md:pl-[3.5rem] text-[14px] text-[var(--fg-muted)] leading-[1.55]">{faq.a}</p>
             </details>
           ))}
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-bold mb-4">{title}</h2>
-        <Link
-          to="/register"
-          className="inline-block bg-primary-500 text-white px-8 py-3.5 rounded-xl text-lg font-medium hover:bg-primary-600 transition"
-        >
-          Попробовать бесплатно
-        </Link>
+      {/* ─── Final CTA ─── */}
+      <section className="max-w-5xl mx-auto px-5 md:px-8 py-20 md:py-28">
+        <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] px-8 py-12 md:px-14 md:py-16">
+          <h2 className="font-display text-4xl md:text-6xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-6 max-w-[20ch]">
+            {title}
+          </h2>
+          <Link to="/register" className="btn-accent">
+            Попробовать бесплатно <span aria-hidden>→</span>
+          </Link>
+        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 py-8">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400">
-          <div><span className="gradient-text font-bold">Dicto</span> &copy; 2026</div>
-          <div className="flex gap-6">
-            <Link to="/audio-v-tekst" className="hover:text-gray-600">Аудио в текст</Link>
-            <Link to="/video-v-tekst" className="hover:text-gray-600">Видео в текст</Link>
-            <Link to="/rasshifrovka-golosovyh" className="hover:text-gray-600">Расшифровка голосовых</Link>
-            <Link to="/pricing" className="hover:text-gray-600">Тарифы</Link>
+      {/* ─── Footer ─── */}
+      <footer className="border-t border-[var(--border)] py-10">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300" aria-hidden />
+            <span className="font-display text-xl text-[var(--fg)] leading-none">Dicto</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] ml-3">© 2026</span>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-[var(--fg-muted)]">
+            <Link to="/audio-v-tekst" className="hover:text-[var(--fg)] transition">Аудио в текст</Link>
+            <Link to="/video-v-tekst" className="hover:text-[var(--fg)] transition">Видео в текст</Link>
+            <Link to="/rasshifrovka-golosovyh" className="hover:text-[var(--fg)] transition">Голосовые</Link>
+            <Link to="/pricing" className="hover:text-[var(--fg)] transition">Тарифы</Link>
           </div>
         </div>
       </footer>

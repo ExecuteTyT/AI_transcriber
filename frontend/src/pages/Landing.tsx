@@ -7,6 +7,7 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
 import MicDemoButton from "@/components/MicDemoButton";
 import { useSound } from "@/lib/sound";
+import { useMagnetic } from "@/hooks/useMagnetic";
 
 /* ─── useCountUp hook ─── */
 function useCountUp(target: number, duration = 1500) {
@@ -206,6 +207,8 @@ export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { play } = useSound();
+  const heroCtaRef = useMagnetic<HTMLAnchorElement>({ radius: 110, strength: 0.32 });
+  const finalCtaRef = useMagnetic<HTMLAnchorElement>({ radius: 110, strength: 0.32 });
 
   useEffect(() => {
     let ticking = false;
@@ -322,7 +325,12 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 animate-fade-up" style={{ animationDelay: "0.15s" }}>
-            <Link to="/register" onClick={() => play("confirm")} className="btn-accent w-full sm:w-auto">
+            <Link
+              ref={heroCtaRef}
+              to="/register"
+              onClick={() => play("confirm")}
+              className="btn-accent w-full sm:w-auto will-change-transform"
+            >
               Начать бесплатно
               <span aria-hidden>→</span>
             </Link>
@@ -589,9 +597,10 @@ export default function Landing() {
             Зарегистрируйтесь бесплатно, получите 30 минут + 180 бонусных и попробуйте на своей записи.
           </p>
           <Link
+            ref={finalCtaRef}
             to="/register"
             onClick={() => play("confirm")}
-            className="btn-accent !py-4 !px-8 !text-[16px]"
+            className="btn-accent !py-4 !px-8 !text-[16px] will-change-transform"
           >
             Попробовать бесплатно
             <span aria-hidden>→</span>
