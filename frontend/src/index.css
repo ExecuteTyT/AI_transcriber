@@ -1,15 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Шрифты подгружаются в index.html через <link rel="preload"> — быстрее FOUT-less. */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── CSS-переменные темы ─── */
+:root,
+[data-theme="dark"] {
+  /* Фоны */
+  --bg: #0b0805;
+  --bg-elevated: #141009;
+  --bg-muted: #1b1812;
+  /* Текст */
+  --fg: #f7f3ec;
+  --fg-muted: #c9bba4;
+  --fg-subtle: #968b74;
+  /* Акценты */
+  --accent: #d4ff3d;
+  --accent-hover: #c5f014;
+  --accent-fg: #0b0805;
+  /* Границы */
+  --border: rgba(247, 243, 236, 0.08);
+  --border-strong: rgba(247, 243, 236, 0.18);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #faf7f2;
+  --bg-elevated: #f3ede2;
+  --bg-muted: #e8dec9;
+  --fg: #0b0805;
+  --fg-muted: #3a342a;
+  --fg-subtle: #5d5646;
+  --accent: #82a100;
+  --accent-hover: #617500;
+  --accent-fg: #faf7f2;
+  --border: rgba(11, 8, 5, 0.1);
+  --border-strong: rgba(11, 8, 5, 0.22);
+  color-scheme: light;
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    background: var(--bg);
   }
   body {
-    @apply bg-surface-50 text-gray-900 font-sans antialiased text-base;
+    @apply font-sans antialiased text-base;
+    background: var(--bg);
+    color: var(--fg);
+    transition: background-color 280ms ease, color 280ms ease;
   }
   /* Prevent iOS auto-zoom on input focus */
   input, select, textarea {
@@ -44,6 +84,44 @@
            hover:shadow-[0_1px_2px_rgba(0,0,0,0.1),0_8px_20px_-4px_rgba(79,70,229,0.5)]
            active:shadow-[0_1px_2px_rgba(0,0,0,0.1)]
            hover:-translate-y-px active:translate-y-0;
+  }
+
+  /* ─── Новый акцентный CTA: acid green на ink, с лёгким свечением ─── */
+  .btn-accent {
+    @apply relative inline-flex items-center justify-center gap-2
+           bg-acid-300 text-ink-900 px-6 py-3.5 rounded-full
+           font-semibold text-[15px] tracking-[-0.01em]
+           hover:bg-acid-200
+           active:bg-acid-400
+           transition-all duration-200 ease-out
+           shadow-[0_0_0_1px_rgba(212,255,61,0.3),0_8px_24px_-6px_rgba(212,255,61,0.4)]
+           hover:shadow-[0_0_0_1px_rgba(212,255,61,0.5),0_12px_32px_-6px_rgba(212,255,61,0.55)]
+           hover:-translate-y-px active:translate-y-0;
+  }
+
+  /* ─── Editorial ghost CTA ─── */
+  .btn-editorial-ghost {
+    @apply inline-flex items-center gap-2 px-6 py-3.5 rounded-full
+           text-[var(--fg)] border border-[var(--border-strong)]
+           hover:bg-[var(--bg-muted)] hover:border-[var(--border-strong)]
+           font-medium text-[15px]
+           transition-colors duration-200;
+  }
+
+  /* ─── Editorial H1 utility ─── */
+  .display-h1 {
+    @apply font-serif font-normal leading-[0.92] tracking-[-0.02em];
+    font-size: clamp(2.75rem, 9vw, 8rem);
+    text-wrap: balance;
+  }
+  .display-h1 em {
+    @apply italic text-acid-300;
+    font-style: italic;
+  }
+
+  /* Eyebrow (over-title ритм в editorial вёрстке) */
+  .eyebrow {
+    @apply font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--fg-subtle)];
   }
 
   .btn-secondary {

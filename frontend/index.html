@@ -29,10 +29,36 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="theme-color" content="#4c6ef5" />
+    <meta name="theme-color" content="#0e0a06" />
+
+    <!-- Fonts: Instrument Serif (display) + Inter (body) + JetBrains Mono (timestamps) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
 
     <!-- Robots -->
     <meta name="robots" content="index, follow" />
+
+    <!-- Theme pre-paint: применяем data-theme ДО React-бута чтобы избежать FOUC. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("dicto:theme");
+          if (t !== "dark" && t !== "light") t = "dark";
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
 
     <!-- Schema.org SoftwareApplication -->
     <script type="application/ld+json">

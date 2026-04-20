@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import HeroWaveform from "@/components/HeroWaveform";
 import HeroLiveDemo from "@/components/HeroLiveDemo";
+import ThemeToggle from "@/components/ui/ThemeToggle";
+import SoundToggle from "@/components/ui/SoundToggle";
+import { useSound } from "@/lib/sound";
 
 /* ─── useCountUp hook ─── */
 function useCountUp(target: number, duration = 1500) {
@@ -81,12 +84,22 @@ function AccordionItem({ question, answer }: { question: string; answer: string 
   }, [answer]);
 
   return (
-    <div className="card group p-6 cursor-pointer" onClick={() => setOpen((o: boolean) => !o)}>
-      <div className="font-medium text-gray-900 flex items-center justify-between">
-        {question}
+    <div
+      className="border-b border-[var(--border)] cursor-pointer group"
+      onClick={() => setOpen((o: boolean) => !o)}
+    >
+      <div className="flex items-start justify-between gap-6 py-6 md:py-7">
+        <div className="flex items-start gap-5 flex-1 min-w-0">
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] pt-1.5">
+            Q
+          </span>
+          <span className="font-display text-xl md:text-2xl leading-[1.15] text-[var(--fg)]">
+            {question}
+          </span>
+        </div>
         <svg
-          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          className={`w-5 h-5 flex-shrink-0 mt-2 text-[var(--fg-subtle)] transition-transform duration-300 ${open ? "rotate-180 text-acid-300" : "group-hover:text-[var(--fg)]"}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
@@ -96,7 +109,9 @@ function AccordionItem({ question, answer }: { question: string; answer: string 
         className="overflow-hidden transition-all duration-300 ease-in-out"
         style={{ maxHeight: open ? `${maxHeight}px` : "0px", opacity: open ? 1 : 0 }}
       >
-        <p className="text-sm text-gray-500 mt-4 leading-relaxed">{answer}</p>
+        <p className="text-[15px] text-[var(--fg-muted)] leading-[1.55] pb-6 md:pb-7 pl-[3rem] md:pl-[3.5rem]">
+          {answer}
+        </p>
       </div>
     </div>
   );
@@ -189,6 +204,7 @@ function FadeInOnScroll({ children, className = "" }: { children: ReactNode; cla
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { play } = useSound();
 
   useEffect(() => {
     let ticking = false;
@@ -210,7 +226,7 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="min-h-screen overflow-hidden">
+    <div className="min-h-screen overflow-hidden bg-[var(--bg)] text-[var(--fg)]">
       <Helmet>
         <title>Dicto — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
         <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 30 мин + 180 бонусных при регистрации. Тарифы от 500 ₽/мес." />
@@ -220,28 +236,42 @@ export default function Landing() {
         <meta property="og:url" content="https://dicto.pro/" />
       </Helmet>
 
-      {/* ─── Header ─── */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${scrolled ? "bg-white/90 backdrop-blur-2xl border-b border-gray-200/40 shadow-sm" : "bg-transparent border-b border-transparent"}`}>
+      {/* ─── Header (dark-first, editorial) ─── */}
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${scrolled ? "bg-[var(--bg)]/80 backdrop-blur-2xl border-b border-[var(--border)]" : "bg-transparent border-b border-transparent"}`}>
         <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-16">
-          <Link to="/" className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${scrolled ? "text-gray-900" : "text-white"}`}>Dicto</Link>
-          <nav className={`hidden md:flex items-center gap-8 text-sm font-medium transition-colors duration-300 ${scrolled ? "text-gray-600" : "text-white/70"}`}>
-            <a href="#features" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Возможности</a>
-            <a href="#use-cases" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Кому</a>
-            <a href="#pricing" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Тарифы</a>
-            <Link to="/blog" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Блог</Link>
+          <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
+            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(212,255,61,0.55)]" aria-hidden />
+            Dicto
+          </Link>
+          <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[var(--fg-muted)]">
+            <a href="#features" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Возможности</a>
+            <a href="#use-cases" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Кому</a>
+            <a href="#pricing" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Тарифы</a>
+            <Link to="/blog" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Блог</Link>
           </nav>
-          <div className="flex items-center gap-3">
-            <Link to="/login" className={`text-sm px-4 py-2 rounded-xl font-medium transition-all duration-300 hidden sm:inline-flex ${scrolled ? "text-gray-600 hover:bg-gray-100" : "text-white/80 hover:text-white hover:bg-white/10"}`}>Войти</Link>
-            <Link to="/register" className={`text-[15px] !py-2.5 !px-6 rounded-2xl font-semibold transition-all duration-300 hidden sm:inline-flex ${scrolled ? "btn-primary" : "bg-white text-primary-950 hover:bg-gray-100 shadow-lg"}`}>Попробовать</Link>
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1.5">
+              <SoundToggle />
+              <ThemeToggle />
+            </div>
+            <Link to="/login" onClick={() => play("tick")} className="text-[13px] px-3 py-2 rounded-full font-medium text-[var(--fg-muted)] hover:text-[var(--fg)] hidden sm:inline-flex transition-colors">
+              Войти
+            </Link>
+            <Link to="/register" onClick={() => play("confirm")} className="btn-accent hidden sm:inline-flex !py-2.5 !px-5 !text-[13px]">
+              Попробовать
+            </Link>
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`md:hidden p-3 rounded-xl transition touch-target ${scrolled ? "hover:bg-gray-100" : "hover:bg-white/10"}`}
+              onClick={() => {
+                play("tick");
+                setMobileMenuOpen((v) => !v);
+              }}
+              className="md:hidden p-3 rounded-xl transition touch-target hover:bg-[var(--bg-muted)]"
               aria-label={mobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
             >
               {mobileMenuOpen ? (
-                <svg className={`w-6 h-6 transition-colors duration-300 ${scrolled ? "text-gray-700" : "text-white"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg className="w-6 h-6 text-[var(--fg)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               ) : (
-                <svg className={`w-6 h-6 transition-colors duration-300 ${scrolled ? "text-gray-700" : "text-white"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                <svg className="w-6 h-6 text-[var(--fg)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
               )}
             </button>
           </div>
@@ -251,63 +281,78 @@ export default function Landing() {
       {/* ─── Mobile Menu ─── */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[60] md:hidden">
-          <div className="absolute inset-0 bg-primary-950/95 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)} />
-          <nav className="relative flex flex-col items-center justify-center h-full gap-6 text-lg font-medium text-white">
-            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition py-2 px-4 touch-target">Возможности</a>
-            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition py-2 px-4 touch-target">Кому</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition py-2 px-4 touch-target">Тарифы</a>
-            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary-300 transition py-2 px-4 touch-target">Блог</Link>
-            <div className="flex flex-col gap-3 mt-4 w-64">
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="px-8 py-3.5 rounded-xl border border-white/20 text-center hover:bg-white/10 transition">Войти</Link>
-              <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="bg-white text-primary-950 px-8 py-3.5 rounded-xl font-medium text-center hover:bg-gray-100 transition">Попробовать</Link>
+          <div className="absolute inset-0 bg-[var(--bg)]/95 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)} />
+          <nav className="relative flex flex-col items-center justify-center h-full gap-6 font-display text-2xl text-[var(--fg)]">
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-acid-300 transition py-2 px-4 touch-target">Возможности</a>
+            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="hover:text-acid-300 transition py-2 px-4 touch-target">Кому</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-acid-300 transition py-2 px-4 touch-target">Тарифы</a>
+            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-acid-300 transition py-2 px-4 touch-target">Блог</Link>
+            <div className="mt-4 flex items-center gap-3">
+              <SoundToggle />
+              <ThemeToggle />
+            </div>
+            <div className="flex flex-col gap-3 mt-2 w-64">
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="px-8 py-3.5 rounded-full border border-[var(--border-strong)] text-center text-[var(--fg)] hover:bg-[var(--bg-muted)] transition font-sans text-[15px]">Войти</Link>
+              <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="btn-accent justify-center text-center">Попробовать</Link>
             </div>
           </nav>
         </div>
       )}
 
-      {/* ─── Hero (dark) ─── */}
-      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-primary-950 bg-grid">
+      {/* ─── Hero (editorial dark) ─── */}
+      <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 bg-[var(--bg)]">
 
         <HeroWaveform />
 
-        <div className="relative max-w-5xl mx-auto px-6 text-center">
-          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] mb-6 md:mb-8 animate-fade-up text-balance text-white">
-            От записи к готовому
-            <br />
-            <span className="gradient-text">тексту за 2 минуты</span>
-          </h1>
-
-          <p className="text-lg text-primary-200/80 max-w-2xl mx-auto mb-10 animate-fade-up leading-relaxed" style={{ animationDelay: "0.1s" }}>
-            Говорите — мы расшифруем. Текст с таймкодами, разметка спикеров, AI&#8209;саммари и ключевые выводы — в&nbsp;один клик
+        <div className="relative max-w-6xl mx-auto px-6">
+          {/* Eyebrow */}
+          <p className="eyebrow mb-6 animate-fade-up">
+            <span className="inline-block w-2 h-2 rounded-full bg-acid-300 align-middle mr-2 shadow-[0_0_12px_rgba(212,255,61,0.7)]" aria-hidden />
+            Транскрибация · AI-саммари · RAG-чат
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            <Link to="/register" className="bg-gradient-to-r from-primary-500 to-primary-400 text-white px-6 py-3.5 md:px-8 md:py-4 rounded-2xl text-[15px] md:text-lg font-bold hover:from-primary-400 hover:to-primary-300 transition-all duration-200 hover:-translate-y-0.5 shadow-[0_4px_20px_-4px_rgba(99,102,241,0.5)] w-full sm:w-auto text-center">
+          {/* Editorial H1 — левоприжатый, serif с italic акцентом */}
+          <h1 className="display-h1 text-[var(--fg)] max-w-[18ch] mb-8 md:mb-10 animate-fade-up" style={{ animationDelay: "0.05s" }}>
+            От записи к <em>готовому тексту</em> за две минуты.
+          </h1>
+
+          <p className="font-sans text-lg md:text-xl text-[var(--fg-muted)] max-w-[48ch] leading-[1.55] mb-10 md:mb-12 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+            Говорите&nbsp;— мы расшифруем. Текст с таймкодами, разметка спикеров, AI‑саммари и ключевые выводы&nbsp;— в один клик.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 animate-fade-up" style={{ animationDelay: "0.15s" }}>
+            <Link to="/register" onClick={() => play("confirm")} className="btn-accent w-full sm:w-auto">
               Начать бесплатно
+              <span aria-hidden>→</span>
             </Link>
-            <a href="#features" className="px-6 py-3.5 md:px-8 md:py-4 rounded-2xl text-[15px] md:text-lg font-medium border border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-200 w-full sm:w-auto text-center">
+            <a href="#demo" onClick={() => play("tick")} className="btn-editorial-ghost w-full sm:w-auto justify-center">
               Как это работает
             </a>
           </div>
 
-          <p className="text-sm text-primary-200/75 mt-5 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            Без кредитной карты &middot; Регистрация за 30 секунд
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mt-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+            Без карты · 30 мин бесплатно + 180 бонусных при регистрации
           </p>
         </div>
 
         {/* Live transcription demo */}
-        <HeroLiveDemo />
+        <div id="demo">
+          <HeroLiveDemo />
+        </div>
       </section>
 
-      {/* ─── Stats (dark) ─── */}
-      <section className="py-12 bg-primary-950 bg-grid">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+      {/* ─── Stats row (editorial strip) ─── */}
+      <section className="py-14 md:py-16 bg-[var(--bg)] border-y border-[var(--border)]">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6">
           {stats.map((s, i) => (
-            <div key={s.label} className={`text-center ${i < stats.length - 1 ? "md:border-r md:border-primary-800" : ""}`}>
-              <div className="text-4xl md:text-5xl font-black text-white">
+            <div key={s.label} className={`flex flex-col ${i < stats.length - 1 ? "md:border-r md:border-[var(--border)] md:pr-6" : ""}`}>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-3">
+                /0{i + 1}
+              </p>
+              <div className="font-display text-5xl md:text-6xl leading-none text-[var(--fg)]">
                 <CountUpNumber target={s.value} prefix={s.prefix} suffix={s.suffix} />
               </div>
-              <div className="text-sm text-primary-100/80 mt-1">{s.label}</div>
+              <div className="text-[13px] text-[var(--fg-muted)] mt-3">{s.label}</div>
             </div>
           ))}
         </div>
@@ -366,27 +411,26 @@ export default function Landing() {
         </FadeInOnScroll>
       </section>
 
-      {/* ─── How it works ─── */}
-      <section className="py-20 bg-white">
+      {/* ─── How it works (editorial 3-steps) ─── */}
+      <section className="py-24 md:py-32 bg-[var(--bg)] border-t border-[var(--border)]">
         <FadeInOnScroll>
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">3 шага</p>
-            <h2 className="section-heading">Как это работает</h2>
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-16 md:mb-20">
+            <p className="eyebrow mb-4">Процесс</p>
+            <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] max-w-[18ch]">
+              Три шага, <em className="italic text-acid-300">никаких</em> настроек
+            </h2>
           </div>
-          <div className="relative grid md:grid-cols-3 gap-8">
-            <div className="hidden md:block absolute top-6 left-[20%] right-[20%] h-px bg-primary-200" />
+          <div className="grid md:grid-cols-3 gap-10 md:gap-14">
             {[
-              { step: "01", title: "Загрузите", desc: "Перетащите аудио или видео. MP3, WAV, MP4 и ещё 8 форматов. До 500 МБ." },
-              { step: "02", title: "Подождите", desc: "Нейросеть расшифрует речь за ~2 минуты на час записи. Спикеры и пунктуация автоматически." },
-              { step: "03", title: "Получите", desc: "Текст, таймкоды, AI-саммари, тезисы, action items. Экспорт в TXT и SRT." },
+              { step: "01", title: "Загрузите", desc: "Аудио, видео или ссылка на YouTube / VK / Rutube. MP3, WAV, MP4 и ещё 8 форматов. До 500 МБ, до 6 часов." },
+              { step: "02", title: "Подождите ~2 мин", desc: "Voxtral V2 расшифрует речь, расставит пунктуацию, разметит спикеров. На час записи уходит в среднем 2 минуты." },
+              { step: "03", title: "Получите инсайты", desc: "Текст с таймкодами, AI-саммари, ключевые тезисы и action items. Экспорт в TXT / SRT / DOCX. Чат с записью через RAG." },
             ].map((item) => (
-              <div key={item.step} className="relative text-center md:text-left">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 shadow-lg shadow-primary-500/30 flex items-center justify-center text-white font-bold text-sm mx-auto md:mx-0 mb-4 relative z-10">
-                  {item.step}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+              <div key={item.step} className="relative">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-5">/{item.step}</p>
+                <h3 className="font-display text-3xl md:text-4xl text-[var(--fg)] mb-4 leading-tight">{item.title}</h3>
+                <p className="text-[var(--fg-muted)] text-[15px] leading-[1.55]">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -394,22 +438,22 @@ export default function Landing() {
         </FadeInOnScroll>
       </section>
 
-      {/* ─── Use cases ─── */}
-      <section id="use-cases" className="py-20 bg-surface-50">
+      {/* ─── Use cases (editorial cards on ink) ─── */}
+      <section id="use-cases" className="py-24 md:py-32 bg-[var(--bg-elevated)] border-t border-[var(--border)]">
         <FadeInOnScroll>
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Аудитория</p>
-            <h2 className="section-heading">Кому подходит Dicto</h2>
+          <div className="mb-16">
+            <p className="eyebrow mb-4">Аудитория</p>
+            <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] max-w-[20ch]">
+              Кому подходит <em className="italic text-acid-300">Dicto</em>
+            </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
             {useCases.map((uc) => (
-              <div key={uc.title} className="gradient-border group">
-                <div className="bg-white rounded-2xl p-6 text-center h-full transition-transform duration-300 group-hover:scale-[1.02]">
-                  <div className="text-5xl mb-4">{uc.emoji}</div>
-                  <h3 className="font-semibold mb-2">{uc.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{uc.desc}</p>
-                </div>
+              <div key={uc.title} className="group relative overflow-hidden rounded-2xl p-6 bg-[var(--bg)] border border-[var(--border)] hover:border-[var(--border-strong)] transition-colors duration-300">
+                <div className="text-4xl mb-5 grayscale-[0.2] group-hover:grayscale-0 transition-[filter] duration-300">{uc.emoji}</div>
+                <h3 className="font-display text-xl text-[var(--fg)] mb-2">{uc.title}</h3>
+                <p className="text-sm text-[var(--fg-muted)] leading-relaxed">{uc.desc}</p>
               </div>
             ))}
           </div>
@@ -492,14 +536,16 @@ export default function Landing() {
       </section>
 
       {/* ─── FAQ ─── */}
-      <section id="faq" className="py-20 bg-surface-50">
+      <section id="faq" className="py-24 md:py-32 bg-[var(--bg-elevated)] border-t border-[var(--border)]">
         <FadeInOnScroll>
         <div className="max-w-3xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">FAQ</p>
-            <h2 className="section-heading">Частые вопросы</h2>
+          <div className="mb-12 md:mb-16">
+            <p className="eyebrow mb-4">FAQ</p>
+            <h2 className="font-display text-5xl md:text-6xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
+              Частые <em className="italic text-acid-300">вопросы</em>
+            </h2>
           </div>
-          <div className="space-y-3">
+          <div className="border-t border-[var(--border)]">
             {faqs.map((faq) => (
               <AccordionItem key={faq.q} question={faq.q} answer={faq.a} />
             ))}
@@ -508,50 +554,52 @@ export default function Landing() {
         </FadeInOnScroll>
       </section>
 
-      {/* ─── Final CTA (gradient) ─── */}
-      <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-purple-800">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-float hidden md:block motion-reduce:hidden motion-reduce:animate-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/10 rounded-full blur-3xl animate-float hidden md:block motion-reduce:hidden motion-reduce:animate-none" style={{ animationDelay: "3s" }} />
+      {/* ─── Final CTA (ink + acid) ─── */}
+      <section className="py-24 md:py-32 relative overflow-hidden bg-[var(--bg)] border-t border-[var(--border)]">
         <FadeInOnScroll>
-        <div className="relative max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
-            Ваша следующая запись
-            <br />станет текстом за 2 минуты
+        <div className="relative max-w-4xl mx-auto px-6">
+          <h2 className="font-display text-6xl md:text-8xl leading-[0.92] tracking-[-0.02em] text-[var(--fg)] max-w-[14ch] mb-8">
+            Ваша следующая запись — <em className="italic text-acid-300">текст за две минуты</em>.
           </h2>
-          <p className="text-white/70 text-lg mb-10">
-            Зарегистрируйтесь бесплатно и получите 15 минут транскрибации.
+          <p className="text-[var(--fg-muted)] text-lg md:text-xl max-w-[40ch] mb-10 leading-[1.5]">
+            Зарегистрируйтесь бесплатно, получите 30 минут + 180 бонусных и попробуйте на своей записи.
           </p>
           <Link
             to="/register"
-            className="inline-block bg-white text-primary-950 px-10 py-4 rounded-2xl text-lg font-bold hover:bg-gray-100 transition-all duration-200 shadow-xl hover:shadow-[0_8px_30px_rgba(255,255,255,0.3)] hover:-translate-y-0.5"
+            onClick={() => play("confirm")}
+            className="btn-accent !py-4 !px-8 !text-[16px]"
           >
             Попробовать бесплатно
+            <span aria-hidden>→</span>
           </Link>
         </div>
         </FadeInOnScroll>
       </section>
 
-      {/* ─── Footer (dark) ─── */}
-      <footer className="py-12 bg-dark-100 border-t border-white/[0.06]">
+      {/* ─── Footer (editorial) ─── */}
+      <footer className="py-16 bg-[var(--bg)] border-t border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <span className="font-extrabold text-white text-lg tracking-tight">Dicto</span>
-              <span className="text-sm text-gray-500">&copy; 2026</span>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-[var(--border)]">
+            <div className="flex items-center gap-2">
+              <span className="block w-1.5 h-1.5 rounded-full bg-acid-300" aria-hidden />
+              <span className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">Dicto</span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] ml-3">© 2026</span>
             </div>
-            <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">
-              <Link to="/audio-v-tekst" className="hover:text-white transition">Аудио в текст</Link>
-              <Link to="/video-v-tekst" className="hover:text-white transition">Видео в текст</Link>
-              <Link to="/nejroset-transkribaciya" className="hover:text-white transition">Нейросеть</Link>
-              <Link to="/rasshifrovka-golosovyh" className="hover:text-white transition">Голосовые</Link>
-              <Link to="/blog" className="hover:text-white transition">Блог</Link>
-              <Link to="/pricing" className="hover:text-white transition">Тарифы</Link>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[var(--fg-muted)]">
+              <Link to="/audio-v-tekst" className="hover:text-[var(--fg)] transition">Аудио в текст</Link>
+              <Link to="/video-v-tekst" className="hover:text-[var(--fg)] transition">Видео в текст</Link>
+              <Link to="/nejroset-transkribaciya" className="hover:text-[var(--fg)] transition">Нейросеть</Link>
+              <Link to="/rasshifrovka-golosovyh" className="hover:text-[var(--fg)] transition">Голосовые</Link>
+              <Link to="/blog" className="hover:text-[var(--fg)] transition">Блог</Link>
+              <Link to="/pricing" className="hover:text-[var(--fg)] transition">Тарифы</Link>
             </div>
           </div>
-          <div className="mt-6 flex flex-wrap items-center justify-center md:justify-end gap-5 text-xs text-gray-500">
-            <Link to="/privacy" className="hover:text-white transition">Политика конфиденциальности</Link>
-            <Link to="/terms" className="hover:text-white transition">Пользовательское соглашение</Link>
-            <a href="mailto:support@dicto.pro" className="hover:text-white transition">support@dicto.pro</a>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-[11px] font-mono uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+            <div className="flex flex-wrap gap-5">
+              <Link to="/privacy" className="hover:text-[var(--fg)] transition">Конфиденциальность</Link>
+              <Link to="/terms" className="hover:text-[var(--fg)] transition">Соглашение</Link>
+            </div>
+            <a href="mailto:support@dicto.pro" className="hover:text-[var(--fg)] transition normal-case tracking-normal font-sans text-[13px]">support@dicto.pro</a>
           </div>
         </div>
       </footer>

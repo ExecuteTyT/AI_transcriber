@@ -8,6 +8,9 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        serif: ["'Instrument Serif'", "ui-serif", "Georgia", "serif"],
+        mono: ["'JetBrains Mono'", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        display: ["'Instrument Serif'", "ui-serif", "Georgia", "serif"],
       },
       fontSize: {
         xs: ["0.8125rem", { lineHeight: "1.25rem" }],
@@ -21,6 +24,40 @@ export default {
         "top-bar": "56px",
       },
       colors: {
+        // ─── Новая палитра: editorial cream + ink + acid green ───
+        ink: {
+          50: "#f7f3ec",
+          100: "#e8dfcf",
+          200: "#c9bba4",
+          300: "#968b74",
+          400: "#5d5646",
+          500: "#3a342a",
+          600: "#28241c",
+          700: "#1b1812",
+          800: "#141009",
+          900: "#0b0805",
+          950: "#050302",
+        },
+        cream: {
+          50: "#faf7f2",
+          100: "#f3ede2",
+          200: "#e8dec9",
+          300: "#d5c8a9",
+          400: "#bcab85",
+          500: "#a08f68",
+        },
+        acid: {
+          50: "#f7ffdc",
+          100: "#eeffb5",
+          200: "#e0ff83",
+          300: "#d4ff3d",
+          400: "#c5f014",
+          500: "#a8ce00",
+          600: "#82a100",
+          700: "#617500",
+        },
+        // ─── Старые алиасы для обратной совместимости. Удалим когда все
+        //     страницы мигрируют на ink/cream/acid. ───
         primary: {
           50: "#eef2ff",
           100: "#e0e7ff",
