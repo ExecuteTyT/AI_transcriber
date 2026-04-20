@@ -437,7 +437,7 @@ export default function Pricing() {
   if (!isStandalone) return content;
 
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <Helmet>
         <title>Тарифы Dicto — транскрибация от 500 ₽/мес</title>
         <meta
@@ -446,22 +446,23 @@ export default function Pricing() {
         />
         <link rel="canonical" href="https://dicto.pro/pricing" />
       </Helmet>
-      <header className="sticky top-0 z-30 border-b border-gray-100 bg-white/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link to="/" className="text-xl font-bold gradient-text">
+          <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
+            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(212,255,61,0.55)]" aria-hidden />
             Dicto
           </Link>
           <div className="flex items-center gap-3">
-            <Link to="/login" className="btn-ghost text-sm">
+            <Link to="/login" className="text-[13px] px-3 py-2 rounded-full font-medium text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors">
               Войти
             </Link>
-            <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5">
+            <Link to="/register" className="btn-accent !py-2.5 !px-5 !text-[13px]">
               Попробовать
             </Link>
           </div>
         </div>
       </header>
-      <div className="mx-auto max-w-5xl px-4 py-12 md:px-6 md:py-16">{content}</div>
+      <div className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">{content}</div>
     </div>
   );
 }
