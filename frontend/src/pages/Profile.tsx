@@ -197,7 +197,7 @@ export default function Profile() {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold text-primary-800">Больше минут и AI</p>
-                <p className="text-xs text-gray-500">Тариф Старт от 290 ₽/мес</p>
+                <p className="text-xs text-gray-500">Тариф Старт от 500 ₽/мес</p>
               </div>
               <Icon
                 icon={ChevronRight}

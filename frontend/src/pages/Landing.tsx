@@ -13,6 +13,11 @@ function useCountUp(target: number, duration = 1500) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      setValue(target);
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !triggered.current) {
@@ -35,6 +40,32 @@ function useCountUp(target: number, duration = 1500) {
   }, [target, duration]);
 
   return { ref, value };
+}
+
+/* ─── CountUpNumber component ─── */
+// Хук вызывается на уровне компонента, не в цикле map — фикс Rules of Hooks.
+function CountUpNumber({
+  target,
+  duration = 1500,
+  format,
+  prefix = "",
+  suffix = "",
+}: {
+  target: number;
+  duration?: number;
+  format?: (v: number) => string;
+  prefix?: string;
+  suffix?: string;
+}) {
+  const { ref, value } = useCountUp(target, duration);
+  const rendered = format ? format(value) : value.toString();
+  return (
+    <span ref={ref}>
+      {prefix}
+      {rendered}
+      {suffix}
+    </span>
+  );
 }
 
 /* ─── AccordionItem component ─── */
@@ -125,43 +156,7 @@ const stats = [
   { value: 98, suffix: "%", prefix: "", label: "точность речи" },
   { value: 13, suffix: "", prefix: "", label: "языков" },
   { value: 2, suffix: " мин", prefix: "~", label: "на час записи" },
-  { value: 290, suffix: " ₽", prefix: "от ", label: "в месяц" },
-];
-
-const socialProof = [
-  {
-    value: 10000,
-    suffix: "+",
-    label: "минут обработано",
-    desc: "Аудио и видео расшифрованы нашей нейросетью",
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
-    value: 500,
-    suffix: "+",
-    label: "пользователей",
-    desc: "Доверяют Dicto транскрибацию своих записей",
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-      </svg>
-    ),
-  },
-  {
-    value: 98,
-    suffix: "%",
-    label: "точность распознавания",
-    desc: "На чистом аудио с автоматической пунктуацией",
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-      </svg>
-    ),
-  },
+  { value: 500, suffix: " ₽", prefix: "от ", label: "в месяц" },
 ];
 
 const faqs = [
@@ -196,7 +191,20 @@ export default function Landing() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    let ticking = false;
+    let prev = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const next = window.scrollY > 60;
+        if (next !== prev) {
+          prev = next;
+          setScrolled(next);
+        }
+        ticking = false;
+      });
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -205,7 +213,7 @@ export default function Landing() {
     <div className="min-h-screen overflow-hidden">
       <Helmet>
         <title>Dicto — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
-        <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 15 мин/мес. От 290 ₽/мес." />
+        <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 30 мин + 180 бонусных при регистрации. Тарифы от 500 ₽/мес." />
         <link rel="canonical" href="https://dicto.pro/" />
         <meta property="og:title" content="Dicto — Транскрибация аудио и видео в текст онлайн" />
         <meta property="og:description" content="Превращайте аудио и видео в текст, саммари и ключевые тезисы с помощью ИИ. Разметка спикеров, таймкоды, экспорт. Бесплатно 15 мин/мес." />
@@ -213,8 +221,8 @@ export default function Landing() {
       </Helmet>
 
       {/* ─── Header ─── */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/90 backdrop-blur-2xl border-b border-gray-200/40 shadow-sm" : "bg-transparent"}`}>
-        <div className={`max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between transition-all duration-300 ${scrolled ? "h-14" : "h-16"}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${scrolled ? "bg-white/90 backdrop-blur-2xl border-b border-gray-200/40 shadow-sm" : "bg-transparent border-b border-transparent"}`}>
+        <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-16">
           <Link to="/" className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${scrolled ? "text-gray-900" : "text-white"}`}>Dicto</Link>
           <nav className={`hidden md:flex items-center gap-8 text-sm font-medium transition-colors duration-300 ${scrolled ? "text-gray-600" : "text-white/70"}`}>
             <a href="#features" className={`transition ${scrolled ? "hover:text-gray-900" : "hover:text-white"}`}>Возможности</a>
@@ -282,7 +290,7 @@ export default function Landing() {
             </a>
           </div>
 
-          <p className="text-sm text-primary-300/60 mt-5 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+          <p className="text-sm text-primary-200/75 mt-5 animate-fade-in" style={{ animationDelay: "0.4s" }}>
             Без кредитной карты &middot; Регистрация за 30 секунд
           </p>
         </div>
@@ -294,17 +302,14 @@ export default function Landing() {
       {/* ─── Stats (dark) ─── */}
       <section className="py-12 bg-primary-950 bg-grid">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-          {stats.map((s, i) => {
-            const countUp = useCountUp(s.value);
-            return (
-              <div key={s.label} className={`text-center ${i < stats.length - 1 ? "md:border-r md:border-primary-800" : ""}`}>
-                <div className="text-4xl md:text-5xl font-black text-white">
-                  <span ref={countUp.ref}>{s.prefix}{countUp.value}{s.suffix}</span>
-                </div>
-                <div className="text-sm text-primary-200/70 mt-1">{s.label}</div>
+          {stats.map((s, i) => (
+            <div key={s.label} className={`text-center ${i < stats.length - 1 ? "md:border-r md:border-primary-800" : ""}`}>
+              <div className="text-4xl md:text-5xl font-black text-white">
+                <CountUpNumber target={s.value} prefix={s.prefix} suffix={s.suffix} />
               </div>
-            );
-          })}
+              <div className="text-sm text-primary-100/80 mt-1">{s.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -412,37 +417,6 @@ export default function Landing() {
         </FadeInOnScroll>
       </section>
 
-      {/* ─── Social Proof ─── */}
-      <section className="py-20 bg-white">
-        <FadeInOnScroll>
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-primary-600 tracking-wide uppercase mb-3">Цифры</p>
-            <h2 className="section-heading">Цифры говорят за нас</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {socialProof.map((item) => {
-              const countUp = useCountUp(item.value, 2000);
-              return (
-                <div key={item.label} className="gradient-border group">
-                  <div className="bg-white rounded-2xl p-8 h-full text-center glow-ring">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center text-primary-600 mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
-                      {item.icon}
-                    </div>
-                    <div className="text-4xl md:text-5xl font-black text-gray-900 mb-2">
-                      <span ref={countUp.ref}>{countUp.value.toLocaleString()}{item.suffix}</span>
-                    </div>
-                    <p className="font-semibold text-gray-900 mb-1">{item.label}</p>
-                    <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        </FadeInOnScroll>
-      </section>
-
       {/* ─── Pricing (dark) ─── */}
       <section id="pricing" className="py-20 md:py-24 bg-dark-50 bg-grid">
         <FadeInOnScroll>
@@ -461,14 +435,30 @@ export default function Landing() {
                 <span className="text-4xl font-extrabold text-white">0 ₽</span>
               </div>
               <ul className="space-y-3 text-sm text-gray-300 mb-8">
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 15 минут/мес</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 3 AI-саммари</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Экспорт TXT</li>
-                <li className="flex items-center gap-2 text-gray-500"><span>&#10007;</span> Спикеры</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 30 мин/мес + 180 бонус</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 5 AI-саммари</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Спикеры до 3</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Экспорт TXT / SRT</li>
               </ul>
               <Link to="/register" className="w-full text-center block border-2 border-primary-400 text-primary-300 hover:bg-primary-500/20 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200">Начать бесплатно</Link>
             </div>
-            {/* Start — popular */}
+            {/* Start */}
+            <div className="bg-white/[0.05] border border-white/[0.08] rounded-2xl p-8">
+              <h3 className="font-bold text-lg text-white">Старт</h3>
+              <p className="text-xs text-gray-500 mt-1">Для подкастеров и фрилансеров</p>
+              <div className="mt-4 mb-6">
+                <span className="text-4xl font-extrabold text-white">500 ₽</span>
+                <span className="text-gray-400 text-sm">/мес</span>
+              </div>
+              <ul className="space-y-3 text-sm text-gray-300 mb-8">
+                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 600 мин (10 часов)</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> AI-саммари безлимит</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Разметка до 10 спикеров</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> TXT / SRT / DOCX</li>
+              </ul>
+              <Link to="/register" className="w-full text-center block border-2 border-primary-400 text-primary-300 hover:bg-primary-500/20 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200">Попробовать Старт</Link>
+            </div>
+            {/* Pro — popular */}
             <div className="relative gradient-border shadow-glow-lg md:scale-[1.02]">
               <div className="bg-dark-100 rounded-2xl p-8 h-full">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -476,37 +466,26 @@ export default function Landing() {
                     Популярный
                   </span>
                 </div>
-                <h3 className="font-bold text-lg text-white">Старт</h3>
-                <p className="text-xs text-accent-500 font-medium mt-1">Для подкастеров и бизнеса</p>
+                <h3 className="font-bold text-lg text-white">Про</h3>
+                <p className="text-xs text-accent-500 font-medium mt-1">Для бизнеса и продакшена</p>
                 <div className="mt-4 mb-6">
-                  <span className="text-4xl font-extrabold text-white">290 ₽</span>
+                  <span className="text-4xl font-extrabold text-white">820 ₽</span>
                   <span className="text-gray-400 text-sm">/мес</span>
                 </div>
                 <ul className="space-y-3 text-sm text-gray-300 mb-8">
-                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 300 мин (5 часов)</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> AI-саммари безлимит</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Разметка спикеров</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> TXT / SRT / DOCX</li>
+                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 1 500 мин (25 часов)</li>
+                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Спикеры без лимита</li>
+                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> RAG-чат безлимит</li>
+                  <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Action items</li>
                 </ul>
-                <Link to="/register" className="btn-primary w-full text-center block">Попробовать Старт</Link>
+                <Link to="/register" className="btn-primary w-full text-center block">Попробовать Про</Link>
               </div>
             </div>
-            {/* Pro */}
-            <div className="bg-white/[0.05] border border-white/[0.08] rounded-2xl p-8">
-              <h3 className="font-bold text-lg text-white">Про</h3>
-              <p className="text-xs text-gray-500 mt-1">Для команд и продакшена</p>
-              <div className="mt-4 mb-6">
-                <span className="text-4xl font-extrabold text-white">590 ₽</span>
-                <span className="text-gray-400 text-sm">/мес</span>
-              </div>
-              <ul className="space-y-3 text-sm text-gray-300 mb-8">
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 1200 мин (20 часов)</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Всё из Старта</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> RAG-чат безлимит</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Action items</li>
-              </ul>
-              <Link to="/register" className="w-full text-center block border-2 border-primary-400 text-primary-300 hover:bg-primary-500/20 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200">Перейти на Про</Link>
-            </div>
+          </div>
+          <div className="text-center mt-8">
+            <Link to="/pricing" className="text-sm text-primary-300 hover:text-white transition underline underline-offset-4">
+              Бизнес 2 300 ₽ и Премиум 4 600 ₽ — все тарифы →
+            </Link>
           </div>
         </div>
         </FadeInOnScroll>
@@ -531,8 +510,8 @@ export default function Landing() {
 
       {/* ─── Final CTA (gradient) ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-purple-800">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-float hidden md:block motion-reduce:hidden motion-reduce:animate-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/10 rounded-full blur-3xl animate-float hidden md:block motion-reduce:hidden motion-reduce:animate-none" style={{ animationDelay: "3s" }} />
         <FadeInOnScroll>
         <div className="relative max-w-3xl mx-auto px-6 text-center">
           <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">

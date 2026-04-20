@@ -19,6 +19,19 @@
   ::selection {
     @apply bg-primary-200/50 text-primary-900;
   }
+
+  /* Видимый focus-ring для клавиатурной навигации.
+     Не перекрывает `focus:ring-*` утилиты у inputs — они имеют приоритет за счёт specificity. */
+  *:focus-visible {
+    outline: 2px solid rgba(99, 102, 241, 0.75);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+  }
 }
 
 @layer components {
@@ -244,6 +257,26 @@
     animation: none !important;
     opacity: 0 !important;
   }
+
+  /* Декоративные непрерывные анимации — гасим; функциональные
+     (focus, hover) сохраняем через обычный короткий transition-duration. */
+  .animate-float,
+  .animate-pulse-slow,
+  .animate-fade-in,
+  .animate-fade-up,
+  .animate-slide-up,
+  .animate-slide-in,
+  .animate-shimmer,
+  .animate-wave-bar,
+  .animate-glow-pulse,
+  .animate-pulse {
+    animation: none !important;
+  }
+}
+
+/* GPU-композит для постоянных transform-анимаций. */
+.animate-float {
+  will-change: transform;
 }
 
 @layer utilities {

@@ -439,10 +439,10 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-surface-50">
       <Helmet>
-        <title>Тарифы Dicto — транскрибация от 290 ₽/мес</title>
+        <title>Тарифы Dicto — транскрибация от 500 ₽/мес</title>
         <meta
           name="description"
-          content="Тарифы Dicto: Free (15 мин/мес бесплатно), Старт (290 ₽/мес, 5 часов), Про (590 ₽/мес, 20 часов). AI-саммари, разметка спикеров, экспорт."
+          content="Тарифы Dicto: Free (30 мин + 180 бонус), Старт (500 ₽/мес, 10 часов), Про (820 ₽/мес, 25 часов), Бизнес (2 300 ₽, 60 часов), Премиум (4 600 ₽, 120 часов). AI-саммари, разметка спикеров, экспорт."
         />
         <link rel="canonical" href="https://dicto.pro/pricing" />
       </Helmet>

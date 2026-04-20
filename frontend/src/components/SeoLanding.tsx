@@ -130,17 +130,17 @@ export default function SeoLanding({
             <div className="bg-white rounded-xl border border-gray-200 p-5 flex-1 max-w-xs mx-auto md:mx-0">
               <div className="font-bold mb-1">Free</div>
               <div className="text-2xl font-bold mb-2">0 ₽</div>
-              <div className="text-sm text-gray-500">15 мин/мес</div>
+              <div className="text-sm text-gray-500">30 мин/мес + 180 бонус</div>
             </div>
             <div className="bg-white rounded-xl border-2 border-primary-500 p-5 flex-1 max-w-xs mx-auto md:mx-0 shadow-lg">
               <div className="font-bold mb-1">Старт</div>
-              <div className="text-2xl font-bold mb-2">290 ₽<span className="text-sm font-normal text-gray-500">/мес</span></div>
-              <div className="text-sm text-gray-500">5 часов, спикеры</div>
+              <div className="text-2xl font-bold mb-2">500 ₽<span className="text-sm font-normal text-gray-500">/мес</span></div>
+              <div className="text-sm text-gray-500">10 часов, спикеры</div>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-5 flex-1 max-w-xs mx-auto md:mx-0">
               <div className="font-bold mb-1">Про</div>
-              <div className="text-2xl font-bold mb-2">590 ₽<span className="text-sm font-normal text-gray-500">/мес</span></div>
-              <div className="text-sm text-gray-500">20 часов, RAG-чат</div>
+              <div className="text-2xl font-bold mb-2">820 ₽<span className="text-sm font-normal text-gray-500">/мес</span></div>
+              <div className="text-sm text-gray-500">25 часов, RAG-чат</div>
             </div>
           </div>
           <Link to="/pricing" className="inline-block mt-6 text-primary-500 hover:underline text-sm">
