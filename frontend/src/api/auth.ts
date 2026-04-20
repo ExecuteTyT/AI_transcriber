@@ -15,6 +15,7 @@ export interface User {
   minutes_limit: number;
   is_email_verified: boolean;
   is_admin: boolean;
+  data_retention_days: number | null;
   created_at: string | null;
 }
 
@@ -46,8 +47,11 @@ export const authApi = {
 
   logout: () => api.post<MessageResponse>("/auth/logout"),
 
-  updateProfile: (data: { name?: string; email?: string }) =>
-    api.patch<User>("/auth/profile", data),
+  updateProfile: (data: {
+    name?: string;
+    email?: string;
+    data_retention_days?: number | null;
+  }) => api.patch<User>("/auth/profile", data),
 
   changePassword: (currentPassword: string, newPassword: string) =>
     api.post<MessageResponse>("/auth/change-password", {

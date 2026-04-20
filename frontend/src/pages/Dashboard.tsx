@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileText, Mic, Plus, Search, Trash2 } from "lucide-react";
+import { Clock, FileText, Mic, Plus, RotateCw, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { transcriptionApi, type TranscriptionListItem } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
@@ -12,9 +12,11 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { TranscriptionRow } from "@/components/dashboard/TranscriptionListItem";
 import { EmptyState } from "@/components/states/EmptyState";
 import { LoadingRows } from "@/components/states/LoadingState";
-import { fadeUp, staggerChildren } from "@/lib/motion";
+import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
+import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
+import { cn } from "@/lib/cn";
 
-const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
+const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес" };
 
 type FilterKey = "all" | "active" | "completed";
 
@@ -23,28 +25,42 @@ export default function Dashboard() {
   const [items, setItems] = useState<TranscriptionListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
   const [actionItem, setActionItem] = useState<TranscriptionListItem | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<TranscriptionListItem | null>(null);
+  const firstLoadRef = useRef(true);
 
-  const loadTranscriptions = async () => {
-    setLoading(true);
+  const loadTranscriptions = useCallback(async (background = false) => {
+    if (!background) setRefreshing(true);
     try {
       const { data } = await transcriptionApi.list();
       setItems(data.items);
       setTotal(data.total);
     } catch {
-      toast.error("Не удалось загрузить список транскрипций");
+      if (!background) toast.error("Не удалось загрузить список транскрипций");
     } finally {
-      setLoading(false);
+      if (firstLoadRef.current) {
+        setLoading(false);
+        firstLoadRef.current = false;
+      }
+      if (!background) setRefreshing(false);
     }
-  };
-
-  useEffect(() => {
-    loadTranscriptions();
   }, []);
+
+  useVisibilityPolling(
+    useCallback(() => {
+      void loadTranscriptions(true);
+    }, [loadTranscriptions]),
+    { interval: 30000, immediate: true }
+  );
+
+  const handleManualRefresh = () => {
+    if (refreshing) return;
+    void loadTranscriptions(false);
+  };
 
   const handleDelete = async (item: TranscriptionListItem) => {
     setDeleteConfirm(null);
@@ -144,9 +160,30 @@ export default function Dashboard() {
       {items.length > 0 && (
         <motion.div variants={fadeUp} className="space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-bold tracking-tight text-gray-900 md:text-lg">
-              История
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold tracking-tight text-gray-900 md:text-lg">
+                История
+              </h2>
+              <motion.button
+                type="button"
+                onClick={handleManualRefresh}
+                whileTap={{ scale: 0.9 }}
+                transition={springTight}
+                disabled={refreshing}
+                aria-label="Обновить список"
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors duration-fast hover:bg-surface-100 hover:text-gray-700",
+                  refreshing && "pointer-events-none text-primary-500"
+                )}
+              >
+                <Icon
+                  icon={RotateCw}
+                  size={14}
+                  strokeWidth={2}
+                  className={cn("transition-transform", refreshing && "animate-spin")}
+                />
+              </motion.button>
+            </div>
             <div className="flex gap-1 rounded-full bg-surface-100 p-0.5 text-xs font-semibold text-gray-500">
               {(
                 [
@@ -225,6 +262,26 @@ export default function Dashboard() {
         </div>
       )}
 
+      {user && user.data_retention_days != null && items.length > 0 && (
+        <motion.div
+          variants={fadeUp}
+          className="flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-xs text-amber-800 ring-1 ring-amber-100"
+        >
+          <Icon icon={Clock} size={14} className="flex-shrink-0 text-amber-600" />
+          <span className="flex-1">
+            По истечении{" "}
+            <span className="font-semibold tabular">{user.data_retention_days}</span>{" "}
+            {pluralizeDays(user.data_retention_days)} данные безвозвратно удаляются.
+          </span>
+          <Link
+            to="/profile"
+            className="font-semibold text-amber-900 hover:underline underline-offset-2"
+          >
+            Настроить
+          </Link>
+        </motion.div>
+      )}
+
       <MobileSheet open={!!actionItem} onClose={() => setActionItem(null)} title={actionItem?.title}>
         {actionItem && (
           <div className="space-y-1">
@@ -283,6 +340,15 @@ export default function Dashboard() {
       </MobileSheet>
     </motion.div>
   );
+}
+
+function pluralizeDays(n: number): string {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) return "дней";
+  if (b > 1 && b < 5) return "дня";
+  if (b === 1) return "дня";
+  return "дней";
 }
 
 function pluralize(n: number, forms: [string, string, string]) {

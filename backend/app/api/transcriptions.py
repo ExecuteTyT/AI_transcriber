@@ -149,6 +149,12 @@ async def upload_file(
     s3_service.upload_file(file_data, file_key, file.content_type or "application/octet-stream")
 
     # Создание записи в БД
+    # expires_at = now + user.data_retention_days (None = бессрочно).
+    from datetime import datetime, timedelta, timezone
+    expires_at = None
+    if user.data_retention_days is not None and user.data_retention_days > 0:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=user.data_retention_days)
+
     transcription = Transcription(
         user_id=user.id,
         title=safe_filename or "Без названия",
@@ -156,6 +162,7 @@ async def upload_file(
         original_filename=safe_filename,
         content_type=file.content_type or "",
         status="queued",
+        expires_at=expires_at,
     )
     db.add(transcription)
     await db.commit()

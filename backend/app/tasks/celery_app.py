@@ -23,10 +23,16 @@ celery_app.conf.update(
             "task": "app.tasks.reset_limits.reset_monthly_limits",
             "schedule": crontab(day_of_month="1", hour="0", minute="0"),
         },
+        # Daily retention cleanup: 03:00 UTC = 06:00 Moscow (низкая нагрузка).
+        "cleanup-expired-transcriptions": {
+            "task": "app.tasks.cleanup_transcriptions.cleanup_expired",
+            "schedule": crontab(hour="3", minute="0"),
+        },
     },
 )
 
 celery_app.conf.include = [
     "app.tasks.transcribe",
     "app.tasks.reset_limits",
+    "app.tasks.cleanup_transcriptions",
 ]

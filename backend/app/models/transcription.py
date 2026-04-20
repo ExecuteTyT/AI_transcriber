@@ -30,6 +30,11 @@ class Transcription(Base, UUIDMixin, TimestampMixin):
     completed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # Срок авто-удаления. Вычисляется при создании = created_at + user.data_retention_days.
+    # None = бессрочно (Pro/Бизнес опция).
+    expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     user = relationship("User", back_populates="transcriptions")
     ai_analyses = relationship("AiAnalysis", back_populates="transcription", lazy="selectin")

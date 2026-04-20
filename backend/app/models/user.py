@@ -30,5 +30,9 @@ class User(Base, UUIDMixin, TimestampMixin):
     consent_terms_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
     consent_cross_border_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Срок хранения транскрипций в днях (None = бессрочно, доступно Pro/Бизнес+).
+    # Каждый день Celery-beat запускает cleanup: удаляет записи с истёкшим expires_at.
+    data_retention_days: Mapped[int | None] = mapped_column(Integer, nullable=True, default=30)
+
     transcriptions = relationship("Transcription", back_populates="user", lazy="selectin")
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")

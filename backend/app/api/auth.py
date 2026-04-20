@@ -174,6 +174,9 @@ async def update_profile(
         user.email = data.email
         user.is_email_verified = False
 
+    if data.data_retention_days is not None:
+        user.data_retention_days = data.data_retention_days
+
     await db.commit()
     await db.refresh(user)
     return user

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   Calendar,
   ChevronRight,
+  Clock,
   Mail,
   Shield,
   Sparkles,
@@ -16,7 +17,16 @@ import { Icon } from "@/components/Icon";
 import { fadeUp, staggerChildren } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 
-const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
+const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес" };
+
+function pluralizeDays(n: number): string {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) return "дней";
+  if (b > 1 && b < 5) return "дня";
+  if (b === 1) return "дня";
+  return "дней";
+}
 const PLAN_STYLES: Record<string, string> = {
   free: "bg-gray-100 text-gray-700",
   start: "bg-primary-50 text-primary-700",
@@ -26,7 +36,11 @@ const PLAN_STYLES: Record<string, string> = {
 export default function Profile() {
   const { user, loadUser } = useAuthStore();
   const [name, setName] = useState(user?.name || "");
+  const [retentionDays, setRetentionDays] = useState<number>(
+    user?.data_retention_days ?? 30
+  );
   const [profileLoading, setProfileLoading] = useState(false);
+  const [retentionLoading, setRetentionLoading] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -49,6 +63,21 @@ export default function Profile() {
       toast.error(axiosErr.response?.data?.detail || "Ошибка обновления");
     } finally {
       setProfileLoading(false);
+    }
+  };
+
+  const handleRetentionSave = async () => {
+    setRetentionLoading(true);
+    try {
+      await authApi.updateProfile({ data_retention_days: retentionDays });
+      await loadUser();
+      toast.success(
+        `Файлы будут удаляться после ${retentionDays} ${pluralizeDays(retentionDays)}`
+      );
+    } catch {
+      toast.error("Не удалось сохранить настройку");
+    } finally {
+      setRetentionLoading(false);
     }
   };
 
@@ -182,6 +211,52 @@ export default function Profile() {
               {profileLoading ? "Сохранение…" : "Сохранить"}
             </button>
           </form>
+        </Card>
+      </motion.section>
+
+      <motion.section variants={fadeUp}>
+        <Card title="Хранение данных" icon={Clock}>
+          <p className="mb-4 text-sm text-gray-500">
+            Аудио-файлы и транскрипции автоматически удаляются через выбранное
+            количество дней после создания.
+          </p>
+          <label htmlFor="retention-slider" className="mb-2 flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-700">Удалять через</span>
+            <span className="text-sm font-bold tabular text-primary-700">
+              {retentionDays} {pluralizeDays(retentionDays)}
+            </span>
+          </label>
+          <input
+            id="retention-slider"
+            type="range"
+            min={1}
+            max={30}
+            step={1}
+            value={retentionDays}
+            onChange={(e) => setRetentionDays(Number(e.target.value))}
+            className="w-full cursor-pointer accent-primary-600"
+          />
+          <div className="mt-1 flex justify-between text-[10px] font-medium text-gray-400 tabular">
+            <span>1 день</span>
+            <span>7</span>
+            <span>14</span>
+            <span>21</span>
+            <span>30 дней</span>
+          </div>
+          {retentionDays < (user.data_retention_days ?? 30) && (
+            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-100">
+              Уменьшение срока затронет существующие записи — старые файлы будут удалены
+              при ближайшей очистке.
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={handleRetentionSave}
+            disabled={retentionLoading || retentionDays === (user.data_retention_days ?? 30)}
+            className="btn-primary mt-4 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {retentionLoading ? "Сохранение…" : "Сохранить настройку"}
+          </button>
         </Card>
       </motion.section>
 
