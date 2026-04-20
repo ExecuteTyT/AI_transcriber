@@ -1,32 +1,47 @@
 import { Link } from "react-router-dom";
 
+// ASCII-waveform как фирменная деталь 404 — играет на продукте про звук.
+const WAVE_FRAMES = [
+  "╌╌▁▁▂▃▅▆▇▆▅▃▂▁▁╌╌",
+  "╌▁▂▃▅▆▇▇▇▆▅▃▂▁╌╌╌",
+  "▂▃▅▆▇▇▇▆▇▇▆▅▃▂▁╌╌",
+  "▁▂▃▅▆▇▆▅▆▇▆▅▃▂▁╌╌",
+];
+
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-primary-950 bg-grid flex items-center justify-center relative overflow-hidden">
-      {/* Floating glow blobs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] flex items-center justify-center relative overflow-hidden px-6">
+      <div className="relative max-w-xl w-full">
+        {/* ASCII-waveform */}
+        <pre
+          aria-hidden
+          className="font-mono text-acid-300 text-xl md:text-2xl leading-tight tracking-[0.18em] select-none mb-8 animate-fade-up opacity-90"
+        >
+{WAVE_FRAMES[0]}
+{WAVE_FRAMES[1]}
+{WAVE_FRAMES[2]}
+{WAVE_FRAMES[3]}
+        </pre>
 
-      <div className="relative text-center animate-fade-up">
-        {/* Wave bars behind text */}
-        <div className="flex items-end justify-center gap-1 h-20 mb-6 opacity-30">
-          {Array.from({ length: 10 }, (_, i) => (
-            <div
-              key={i}
-              className="w-1.5 bg-primary-400 rounded-full animate-wave-bar"
-              style={{ animationDelay: `${i * 0.12}s`, height: "100%" }}
-            />
-          ))}
+        <p className="eyebrow mb-4">Страница не найдена</p>
+        <h1 className="font-display text-6xl md:text-7xl leading-[0.92] tracking-[-0.02em] text-[var(--fg)] mb-6">
+          Здесь <em className="italic text-acid-300">тихо</em>.
+        </h1>
+        <p className="text-[15px] text-[var(--fg-muted)] leading-[1.55] max-w-[40ch] mb-10">
+          Адрес, который вы открыли, не существует или страница была удалена.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Link to="/" className="btn-accent">
+            На главную <span aria-hidden>→</span>
+          </Link>
+          <Link to="/pricing" className="btn-editorial-ghost">
+            Тарифы
+          </Link>
         </div>
 
-        <div className="text-[100px] sm:text-[160px] font-black text-white/10 leading-none mb-2 select-none">404</div>
-        <div className="gradient-text text-5xl sm:text-6xl font-black -mt-20 sm:-mt-28 mb-8 select-none">404</div>
-
-        <h1 className="text-xl font-semibold text-white mb-2">Страница не найдена</h1>
-        <p className="text-primary-200/80 mb-8">Возможно, она была удалена или вы ввели неверный адрес.</p>
-        <Link to="/" className="bg-white text-primary-950 px-6 py-3.5 rounded-xl font-medium hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5">
-          На главную
-        </Link>
+        <p className="mt-14 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+          HTTP/2 404 · dicto.pro
+        </p>
       </div>
     </div>
   );
