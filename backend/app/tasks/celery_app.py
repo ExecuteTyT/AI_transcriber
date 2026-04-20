@@ -33,6 +33,7 @@ celery_app.conf.update(
 
 celery_app.conf.include = [
     "app.tasks.transcribe",
+    "app.tasks.transcribe_url",
     "app.tasks.reset_limits",
     "app.tasks.cleanup_transcriptions",
 ]

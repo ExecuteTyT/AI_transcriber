@@ -17,6 +17,7 @@ from app.schemas.transcription import (
     TranscriptionResponse,
     TranscriptionStatusResponse,
     TranscriptionUploadResponse,
+    UrlIngestRequest,
 )
 from app.services.plans import get_plan
 from app.services.storage import s3_service
@@ -104,6 +105,19 @@ ALLOWED_VIDEO_TYPES = {
 ALLOWED_TYPES = ALLOWED_AUDIO_TYPES | ALLOWED_VIDEO_TYPES
 MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 МБ
 
+# Whitelist доменов для URL-ingest. Остальные — 400.
+# Сверка идёт по суффиксу hostname (поддерживает www., m., youtu.be и пр.)
+URL_INGEST_ALLOWED_HOSTS: set[str] = {
+    "youtube.com", "youtu.be",
+    "vk.com", "vk.ru", "vkvideo.ru",
+    "ok.ru",
+    "rutube.ru",
+    "dzen.ru", "zen.yandex.ru",
+}
+
+# URL-ingest запрещён на Free (защита от ToS-abuse).
+URL_INGEST_ALLOWED_PLANS: set[str] = {"start", "pro", "business", "premium"}
+
 
 @router.post("/upload", response_model=TranscriptionUploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_file(
@@ -189,6 +203,107 @@ async def upload_file(
         id=transcription.id,
         status=transcription.status,
         message="Файл загружен, обработка начата",
+    )
+
+
+def _is_allowed_url_host(host: str) -> bool:
+    """Проверка, что hostname попадает в URL_INGEST_ALLOWED_HOSTS.
+
+    Поддерживает поддомены: www.youtube.com, m.youtube.com, vkvideo.ru — и т.д.
+    Сравнение идёт по суффиксу: host заканчивается на allowed или равен ему.
+    """
+    host = (host or "").lower().lstrip("w.").lstrip("m.")
+    for allowed in URL_INGEST_ALLOWED_HOSTS:
+        if host == allowed or host.endswith("." + allowed):
+            return True
+    return False
+
+
+@router.post(
+    "/upload-url",
+    response_model=TranscriptionUploadResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_by_url(
+    data: UrlIngestRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Транскрибация по URL видео — YouTube / VK / Rutube / OK / Дзен.
+
+    Доступна только на платных планах (start+) для защиты от ToS-abuse.
+    Длительность и probe выполняет Celery task (yt-dlp), здесь мы только
+    валидируем host и создаём Transcription-запись.
+    """
+    from urllib.parse import urlparse
+
+    # 1. Plan-gate: Free не может.
+    if not user.is_admin and user.plan not in URL_INGEST_ALLOWED_PLANS:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Транскрибация по ссылке доступна с тарифа Старт. Перейдите на платный план.",
+        )
+
+    # 2. URL whitelist.
+    parsed = urlparse(str(data.url))
+    host = (parsed.hostname or "").lower()
+    if not _is_allowed_url_host(host):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Поддерживаемые источники: YouTube, VK Video, Rutube, OK, Дзен. "
+                "Этот домен не поддерживается."
+            ),
+        )
+
+    # 3. Лимит минут (как у обычного upload — учитываем bonus + monthly).
+    available_minutes = user.bonus_minutes + max(0, user.minutes_limit - user.minutes_used)
+    if not user.is_admin and available_minutes <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Лимит минут исчерпан. Перейдите на более высокий тариф.",
+        )
+
+    # 4. expires_at (как в обычном upload).
+    from datetime import datetime, timedelta, timezone
+    expires_at = None
+    if user.data_retention_days is not None and user.data_retention_days > 0:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=user.data_retention_days)
+
+    normalized_lang = (data.language or "auto").lower().strip()
+
+    # 5. Создаём Transcription со статусом queued. file_key пустой —
+    # proставится в Celery task после скачивания через yt-dlp.
+    transcription = Transcription(
+        user_id=user.id,
+        title="Загружается по ссылке…",
+        file_key="",  # заполнится в transcribe_url task
+        original_filename=host,
+        content_type="",
+        status="queued",
+        expires_at=expires_at,
+        language=normalized_lang if normalized_lang != "auto" else None,
+    )
+    db.add(transcription)
+    await db.commit()
+    await db.refresh(transcription)
+
+    # 6. Ставим в очередь URL-task.
+    try:
+        from app.tasks.transcribe_url import process_url_transcription
+        process_url_transcription.delay(str(transcription.id), str(data.url))
+    except (ImportError, ConnectionError, OSError) as exc:
+        logging.getLogger(__name__).error(
+            "Celery unavailable for URL ingest %s: %s", transcription.id, exc
+        )
+        transcription.status = "failed"
+        transcription.error_message = "Сервис обработки временно недоступен. Попробуйте позже."
+        await db.commit()
+
+    return TranscriptionUploadResponse(
+        id=transcription.id,
+        status=transcription.status,
+        message="Ссылка принята, скачиваем и обрабатываем",
     )
 
 

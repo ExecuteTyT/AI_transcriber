@@ -2,16 +2,17 @@ import { useCallback, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileAudio, Film, Languages, Music2, Upload as UploadIcon, Zap } from "lucide-react";
+import { FileAudio, Film, FolderOpen, Languages, Link2, Lock, Music2, Upload as UploadIcon, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { transcriptionApi } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { PipelineSteps, type PipelineStage } from "@/components/upload/PipelineSteps";
 import { ErrorState } from "@/components/states/ErrorState";
-import { fadeUp, staggerChildren } from "@/lib/motion";
+import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { LANGUAGES } from "@/lib/languages";
+import { AnimatePresence } from "framer-motion";
 
 const ACCEPTED_TYPES = {
   "audio/*": [".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".webm"],
@@ -29,6 +30,11 @@ const FORMATS = [
   { label: "WebM", icon: Film },
 ];
 
+const URL_SUPPORTED = ["YouTube", "VK Video", "Rutube", "Одноклассники", "Дзен"];
+const URL_PLAN_ALLOWED = new Set(["start", "pro", "business", "premium"]);
+
+type SourceTab = "file" | "url";
+
 export default function Upload() {
   const { user } = useAuthStore();
   const [stage, setStage] = useState<PipelineStage>("idle");
@@ -36,9 +42,13 @@ export default function Upload() {
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
   const [language, setLanguage] = useState<string>(user?.default_language || "auto");
+  const [tab, setTab] = useState<SourceTab>("file");
+  const [url, setUrl] = useState("");
+  const [urlLoading, setUrlLoading] = useState(false);
   const navigate = useNavigate();
 
   const minutesLeft = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
+  const canUseUrl = Boolean(user?.is_admin) || URL_PLAN_ALLOWED.has(user?.plan || "");
 
   const onDrop = useCallback(
     async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
@@ -90,6 +100,40 @@ export default function Upload() {
     noClick: false,
   });
 
+  const handleUrlSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    try {
+      // Лёгкая валидация на фронте — финально проверяет backend.
+      new URL(trimmed);
+    } catch {
+      toast.error("Некорректная ссылка");
+      return;
+    }
+    setError("");
+    setUrlLoading(true);
+    setStage("uploading");
+    setProgress(100); // в URL-режиме нет upload progress — сразу обработка
+    setFileName(trimmed);
+    try {
+      const { data } = await transcriptionApi.uploadUrl(trimmed, language);
+      setStage("processing");
+      setTimeout(() => {
+        toast.success("Ссылка принята — скачиваем и обрабатываем!");
+        navigate(`/transcription/${data.id}`);
+      }, 600);
+    } catch (err) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      const message = axiosErr.response?.data?.detail || "Не удалось принять ссылку";
+      setError(message);
+      setStage("failed");
+      toast.error(message);
+    } finally {
+      setUrlLoading(false);
+    }
+  };
+
   const busy = stage === "uploading" || stage === "processing";
 
   return (
@@ -112,6 +156,46 @@ export default function Upload() {
         </motion.div>
       ) : (
         <>
+        <motion.div variants={fadeUp} className="flex gap-1 rounded-full bg-surface-100 p-1 text-sm font-semibold">
+          {(
+            [
+              { key: "file" as SourceTab, label: "Файл", icon: FolderOpen },
+              { key: "url" as SourceTab, label: "Ссылка", icon: Link2 },
+            ]
+          ).map((opt) => {
+            const active = tab === opt.key;
+            return (
+              <motion.button
+                key={opt.key}
+                type="button"
+                whileTap={{ scale: 0.97 }}
+                transition={springTight}
+                onClick={() => {
+                  setError("");
+                  setTab(opt.key);
+                }}
+                className={cn(
+                  "relative flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 transition-colors duration-fast",
+                  active ? "text-white" : "text-gray-600 hover:text-gray-900"
+                )}
+                aria-current={active ? "page" : undefined}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="source-tab"
+                    className="absolute inset-0 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 shadow-glow-sm"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  />
+                )}
+                <span className="relative z-10 inline-flex items-center gap-2">
+                  <Icon icon={opt.icon} size={14} strokeWidth={2.2} />
+                  {opt.label}
+                </span>
+              </motion.button>
+            );
+          })}
+        </motion.div>
+
         <motion.div variants={fadeUp} className="flex items-center gap-3 rounded-2xl border border-gray-200/70 bg-white px-4 py-3">
           <Icon icon={Languages} size={16} className="text-gray-400" />
           <label htmlFor="lang-select" className="text-sm font-semibold text-gray-700 whitespace-nowrap">
@@ -131,7 +215,15 @@ export default function Upload() {
           </select>
         </motion.div>
 
-        <motion.div variants={fadeUp}>
+        <AnimatePresence mode="wait">
+        {tab === "file" ? (
+        <motion.div
+          key="file-tab"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
+        >
         <div
           {...getRootProps()}
           className={cn(
@@ -197,6 +289,90 @@ export default function Upload() {
           </div>
         </div>
         </motion.div>
+        ) : (
+        <motion.div
+          key="url-tab"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
+        >
+          {!canUseUrl ? (
+            <div className="rounded-3xl border border-primary-100/70 bg-white p-8 text-center shadow-card">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 text-white shadow-glow-sm">
+                <Icon icon={Lock} size={22} strokeWidth={2} />
+              </div>
+              <h2 className="text-lg font-bold tracking-tight text-gray-900">
+                Транскрибация по ссылке — от тарифа Старт
+              </h2>
+              <p className="mt-2 text-sm text-gray-500">
+                На Free-тарифе доступна загрузка файлов. Для YouTube, VK, Rutube и других
+                источников перейдите на Старт от 500 ₽/мес.
+              </p>
+              <Link
+                to="/app/pricing"
+                className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-accent-500 px-5 py-2.5 text-sm font-bold text-white shadow-glow-sm hover:shadow-glow transition-shadow duration-base press"
+              >
+                <Icon icon={Zap} size={14} strokeWidth={2.25} />
+                Перейти на Старт
+              </Link>
+            </div>
+          ) : (
+            <form onSubmit={handleUrlSubmit} className="space-y-3 rounded-3xl border border-gray-200/70 bg-white p-5 shadow-card md:p-8">
+              <div>
+                <label htmlFor="url-input" className="mb-2 block text-sm font-semibold text-gray-800">
+                  Ссылка на видео или аудио
+                </label>
+                <div className="relative">
+                  <Icon
+                    icon={Link2}
+                    size={16}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    id="url-input"
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://youtube.com/watch?v=..."
+                    className="input-field !pl-11"
+                    required
+                    autoFocus
+                    disabled={urlLoading}
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+                  Поддерживаемые источники
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {URL_SUPPORTED.map((name) => (
+                    <span
+                      key={name}
+                      className="inline-flex items-center rounded-full bg-surface-100 px-2.5 py-1 text-[11px] font-semibold text-gray-700"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={urlLoading || !url.trim()}
+                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {urlLoading ? "Принимаем…" : "Распознать"}
+              </button>
+              <p className="text-[11px] leading-relaxed text-gray-400">
+                Максимальная длительность: согласно вашему тарифу. Приватные, возрастные и
+                live-трансляции — не поддерживаются.
+              </p>
+            </form>
+          )}
+        </motion.div>
+        )}
+        </AnimatePresence>
         </>
       )}
 

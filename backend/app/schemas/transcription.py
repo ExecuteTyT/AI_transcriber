@@ -1,7 +1,14 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, HttpUrl
+
+
+class UrlIngestRequest(BaseModel):
+    """Запрос на транскрибацию по URL (YouTube / VK / Rutube / OK / Дзен)."""
+
+    url: HttpUrl
+    language: str = Field("auto", min_length=2, max_length=10)
 
 
 class TranscriptionResponse(BaseModel):

@@ -53,3 +53,6 @@ email-validator==2.3.0
 
 # Vector embeddings
 pgvector==0.3.6
+
+# URL ingest (YouTube / VK / Rutube / Дзен) — аудио-download для транскрибации
+yt-dlp==2025.1.15
