@@ -7,10 +7,10 @@ export default {
         xs: "400px",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        serif: ["'Instrument Serif'", "ui-serif", "Georgia", "serif"],
+        sans: ["Inter", "Inter Fallback", "system-ui", "-apple-system", "sans-serif"],
+        serif: ["'Instrument Serif'", "Instrument Serif Fallback", "ui-serif", "Georgia", "serif"],
         mono: ["'JetBrains Mono'", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
-        display: ["'Instrument Serif'", "ui-serif", "Georgia", "serif"],
+        display: ["'Instrument Serif'", "Instrument Serif Fallback", "ui-serif", "Georgia", "serif"],
       },
       fontSize: {
         xs: ["0.8125rem", { lineHeight: "1.25rem" }],

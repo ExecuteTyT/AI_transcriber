@@ -1,4 +1,23 @@
-/* Шрифты подгружаются в index.html через <link rel="preload"> — быстрее FOUT-less. */
+/* Шрифты подгружаются в index.html через <link rel="preload"> — быстрее FOUT-less.
+   Ниже — fallback-fonts с size-adjust, чтобы layout не «прыгал» при свопе. */
+
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Instrument Serif Fallback";
+  src: local("Georgia");
+  size-adjust: 96%;
+  ascent-override: 95%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+}
 
 @tailwind base;
 @tailwind components;
