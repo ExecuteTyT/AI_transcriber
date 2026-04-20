@@ -5,6 +5,7 @@ import HeroWaveform from "@/components/HeroWaveform";
 import HeroLiveDemo from "@/components/HeroLiveDemo";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
+import MicDemoButton from "@/components/MicDemoButton";
 import { useSound } from "@/lib/sound";
 
 /* ─── useCountUp hook ─── */
@@ -333,6 +334,11 @@ export default function Landing() {
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mt-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
             Без карты · 30 мин бесплатно + 180 бонусных при регистрации
           </p>
+
+          {/* Mic demo — signature interactive moment */}
+          <div className="mt-10 md:mt-12 animate-fade-up" style={{ animationDelay: "0.25s" }}>
+            <MicDemoButton />
+          </div>
         </div>
 
         {/* Live transcription demo */}
