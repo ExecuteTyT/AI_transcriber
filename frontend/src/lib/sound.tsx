@@ -95,8 +95,14 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;
 }
 
+/** No-op fallback — для тестов и edge-cases. В production main.tsx обёрнут <SoundProvider>. */
+const NOOP_SOUND: SoundContextValue = {
+  enabled: false,
+  toggle: () => {},
+  set: () => {},
+  play: () => {},
+};
+
 export function useSound(): SoundContextValue {
-  const ctx = useContext(SoundContext);
-  if (!ctx) throw new Error("useSound must be used within <SoundProvider>");
-  return ctx;
+  return useContext(SoundContext) ?? NOOP_SOUND;
 }

@@ -164,6 +164,26 @@
            transition-all duration-200;
   }
 
+  /* ─── Editorial input (на ink-фоне, для auth-страниц) ─── */
+  .input-editorial {
+    @apply w-full bg-transparent rounded-none px-0 py-3
+           text-[var(--fg)] text-[15px] placeholder:text-[var(--fg-subtle)]
+           border-0 border-b border-[var(--border-strong)]
+           focus:outline-none focus:border-acid-300
+           transition-colors duration-200;
+  }
+  .input-editorial:autofill,
+  .input-editorial:-webkit-autofill {
+    -webkit-text-fill-color: var(--fg);
+    box-shadow: 0 0 0 1000px var(--bg) inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /* Editorial label поверх input — mono, uppercase, маленький */
+  .label-editorial {
+    @apply block font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-2;
+  }
+
   /* ─── Cards ─── */
   .card {
     @apply bg-white rounded-2xl border border-gray-200/60

@@ -16,12 +16,12 @@ describe("Login page", () => {
     renderLogin();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(screen.getByLabelText("Пароль")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Войти" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Войти/ })).toBeInTheDocument();
   });
 
   it("renders registration link", () => {
     renderLogin();
-    expect(screen.getByText("Зарегистрироваться")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Создать" })).toBeInTheDocument();
   });
 
   it("has correct title", () => {

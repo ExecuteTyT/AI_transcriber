@@ -17,11 +17,11 @@ describe("Register page", () => {
     expect(screen.getByLabelText("Имя")).toBeInTheDocument();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(screen.getByLabelText(/Пароль/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Создать аккаунт" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Создать аккаунт/ })).toBeInTheDocument();
   });
 
   it("renders login link", () => {
     renderRegister();
-    expect(screen.getByText("Войти")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Войти" })).toBeInTheDocument();
   });
 });

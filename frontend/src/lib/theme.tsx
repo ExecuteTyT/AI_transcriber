@@ -44,8 +44,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
+/** No-op fallback — для тестов и edge-cases где провайдер случайно не подключён.
+ *  В production main.tsx обёрнут <ThemeProvider>, так что это путь только для defensive-render. */
+const NOOP_THEME: ThemeContextValue = { theme: "dark", toggle: () => {}, set: () => {} };
+
 export function useTheme(): ThemeContextValue {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within <ThemeProvider>");
-  return ctx;
+  return useContext(ThemeContext) ?? NOOP_THEME;
 }

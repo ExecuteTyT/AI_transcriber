@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import AuthLayout from "@/components/auth/AuthLayout";
+import WaveformLoader from "@/components/ui/WaveformLoader";
+import { useSound } from "@/lib/sound";
 import { authApi } from "@/api/auth";
 
 export default function ForgotPassword() {
@@ -7,13 +10,16 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const { play } = useSound();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    play("tick");
     try {
       await authApi.requestPasswordReset(email);
+      play("confirm");
       setSent(true);
     } catch {
       setError("Произошла ошибка. Попробуйте позже.");
@@ -22,67 +28,76 @@ export default function ForgotPassword() {
     }
   };
 
+  if (sent) {
+    return (
+      <AuthLayout
+        eyebrow="Письмо отправлено"
+        title={<>Проверьте <em className="italic text-acid-300">почту</em>.</>}
+        subtitle={
+          <>
+            Если аккаунт с адресом <span className="text-[var(--fg)]">{email}</span> существует, мы прислали ссылку для сброса пароля.
+          </>
+        }
+        footer={
+          <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-acid-300 transition-colors">
+            ← Вернуться ко входу
+          </Link>
+        }
+      >
+        <div className="rounded-xl border border-[var(--border-strong)] bg-[var(--bg-elevated)] p-5 font-mono text-[12px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+          → Проверьте папку «Спам», если письмо не пришло за 2 минуты.
+        </div>
+      </AuthLayout>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-      <div className="absolute inset-0 bg-hero-mesh opacity-40" />
-      <div className="absolute top-1/4 right-[15%] w-72 h-72 bg-primary-400/10 rounded-full blur-3xl animate-float" />
-      <div className="relative w-full max-w-md">
-        <div className="text-center mb-8 animate-fade-in">
-          <Link to="/" className="text-2xl font-bold gradient-text">Dicto</Link>
+    <AuthLayout
+      eyebrow="Восстановление доступа"
+      title={<>Забыли <em className="italic text-acid-300">пароль</em>?</>}
+      subtitle="Введите email — пришлём ссылку для сброса."
+      footer={
+        <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-acid-300 transition-colors">
+          ← Вернуться ко входу
+        </Link>
+      }
+    >
+      {error && (
+        <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-[13px] text-red-200">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-7">
+        <div>
+          <label htmlFor="forgot-email" className="label-editorial">Email</label>
+          <input
+            id="forgot-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input-editorial"
+            placeholder="you@example.com"
+            required
+            autoFocus
+            autoComplete="email"
+          />
         </div>
 
-        <div className="card p-8 shadow-elevated">
-          {sent ? (
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-              </div>
-              <h1 className="text-xl font-bold mb-2">Письмо отправлено</h1>
-              <p className="text-sm text-gray-500 mb-6">
-                Если аккаунт с адресом <strong>{email}</strong> существует, мы отправили ссылку для сброса пароля. Проверьте почту.
-              </p>
-              <Link to="/login" className="text-primary-600 hover:underline text-sm">Вернуться ко входу</Link>
-            </div>
-          ) : (
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-accent w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
             <>
-              <h1 className="text-xl font-bold mb-2">Забыли пароль?</h1>
-              <p className="text-sm text-gray-500 mb-6">
-                Введите email, и мы отправим ссылку для сброса пароля.
-              </p>
-
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input-field"
-                    placeholder="you@example.com"
-                    required
-                    autoFocus
-                  />
-                </div>
-
-                {error && (
-                  <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-100">{error}</div>
-                )}
-
-                <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {loading ? "Отправка..." : "Отправить ссылку"}
-                </button>
-              </form>
-
-              <p className="text-sm text-center text-gray-500 mt-6">
-                <Link to="/login" className="text-primary-600 hover:underline">Вернуться ко входу</Link>
-              </p>
+              <WaveformLoader size={14} label="Отправка" /> Отправка…
             </>
+          ) : (
+            <>Отправить ссылку <span aria-hidden>→</span></>
           )}
-        </div>
-      </div>
-    </div>
+        </button>
+      </form>
+    </AuthLayout>
   );
 }
