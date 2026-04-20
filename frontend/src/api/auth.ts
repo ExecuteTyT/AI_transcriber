@@ -16,6 +16,7 @@ export interface User {
   is_email_verified: boolean;
   is_admin: boolean;
   data_retention_days: number | null;
+  default_language: string;
   created_at: string | null;
 }
 
@@ -51,6 +52,7 @@ export const authApi = {
     name?: string;
     email?: string;
     data_retention_days?: number | null;
+    default_language?: string;
   }) => api.patch<User>("/auth/profile", data),
 
   changePassword: (currentPassword: string, newPassword: string) =>

@@ -14,9 +14,13 @@ class VoxtralProvider(TranscriptionProvider):
 
     API_URL = "https://api.mistral.ai/v1/audio/transcriptions"
 
-    def transcribe(self, file_path: str) -> TranscriptionResult:
-        """Транскрибировать аудиофайл через Voxtral V2 API."""
-        # Определяем MIME-тип
+    def transcribe(
+        self, file_path: str, language: str | None = None
+    ) -> TranscriptionResult:
+        """Транскрибировать аудиофайл через Voxtral V2 API.
+
+        language — ISO-код (ru, en, de, …) или None для автоопределения.
+        """
         ext = file_path.rsplit(".", 1)[-1].lower()
         mime_map = {
             "mp3": "audio/mpeg", "wav": "audio/wav", "flac": "audio/flac",
@@ -25,16 +29,21 @@ class VoxtralProvider(TranscriptionProvider):
         mime_type = mime_map.get(ext, "audio/mpeg")
         filename = os.path.basename(file_path)
 
+        payload = {
+            "model": "voxtral-mini-latest",
+            "timestamp_granularities": "segment",
+            "diarize": "true",
+        }
+        # Передаём language только если явно выбран (не "auto" / None).
+        if language and language.lower() != "auto":
+            payload["language"] = language
+
         with open(file_path, "rb") as f:
             response = httpx.post(
                 self.API_URL,
                 headers={"Authorization": f"Bearer {settings.MISTRAL_API_KEY}"},
                 files={"file": (filename, f, mime_type)},
-                data={
-                    "model": "voxtral-mini-latest",
-                    "timestamp_granularities": "segment",
-                    "diarize": "true",
-                },
+                data=payload,
                 timeout=600,
             )
 

@@ -70,9 +70,14 @@ export interface ChatHistoryResponse {
 }
 
 export const transcriptionApi = {
-  upload: (file: File, onProgress?: (percent: number) => void) => {
+  upload: (
+    file: File,
+    onProgress?: (percent: number) => void,
+    language: string = "auto"
+  ) => {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("language", language);
     return api.post<{ id: string; status: string; message: string }>(
       "/transcriptions/upload",
       formData,

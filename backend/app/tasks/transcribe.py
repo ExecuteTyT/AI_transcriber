@@ -74,15 +74,18 @@ def process_transcription(self, transcription_id: str):
             if transcription.content_type in VIDEO_CONTENT_TYPES:
                 audio_path = _extract_audio_from_video(tmp_path)
 
-            # 3. Транскрибация
+            # 3. Транскрибация (передаём выбранный пользователем язык, если есть)
             from app.services.transcription import get_provider
             provider = get_provider()
-            result = provider.transcribe(audio_path)
+            language_hint = transcription.language if transcription.language and transcription.language != "auto" else None
+            result = provider.transcribe(audio_path, language=language_hint)
 
-            # 4. Сохранение результата
+            # 4. Сохранение результата. Язык: приоритет — ответ API; если API
+            # не определил, оставляем то что выбрал пользователь.
             transcription.full_text = result.full_text
             transcription.segments = [seg.__dict__ for seg in result.segments]
-            transcription.language = result.language
+            if result.language:
+                transcription.language = result.language
             transcription.duration_sec = result.duration_sec
             transcription.status = "completed"
             transcription.completed_at = datetime.now(timezone.utc)

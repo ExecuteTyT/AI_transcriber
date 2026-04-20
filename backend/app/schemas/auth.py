@@ -49,6 +49,7 @@ class UserResponse(BaseModel):
     is_email_verified: bool = False
     is_admin: bool = False
     data_retention_days: int | None = 30
+    default_language: str = "auto"
     created_at: datetime | None = None
 
     model_config = {"from_attributes": True}
@@ -70,6 +71,8 @@ class UpdateProfileRequest(BaseModel):
     current_password: str | None = Field(None, description="Обязателен при смене email")
     # Срок хранения транскрипций в днях (1-30). None = бессрочно (только Pro/Бизнес).
     data_retention_days: int | None = Field(None, ge=1, le=30)
+    # Язык распознавания по умолчанию (ISO-код: ru/en/de/… или "auto").
+    default_language: str | None = Field(None, min_length=2, max_length=10)
 
 
 class ChangePasswordRequest(BaseModel):

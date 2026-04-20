@@ -34,5 +34,9 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Каждый день Celery-beat запускает cleanup: удаляет записи с истёкшим expires_at.
     data_retention_days: Mapped[int | None] = mapped_column(Integer, nullable=True, default=30)
 
+    # Язык распознавания по умолчанию ("auto" = определить автоматически).
+    # ISO-коды: ru, en, de, fr, es, it, pt, nl, pl, uk, zh, ja, ko, tr, ar.
+    default_language: Mapped[str] = mapped_column(String(10), default="auto")
+
     transcriptions = relationship("Transcription", back_populates="user", lazy="selectin")
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")

@@ -2,7 +2,7 @@ import logging
 import os
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -108,6 +108,7 @@ MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 МБ
 @router.post("/upload", response_model=TranscriptionUploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_file(
     file: UploadFile,
+    language: str = Form("auto"),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -155,6 +156,9 @@ async def upload_file(
     if user.data_retention_days is not None and user.data_retention_days > 0:
         expires_at = datetime.now(timezone.utc) + timedelta(days=user.data_retention_days)
 
+    # Сохраняем выбранный язык (включая "auto") — Celery task прочитает и передаст в Voxtral.
+    normalized_lang = (language or "auto").lower().strip()
+
     transcription = Transcription(
         user_id=user.id,
         title=safe_filename or "Без названия",
@@ -163,6 +167,7 @@ async def upload_file(
         content_type=file.content_type or "",
         status="queued",
         expires_at=expires_at,
+        language=normalized_lang if normalized_lang != "auto" else None,
     )
     db.add(transcription)
     await db.commit()

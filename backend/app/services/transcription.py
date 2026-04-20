@@ -28,8 +28,10 @@ class TranscriptionProvider(ABC):
     """Абстрактный провайдер транскрибации."""
 
     @abstractmethod
-    def transcribe(self, file_path: str) -> TranscriptionResult:
-        """Транскрибировать аудиофайл."""
+    def transcribe(
+        self, file_path: str, language: str | None = None
+    ) -> TranscriptionResult:
+        """Транскрибировать аудиофайл. language — ISO-код или None (auto)."""
         ...
 
 

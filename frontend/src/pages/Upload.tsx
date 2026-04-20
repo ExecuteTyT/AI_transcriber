@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileAudio, Film, Music2, Upload as UploadIcon, Zap } from "lucide-react";
+import { FileAudio, Film, Languages, Music2, Upload as UploadIcon, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { transcriptionApi } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
@@ -11,6 +11,7 @@ import { PipelineSteps, type PipelineStage } from "@/components/upload/PipelineS
 import { ErrorState } from "@/components/states/ErrorState";
 import { fadeUp, staggerChildren } from "@/lib/motion";
 import { cn } from "@/lib/cn";
+import { LANGUAGES } from "@/lib/languages";
 
 const ACCEPTED_TYPES = {
   "audio/*": [".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".webm"],
@@ -34,6 +35,7 @@ export default function Upload() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
+  const [language, setLanguage] = useState<string>(user?.default_language || "auto");
   const navigate = useNavigate();
 
   const minutesLeft = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
@@ -61,7 +63,7 @@ export default function Upload() {
       setFileName(file.name);
 
       try {
-        const { data } = await transcriptionApi.upload(file, (percent) => setProgress(percent));
+        const { data } = await transcriptionApi.upload(file, (percent) => setProgress(percent), language);
         setStage("processing");
         // Give user a brief moment to see the pipeline before navigating.
         setTimeout(() => {
@@ -76,7 +78,7 @@ export default function Upload() {
         toast.error(message);
       }
     },
-    [navigate]
+    [navigate, language]
   );
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
@@ -109,6 +111,26 @@ export default function Upload() {
           <PipelineSteps stage={stage} uploadPercent={progress} fileName={fileName} />
         </motion.div>
       ) : (
+        <>
+        <motion.div variants={fadeUp} className="flex items-center gap-3 rounded-2xl border border-gray-200/70 bg-white px-4 py-3">
+          <Icon icon={Languages} size={16} className="text-gray-400" />
+          <label htmlFor="lang-select" className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+            Язык записи:
+          </label>
+          <select
+            id="lang-select"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="flex-1 rounded-lg border border-gray-200 bg-surface-50 px-3 py-1.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+          >
+            {LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.flag} {lang.label}
+              </option>
+            ))}
+          </select>
+        </motion.div>
+
         <motion.div variants={fadeUp}>
         <div
           {...getRootProps()}
@@ -175,6 +197,7 @@ export default function Upload() {
           </div>
         </div>
         </motion.div>
+        </>
       )}
 
       {user && !busy && (

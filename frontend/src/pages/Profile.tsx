@@ -5,6 +5,7 @@ import {
   Calendar,
   ChevronRight,
   Clock,
+  Languages,
   Mail,
   Shield,
   Sparkles,
@@ -16,6 +17,7 @@ import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { fadeUp, staggerChildren } from "@/lib/motion";
 import { cn } from "@/lib/cn";
+import { LANGUAGES } from "@/lib/languages";
 
 const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес" };
 
@@ -39,8 +41,10 @@ export default function Profile() {
   const [retentionDays, setRetentionDays] = useState<number>(
     user?.data_retention_days ?? 30
   );
+  const [defaultLang, setDefaultLang] = useState<string>(user?.default_language || "auto");
   const [profileLoading, setProfileLoading] = useState(false);
   const [retentionLoading, setRetentionLoading] = useState(false);
+  const [langLoading, setLangLoading] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -63,6 +67,19 @@ export default function Profile() {
       toast.error(axiosErr.response?.data?.detail || "Ошибка обновления");
     } finally {
       setProfileLoading(false);
+    }
+  };
+
+  const handleLangSave = async () => {
+    setLangLoading(true);
+    try {
+      await authApi.updateProfile({ default_language: defaultLang });
+      await loadUser();
+      toast.success("Язык сохранён");
+    } catch {
+      toast.error("Не удалось сохранить язык");
+    } finally {
+      setLangLoading(false);
     }
   };
 
@@ -211,6 +228,38 @@ export default function Profile() {
               {profileLoading ? "Сохранение…" : "Сохранить"}
             </button>
           </form>
+        </Card>
+      </motion.section>
+
+      <motion.section variants={fadeUp}>
+        <Card title="Язык распознавания" icon={Languages}>
+          <p className="mb-4 text-sm text-gray-500">
+            Будет применяться по умолчанию для новых загрузок. Перед каждой
+            можно переопределить.
+          </p>
+          <label htmlFor="default-lang" className="mb-1.5 block text-sm font-semibold text-gray-700">
+            Язык по умолчанию
+          </label>
+          <select
+            id="default-lang"
+            value={defaultLang}
+            onChange={(e) => setDefaultLang(e.target.value)}
+            className="input-field"
+          >
+            {LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.flag} {lang.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={handleLangSave}
+            disabled={langLoading || defaultLang === (user.default_language || "auto")}
+            className="btn-primary mt-4 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {langLoading ? "Сохранение…" : "Сохранить"}
+          </button>
         </Card>
       </motion.section>
 

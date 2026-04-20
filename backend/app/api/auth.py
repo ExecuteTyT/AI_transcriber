@@ -177,6 +177,9 @@ async def update_profile(
     if data.data_retention_days is not None:
         user.data_retention_days = data.data_retention_days
 
+    if data.default_language is not None:
+        user.default_language = data.default_language.lower().strip()
+
     await db.commit()
     await db.refresh(user)
     return user
