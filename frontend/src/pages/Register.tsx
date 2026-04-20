@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuthStore } from "@/store/authStore";
 
 export default function Register() {
@@ -28,6 +29,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(email, password, name);
+      toast.success("🎉 Добро пожаловать! +180 бонусных минут", { duration: 5000 });
       navigate("/dashboard");
     } catch {
       setError("Ошибка регистрации. Возможно, email уже занят.");

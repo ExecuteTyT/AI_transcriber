@@ -38,5 +38,9 @@ class User(Base, UUIDMixin, TimestampMixin):
     # ISO-коды: ru, en, de, fr, es, it, pt, nl, pl, uk, zh, ja, ko, tr, ar.
     default_language: Mapped[str] = mapped_column(String(10), default="auto")
 
+    # Welcome-бонус минут: начисляется one-time при регистрации.
+    # Расходуется ПЕРЕД monthly-лимитом. reset_monthly_limits его НЕ трогает.
+    bonus_minutes: Mapped[int] = mapped_column(Integer, default=180)
+
     transcriptions = relationship("Transcription", back_populates="user", lazy="selectin")
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")

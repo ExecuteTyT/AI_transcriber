@@ -90,10 +90,18 @@ def process_transcription(self, transcription_id: str):
             transcription.status = "completed"
             transcription.completed_at = datetime.now(timezone.utc)
 
-            # Обновляем использованные минуты пользователя
+            # Списание минут: сначала с bonus_minutes (welcome bonus),
+            # потом — с месячного лимита. Расход сверх обоих уйдёт в overage
+            # (будет реализован в PR#4). Пока — просто увеличиваем minutes_used.
             user = db.get(User, transcription.user_id)
             if user and result.duration_sec:
-                user.minutes_used += math.ceil(result.duration_sec / 60)
+                minutes = math.ceil(result.duration_sec / 60)
+                if user.bonus_minutes > 0:
+                    spent_from_bonus = min(user.bonus_minutes, minutes)
+                    user.bonus_minutes -= spent_from_bonus
+                    minutes -= spent_from_bonus
+                if minutes > 0:
+                    user.minutes_used += minutes
 
             db.commit()
 

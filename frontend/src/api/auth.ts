@@ -17,6 +17,7 @@ export interface User {
   is_admin: boolean;
   data_retention_days: number | null;
   default_language: string;
+  bonus_minutes: number;
   created_at: string | null;
 }
 

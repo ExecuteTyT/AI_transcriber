@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight, Gift, Sparkles } from "lucide-react";
 import { Icon } from "@/components/Icon";
 import { fadeUp, easeOutQuart } from "@/lib/motion";
 
 interface UsageCardProps {
   minutesUsed: number;
   minutesLimit: number;
+  bonusMinutes: number;
   planName: string;
   totalRecords: number;
 }
@@ -35,12 +36,13 @@ function useCountUp(target: number, duration = 900, trigger = true) {
   return value;
 }
 
-export function UsageCard({ minutesUsed, minutesLimit, planName, totalRecords }: UsageCardProps) {
-  const remaining = Math.max(0, minutesLimit - minutesUsed);
+export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, totalRecords }: UsageCardProps) {
+  const monthlyRemaining = Math.max(0, minutesLimit - minutesUsed);
+  const totalAvailable = bonusMinutes + monthlyRemaining;
   const usedPercent = minutesLimit > 0 ? Math.min(100, (minutesUsed / minutesLimit) * 100) : 0;
-  const low = usedPercent >= 80;
+  const low = bonusMinutes === 0 && usedPercent >= 80;
 
-  const animated = useCountUp(remaining);
+  const animated = useCountUp(totalAvailable);
 
   const radius = 56;
   const circumference = 2 * Math.PI * radius;
@@ -116,7 +118,18 @@ export function UsageCard({ minutesUsed, minutesLimit, planName, totalRecords }:
               ? "Увеличьте лимит, чтобы не потерять новые идеи и встречи."
               : "Загружайте записи — транскрибация и AI-анализ под рукой."}
           </p>
-          <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+          {bonusMinutes > 0 && (
+            <div className="mt-3 flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 px-3 py-2 ring-1 ring-amber-200/60">
+              <Icon icon={Gift} size={14} strokeWidth={2} className="text-amber-600" />
+              <span className="text-[12px] font-semibold text-amber-800">
+                Бонус <span className="tabular">{bonusMinutes}</span> мин
+              </span>
+              <span className="ml-auto text-[10px] font-medium text-amber-700/80">
+                тратится первым
+              </span>
+            </div>
+          )}
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
             <MicroStat label="Записей" value={totalRecords.toString()} />
             <MicroStat label="Потрачено" value={`${minutesUsed}`} unit="мин" />
             <MicroStat label="Лимит" value={`${minutesLimit}`} unit="мин" />

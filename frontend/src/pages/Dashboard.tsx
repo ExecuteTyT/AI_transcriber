@@ -147,6 +147,7 @@ export default function Dashboard() {
         <UsageCard
           minutesUsed={user.minutes_used}
           minutesLimit={user.minutes_limit}
+          bonusMinutes={user.bonus_minutes ?? 0}
           planName={PLAN_NAMES[user.plan] || user.plan}
           totalRecords={total}
         />

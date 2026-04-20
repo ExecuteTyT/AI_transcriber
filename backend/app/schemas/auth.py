@@ -50,6 +50,7 @@ class UserResponse(BaseModel):
     is_admin: bool = False
     data_retention_days: int | None = 30
     default_language: str = "auto"
+    bonus_minutes: int = 0
     created_at: datetime | None = None
 
     model_config = {"from_attributes": True}
