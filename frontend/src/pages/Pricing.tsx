@@ -18,6 +18,7 @@ import { paymentsApi } from "@/api/payments";
 import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { ErrorState } from "@/components/states/ErrorState";
+import PricingCalculator from "@/components/pricing/PricingCalculator";
 import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 
@@ -360,6 +361,10 @@ export default function Pricing() {
             onSelect={() => handleSubscribe(plan.id)}
           />
         ))}
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+        <PricingCalculator />
       </motion.div>
 
       <motion.div variants={fadeUp} className="grid gap-px sm:grid-cols-3 border border-[var(--border)] rounded-2xl overflow-hidden bg-[var(--border)]">

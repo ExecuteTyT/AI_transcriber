@@ -6,6 +6,7 @@ import HeroLiveDemo from "@/components/HeroLiveDemo";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
 import MicDemoButton from "@/components/MicDemoButton";
+import LiveInsightsSection from "@/components/landing/LiveInsightsSection";
 import { useSound } from "@/lib/sound";
 import { useMagnetic } from "@/hooks/useMagnetic";
 
@@ -441,6 +442,9 @@ export default function Landing() {
         </div>
         </FadeInOnScroll>
       </section>
+
+      {/* ─── Live insights scroll-section ─── */}
+      <LiveInsightsSection />
 
       {/* ─── Use cases (editorial cards on ink) ─── */}
       <section id="use-cases" className="py-24 md:py-32 bg-[var(--bg-elevated)] border-t border-[var(--border)]">
