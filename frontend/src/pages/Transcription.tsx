@@ -388,14 +388,17 @@ export default function Transcription() {
         className="flex items-center justify-center py-16 md:py-24"
       >
         <div className="text-center">
-          <div className="relative mx-auto mb-6 h-20 w-20">
-            <div className="absolute inset-0 animate-ping rounded-full bg-primary-100 opacity-30" />
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 shadow-glow">
-              <Icon icon={Loader2} size={28} strokeWidth={2} className="animate-spin text-white" />
+          <div className="relative mx-auto mb-8 h-16 w-16">
+            <div className="absolute inset-0 animate-ping rounded-full bg-acid-300/20 opacity-60" />
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-acid-300/30 bg-acid-300/10 text-acid-300">
+              <Icon icon={Loader2} size={22} strokeWidth={1.75} className="animate-spin" />
             </div>
           </div>
-          <h2 className="mb-1 text-xl font-bold tracking-tight">
-            {transcription.status === "queued" ? "В очереди" : "Обрабатываем…"}
+          <p className="eyebrow mb-3">
+            {transcription.status === "queued" ? "В очереди" : "Обработка"}
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl leading-tight tracking-[-0.01em] text-[var(--fg)] mb-2">
+            {transcription.status === "queued" ? "Скоро начнём" : "Расшифровываем"}
           </h2>
           <p className="text-sm text-[var(--fg-muted)]">{transcription.original_filename}</p>
           <p className="mt-2 text-xs text-[var(--fg-subtle)]">Обычно занимает 1–3 минуты</p>
@@ -458,33 +461,39 @@ export default function Transcription() {
           audioRef={player.audioRef}
         />
       )}
-      <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4">
+      <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
         <div className="min-w-0">
-          <h1 className="truncate text-xl font-bold tracking-tight md:text-2xl">
+          <p className="eyebrow mb-2">Транскрипция</p>
+          <h1 className="font-display text-3xl md:text-4xl leading-[1.05] tracking-[-0.01em] text-[var(--fg)] truncate">
             {transcription.title}
           </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px] text-[var(--fg-muted)]">
+          <div className="mt-3 flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
             {transcription.language && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2.5 py-1 font-semibold text-[var(--fg-muted)]">
-                {transcription.language.toUpperCase()}
-              </span>
+              <span className="tabular">{transcription.language.toUpperCase()}</span>
             )}
             {transcription.duration_sec && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2.5 py-1 tabular">
-                <Icon icon={Clock} size={12} />
-                {formatTime(transcription.duration_sec)}
-              </span>
+              <>
+                <span aria-hidden>·</span>
+                <span className="inline-flex items-center gap-1 tabular">
+                  <Icon icon={Clock} size={11} strokeWidth={1.75} />
+                  {formatTime(transcription.duration_sec)}
+                </span>
+              </>
             )}
             {transcription.full_text && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2.5 py-1 tabular">
-                {transcription.full_text.split(/\s+/).length} слов
-              </span>
+              <>
+                <span aria-hidden>·</span>
+                <span className="tabular">{transcription.full_text.split(/\s+/).length} слов</span>
+              </>
             )}
             {uniqueSpeakers.length > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2.5 py-1">
-                <Icon icon={Users} size={12} />
-                {uniqueSpeakers.length} спикеров
-              </span>
+              <>
+                <span aria-hidden>·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Icon icon={Users} size={11} strokeWidth={1.75} />
+                  {uniqueSpeakers.length} спикеров
+                </span>
+              </>
             )}
           </div>
         </div>
@@ -493,25 +502,25 @@ export default function Transcription() {
           <button
             type="button"
             onClick={handleCopy}
-            className="btn-secondary flex items-center gap-1.5"
+            className="btn-editorial-ghost !py-2 !px-4 !text-[12px] inline-flex items-center gap-1.5"
           >
             {copied ? (
               <>
-                <Icon icon={Check} size={14} className="text-emerald-500" /> Скопировано
+                <Icon icon={Check} size={13} className="text-acid-300" /> Скопировано
               </>
             ) : (
               <>
-                <Icon icon={Copy} size={14} /> Копировать
+                <Icon icon={Copy} size={13} /> Копировать
               </>
             )}
           </button>
-          <button type="button" onClick={() => handleExport("txt")} className="btn-secondary">
+          <button type="button" onClick={() => handleExport("txt")} className="btn-editorial-ghost !py-2 !px-3 !text-[11px] font-mono uppercase tracking-[0.12em]">
             TXT
           </button>
-          <button type="button" onClick={() => handleExport("srt")} className="btn-secondary">
+          <button type="button" onClick={() => handleExport("srt")} className="btn-editorial-ghost !py-2 !px-3 !text-[11px] font-mono uppercase tracking-[0.12em]">
             SRT
           </button>
-          <button type="button" onClick={() => handleExport("docx")} className="btn-secondary">
+          <button type="button" onClick={() => handleExport("docx")} className="btn-editorial-ghost !py-2 !px-3 !text-[11px] font-mono uppercase tracking-[0.12em]">
             DOCX
           </button>
         </div>
@@ -520,20 +529,20 @@ export default function Transcription() {
           <button
             type="button"
             onClick={handleCopy}
-            className="btn-secondary flex-1 flex items-center justify-center gap-1.5"
+            className="btn-editorial-ghost flex-1 justify-center inline-flex items-center gap-1.5 !py-2.5 !text-[13px]"
           >
             {copied ? (
               <>
-                <Icon icon={Check} size={14} className="text-emerald-500" /> Скопировано
+                <Icon icon={Check} size={13} className="text-acid-300" /> Скопировано
               </>
             ) : (
               <>
-                <Icon icon={Copy} size={14} /> Копировать
+                <Icon icon={Copy} size={13} /> Копировать
               </>
             )}
           </button>
           <IconButton aria-label="Экспорт" onClick={() => setExportSheetOpen(true)}>
-            <Icon icon={Download} size={18} />
+            <Icon icon={Download} size={16} strokeWidth={1.75} />
           </IconButton>
         </div>
       </header>
@@ -542,7 +551,7 @@ export default function Transcription() {
         aria-label="Разделы транскрипции"
         className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0 scrollbar-hide"
       >
-        <div className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] p-1 text-sm font-semibold">
+        <div className="inline-flex items-center gap-px rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] p-[3px] font-mono text-[10px] uppercase tracking-[0.14em]">
           {TABS.map(({ key, label, proOnly }) => {
             const locked = proOnly && actionItemsLocked;
             const active = tab === key;
@@ -556,7 +565,7 @@ export default function Transcription() {
                 className={cn(
                   "relative inline-flex items-center gap-1.5 rounded-full px-4 py-2 whitespace-nowrap transition-colors duration-fast",
                   active
-                    ? "text-white"
+                    ? "text-ink-900"
                     : locked
                     ? "text-[var(--fg-subtle)]"
                     : "text-[var(--fg-muted)] hover:text-[var(--fg)]"
@@ -566,12 +575,12 @@ export default function Transcription() {
                 {active && (
                   <motion.span
                     layoutId="tab-chip"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 shadow-glow-sm"
+                    className="absolute inset-0 rounded-full bg-acid-300"
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
                 <span className="relative z-10 inline-flex items-center gap-1.5">
-                  {locked && !active && <Icon icon={Sparkles} size={12} />}
+                  {locked && !active && <Icon icon={Sparkles} size={11} />}
                   {label}
                 </span>
               </motion.button>
