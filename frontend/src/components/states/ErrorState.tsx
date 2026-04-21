@@ -14,21 +14,21 @@ export function ErrorState({ title = "Что-то пошло не так", descr
     <div
       role="alert"
       className={cn(
-        "rounded-2xl border border-red-100 bg-red-50/60 p-5 flex items-start gap-3",
+        "rounded-2xl border border-red-500/25 bg-red-500/10 p-5 flex items-start gap-3",
         className
       )}
     >
-      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
-        <Icon icon={AlertTriangle} size={18} strokeWidth={2} />
+      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-red-500/15 text-red-400 border border-red-500/25">
+        <Icon icon={AlertTriangle} size={17} strokeWidth={1.75} />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="text-[15px] font-semibold text-red-900">{title}</h4>
-        {description && <p className="mt-0.5 text-sm text-red-700/80">{description}</p>}
+        <h4 className="font-display text-lg leading-tight text-[var(--fg)]">{title}</h4>
+        {description && <p className="mt-1 text-[13px] text-[var(--fg-muted)] leading-[1.5]">{description}</p>}
         {onRetry && (
           <button
             type="button"
             onClick={onRetry}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-500 active:bg-red-700 transition-colors duration-fast press"
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-red-500/90 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-red-500 transition-colors"
           >
             Повторить
           </button>

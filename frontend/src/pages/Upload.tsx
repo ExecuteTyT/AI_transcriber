@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { FileAudio, Film, FolderOpen, Languages, Link2, Lock, Music2, Upload as UploadIcon, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FileAudio, FolderOpen, Languages, Link2, Lock, Upload as UploadIcon } from "lucide-react";
 import { toast } from "sonner";
 import { transcriptionApi } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
@@ -12,7 +12,7 @@ import { ErrorState } from "@/components/states/ErrorState";
 import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { LANGUAGES } from "@/lib/languages";
-import { AnimatePresence } from "framer-motion";
+import { useSound } from "@/lib/sound";
 
 const ACCEPTED_TYPES = {
   "audio/*": [".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".webm"],
@@ -21,22 +21,15 @@ const ACCEPTED_TYPES = {
 
 const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
 
-const FORMATS = [
-  { label: "MP3", icon: Music2 },
-  { label: "WAV", icon: Music2 },
-  { label: "M4A", icon: Music2 },
-  { label: "MP4", icon: Film },
-  { label: "MOV", icon: Film },
-  { label: "WebM", icon: Film },
-];
-
-const URL_SUPPORTED = ["YouTube", "VK Video", "Rutube", "Одноклассники", "Дзен"];
+const FORMATS = ["MP3", "WAV", "FLAC", "OGG", "M4A", "MP4", "MOV", "WEBM"];
+const URL_SUPPORTED = ["YouTube", "VK Video", "Rutube", "OK", "Дзен"];
 const URL_PLAN_ALLOWED = new Set(["start", "pro", "business", "premium"]);
 
 type SourceTab = "file" | "url";
 
 export default function Upload() {
   const { user } = useAuthStore();
+  const { play } = useSound();
   const [stage, setStage] = useState<PipelineStage>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
@@ -47,7 +40,10 @@ export default function Upload() {
   const [urlLoading, setUrlLoading] = useState(false);
   const navigate = useNavigate();
 
-  const minutesLeft = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
+  const bonusMinutes = user?.bonus_minutes ?? 0;
+  const monthlyRemaining = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
+  const totalAvailable = bonusMinutes + monthlyRemaining;
+  const totalCapacity = bonusMinutes + (user?.minutes_limit ?? 0);
   const canUseUrl = Boolean(user?.is_admin) || URL_PLAN_ALLOWED.has(user?.plan || "");
 
   const onDrop = useCallback(
@@ -71,12 +67,13 @@ export default function Upload() {
       setStage("uploading");
       setProgress(0);
       setFileName(file.name);
+      play("tick");
 
       try {
         const { data } = await transcriptionApi.upload(file, (percent) => setProgress(percent), language);
         setStage("processing");
-        // Give user a brief moment to see the pipeline before navigating.
         setTimeout(() => {
+          play("confirm");
           toast.success("Файл загружен — обрабатываем!");
           navigate(`/transcription/${data.id}`);
         }, 600);
@@ -88,7 +85,7 @@ export default function Upload() {
         toast.error(message);
       }
     },
-    [navigate, language]
+    [navigate, language, play]
   );
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
@@ -105,7 +102,6 @@ export default function Upload() {
     const trimmed = url.trim();
     if (!trimmed) return;
     try {
-      // Лёгкая валидация на фронте — финально проверяет backend.
       new URL(trimmed);
     } catch {
       toast.error("Некорректная ссылка");
@@ -114,12 +110,14 @@ export default function Upload() {
     setError("");
     setUrlLoading(true);
     setStage("uploading");
-    setProgress(100); // в URL-режиме нет upload progress — сразу обработка
+    setProgress(100);
     setFileName(trimmed);
+    play("tick");
     try {
       const { data } = await transcriptionApi.uploadUrl(trimmed, language);
       setStage("processing");
       setTimeout(() => {
+        play("confirm");
         toast.success("Ссылка принята — скачиваем и обрабатываем!");
         navigate(`/transcription/${data.id}`);
       }, 600);
@@ -141,12 +139,15 @@ export default function Upload() {
       variants={staggerChildren(0.06)}
       initial="hidden"
       animate="visible"
-      className="mx-auto max-w-2xl space-y-5"
+      className="mx-auto max-w-2xl space-y-6 md:space-y-8"
     >
       <motion.header variants={fadeUp}>
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Новая запись</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Загрузите аудио или видео — превратим в текст, саммари и задачи.
+        <p className="eyebrow mb-3">Новая запись</p>
+        <h1 className="font-display text-4xl md:text-5xl leading-[1.02] tracking-[-0.02em] text-[var(--fg)]">
+          Превратим в <em className="italic text-acid-300">текст</em>.
+        </h1>
+        <p className="mt-3 text-[14px] text-[var(--fg-muted)] leading-[1.55] max-w-[48ch]">
+          Загрузите аудио/видео или ссылку — AI расшифрует речь, разметит спикеров и выделит ключевые тезисы.
         </p>
       </motion.header>
 
@@ -156,7 +157,11 @@ export default function Upload() {
         </motion.div>
       ) : (
         <>
-        <motion.div variants={fadeUp} className="flex gap-1 rounded-full bg-surface-100 p-1 text-sm font-semibold">
+        {/* ── Source tab ── */}
+        <motion.div
+          variants={fadeUp}
+          className="flex gap-px rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] p-[3px] font-mono text-[10px] uppercase tracking-[0.14em]"
+        >
           {(
             [
               { key: "file" as SourceTab, label: "Файл", icon: FolderOpen },
@@ -171,24 +176,25 @@ export default function Upload() {
                 whileTap={{ scale: 0.97 }}
                 transition={springTight}
                 onClick={() => {
+                  play("focus");
                   setError("");
                   setTab(opt.key);
                 }}
                 className={cn(
-                  "relative flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 transition-colors duration-fast",
-                  active ? "text-white" : "text-gray-600 hover:text-gray-900"
+                  "relative flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 transition-colors duration-fast",
+                  active ? "text-ink-900" : "text-[var(--fg-muted)] hover:text-[var(--fg)]"
                 )}
                 aria-current={active ? "page" : undefined}
               >
                 {active && (
                   <motion.span
                     layoutId="source-tab"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 shadow-glow-sm"
+                    className="absolute inset-0 rounded-full bg-acid-300"
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
                 <span className="relative z-10 inline-flex items-center gap-2">
-                  <Icon icon={opt.icon} size={14} strokeWidth={2.2} />
+                  <Icon icon={opt.icon} size={13} strokeWidth={1.75} />
                   {opt.label}
                 </span>
               </motion.button>
@@ -196,211 +202,208 @@ export default function Upload() {
           })}
         </motion.div>
 
-        <motion.div variants={fadeUp} className="flex items-center gap-3 rounded-2xl border border-gray-200/70 bg-white px-4 py-3">
-          <Icon icon={Languages} size={16} className="text-gray-400" />
-          <label htmlFor="lang-select" className="text-sm font-semibold text-gray-700 whitespace-nowrap">
-            Язык записи:
+        {/* ── Language selector ── */}
+        <motion.div
+          variants={fadeUp}
+          className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3"
+        >
+          <Icon icon={Languages} size={16} className="text-[var(--fg-subtle)]" />
+          <label htmlFor="lang-select" className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] whitespace-nowrap">
+            Язык
           </label>
           <select
             id="lang-select"
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="flex-1 rounded-lg border border-gray-200 bg-surface-50 px-3 py-1.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+            className="flex-1 bg-transparent text-[14px] font-medium text-[var(--fg)] focus:outline-none cursor-pointer"
           >
             {LANGUAGES.map((lang) => (
-              <option key={lang.code} value={lang.code}>
+              <option key={lang.code} value={lang.code} className="bg-[var(--bg-elevated)]">
                 {lang.flag} {lang.label}
               </option>
             ))}
           </select>
         </motion.div>
 
+        {/* ── Tab content ── */}
         <AnimatePresence mode="wait">
         {tab === "file" ? (
-        <motion.div
-          key="file-tab"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
-        >
-        <div
-          {...getRootProps()}
-          className={cn(
-            "group relative overflow-hidden rounded-3xl border-2 border-dashed p-6 text-center transition-all duration-base cursor-pointer md:p-10",
-            isDragActive
-              ? "border-primary-400 bg-primary-50/60 shadow-glow-lg"
-              : "border-surface-300 bg-white hover:border-primary-300 hover:bg-primary-50/30 hover:shadow-glow-sm"
-          )}
-        >
-          <div
-            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-base group-hover:opacity-100"
-            aria-hidden
-            style={{
-              background:
-                "radial-gradient(80% 60% at 50% 0%, rgba(99,102,241,0.08) 0%, transparent 60%)",
-            }}
-          />
-          <input {...getInputProps()} />
-          <div className="relative space-y-4">
-            <motion.div
-              animate={{ scale: isDragActive ? 1.12 : 1, rotate: isDragActive ? 2 : 0 }}
-              transition={{ type: "spring", stiffness: 320, damping: 24 }}
+          <motion.div
+            key="file-tab"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
+          >
+            <div
+              {...getRootProps()}
               className={cn(
-                "mx-auto flex h-16 w-16 items-center justify-center rounded-2xl md:h-20 md:w-20",
+                "group relative overflow-hidden rounded-3xl border-2 border-dashed p-8 md:p-12 text-center transition-all duration-base cursor-pointer",
                 isDragActive
-                  ? "bg-gradient-to-br from-primary-500 to-accent-500 text-white shadow-glow"
-                  : "bg-gradient-to-br from-primary-100 to-primary-50 text-primary-600"
+                  ? "border-acid-300 bg-acid-300/5"
+                  : "border-[var(--border-strong)] bg-[var(--bg-elevated)] hover:border-acid-300/40"
               )}
             >
-              <Icon icon={UploadIcon} size={isDragActive ? 32 : 28} strokeWidth={1.75} />
-            </motion.div>
-            <div>
-              <p className="text-lg font-bold tracking-tight text-gray-900">
-                {isDragActive ? "Отпустите файл — загрузим!" : "Перетащите файл сюда"}
-              </p>
-              <p className="mt-1 text-sm text-gray-500">или нажмите, чтобы выбрать с устройства</p>
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  open();
-                }}
-                className="btn-primary inline-flex items-center gap-2"
-              >
-                <Icon icon={UploadIcon} size={16} strokeWidth={2.25} />
-                Выбрать файл
-              </button>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
-              {FORMATS.map((fmt) => (
-                <span
-                  key={fmt.label}
-                  className="inline-flex items-center gap-1 rounded-full bg-surface-100 px-2.5 py-1 text-[11px] font-semibold text-gray-600"
+              <input {...getInputProps()} />
+              <div className="relative space-y-5">
+                <motion.div
+                  animate={{ scale: isDragActive ? 1.08 : 1 }}
+                  transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                  className={cn(
+                    "mx-auto flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl border transition-colors",
+                    isDragActive
+                      ? "bg-acid-300/15 border-acid-300/50 text-acid-300"
+                      : "bg-acid-300/10 border-acid-300/20 text-acid-300"
+                  )}
                 >
-                  <Icon icon={fmt.icon} size={12} />
-                  {fmt.label}
-                </span>
-              ))}
-            </div>
-            <p className="text-[11px] font-medium text-gray-400">Максимум 500 МБ</p>
-          </div>
-        </div>
-        </motion.div>
-        ) : (
-        <motion.div
-          key="url-tab"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
-        >
-          {!canUseUrl ? (
-            <div className="rounded-3xl border border-primary-100/70 bg-white p-8 text-center shadow-card">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 text-white shadow-glow-sm">
-                <Icon icon={Lock} size={22} strokeWidth={2} />
-              </div>
-              <h2 className="text-lg font-bold tracking-tight text-gray-900">
-                Транскрибация по ссылке — от тарифа Старт
-              </h2>
-              <p className="mt-2 text-sm text-gray-500">
-                На Free-тарифе доступна загрузка файлов. Для YouTube, VK, Rutube и других
-                источников перейдите на Старт от 500 ₽/мес.
-              </p>
-              <Link
-                to="/app/pricing"
-                className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-accent-500 px-5 py-2.5 text-sm font-bold text-white shadow-glow-sm hover:shadow-glow transition-shadow duration-base press"
-              >
-                <Icon icon={Zap} size={14} strokeWidth={2.25} />
-                Перейти на Старт
-              </Link>
-            </div>
-          ) : (
-            <form onSubmit={handleUrlSubmit} className="space-y-3 rounded-3xl border border-gray-200/70 bg-white p-5 shadow-card md:p-8">
-              <div>
-                <label htmlFor="url-input" className="mb-2 block text-sm font-semibold text-gray-800">
-                  Ссылка на видео или аудио
-                </label>
-                <div className="relative">
-                  <Icon
-                    icon={Link2}
-                    size={16}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-                  <input
-                    id="url-input"
-                    type="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://youtube.com/watch?v=..."
-                    className="input-field !pl-11"
-                    required
-                    autoFocus
-                    disabled={urlLoading}
-                  />
+                  <Icon icon={UploadIcon} size={isDragActive ? 30 : 26} strokeWidth={1.5} />
+                </motion.div>
+                <div>
+                  <p className="font-display text-2xl md:text-3xl leading-tight tracking-[-0.01em] text-[var(--fg)]">
+                    {isDragActive ? "Отпустите — загружаем" : "Перетащите файл сюда"}
+                  </p>
+                  <p className="mt-2 text-[13px] text-[var(--fg-muted)]">
+                    или нажмите чтобы выбрать с устройства
+                  </p>
                 </div>
-              </div>
-              <div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
-                  Поддерживаемые источники
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {URL_SUPPORTED.map((name) => (
+                <div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      play("tick");
+                      open();
+                    }}
+                    className="btn-accent"
+                  >
+                    <Icon icon={UploadIcon} size={15} strokeWidth={2} />
+                    Выбрать файл
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-1.5 pt-2">
+                  {FORMATS.map((fmt) => (
                     <span
-                      key={name}
-                      className="inline-flex items-center rounded-full bg-surface-100 px-2.5 py-1 text-[11px] font-semibold text-gray-700"
+                      key={fmt}
+                      className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] px-2 py-0.5"
                     >
-                      {name}
+                      {fmt}
                     </span>
                   ))}
                 </div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+                  Максимум 500 МБ
+                </p>
               </div>
-              <button
-                type="submit"
-                disabled={urlLoading || !url.trim()}
-                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {urlLoading ? "Принимаем…" : "Распознать"}
-              </button>
-              <p className="text-[11px] leading-relaxed text-gray-400">
-                Максимальная длительность: согласно вашему тарифу. Приватные, возрастные и
-                live-трансляции — не поддерживаются.
-              </p>
-            </form>
-          )}
-        </motion.div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="url-tab"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
+          >
+            {!canUseUrl ? (
+              <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-8 md:p-10 text-center">
+                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-acid-300/25 bg-acid-300/10 text-acid-300">
+                  <Icon icon={Lock} size={22} strokeWidth={1.5} />
+                </div>
+                <p className="eyebrow mb-3">Доступ от тарифа Старт</p>
+                <h2 className="font-display text-2xl md:text-3xl leading-tight tracking-[-0.01em] text-[var(--fg)]">
+                  Транскрибация <em className="italic text-acid-300">по ссылке</em>
+                </h2>
+                <p className="mt-3 text-[14px] text-[var(--fg-muted)] leading-[1.55] max-w-[44ch] mx-auto">
+                  На Free-тарифе доступна загрузка файлов. Для YouTube, VK, Rutube и других источников — тариф Старт от 500 ₽/мес.
+                </p>
+                <Link to="/app/pricing" onClick={() => play("tick")} className="btn-accent mt-6">
+                  Перейти на Старт <span aria-hidden>→</span>
+                </Link>
+              </div>
+            ) : (
+              <form onSubmit={handleUrlSubmit} className="space-y-5 rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 md:p-8">
+                <div>
+                  <label htmlFor="url-input" className="label-editorial">
+                    Ссылка на видео или аудио
+                  </label>
+                  <div className="relative">
+                    <Icon
+                      icon={Link2}
+                      size={15}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 text-[var(--fg-subtle)]"
+                    />
+                    <input
+                      id="url-input"
+                      type="url"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://youtube.com/watch?v=..."
+                      className="input-editorial pl-7"
+                      required
+                      autoFocus
+                      disabled={urlLoading}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mb-2">
+                    Поддерживаемые источники
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {URL_SUPPORTED.map((name) => (
+                      <span
+                        key={name}
+                        className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-muted)] border border-[var(--border)] rounded-full px-2.5 py-1"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={urlLoading || !url.trim()}
+                  className="btn-accent w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {urlLoading ? "Принимаем…" : <>Распознать <span aria-hidden>→</span></>}
+                </button>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] leading-[1.5]">
+                  Приватные, возрастные и live-трансляции — не поддерживаются.
+                </p>
+              </form>
+            )}
+          </motion.div>
         )}
         </AnimatePresence>
         </>
       )}
 
+      {/* ── Usage banner ── */}
       {user && !busy && (
         <motion.div
           variants={fadeUp}
-          className="flex items-center justify-between gap-3 rounded-2xl border border-gray-200/70 bg-white px-4 py-3 md:px-5"
+          className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-5 py-4"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
-              <Icon icon={FileAudio} size={18} />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-acid-300/25 bg-acid-300/10 text-acid-300">
+              <Icon icon={FileAudio} size={17} strokeWidth={1.75} />
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-gray-900">
-                <span className="tabular">{minutesLeft}</span> из{" "}
-                <span className="tabular">{user.minutes_limit}</span> мин доступно
+              <p className="text-[13px] text-[var(--fg)]">
+                <span className="font-display text-lg tabular leading-none">{totalAvailable}</span>{" "}
+                <span className="text-[var(--fg-muted)]">из {totalCapacity}&nbsp;мин доступно</span>
               </p>
-              <p className="text-xs text-gray-500">
-                На этот план хватит примерно {Math.floor(minutesLeft / 30)} получасовых встреч
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+                Хватит на ~{Math.max(0, Math.floor(totalAvailable / 30))} получасовых встреч
               </p>
             </div>
           </div>
-          {user.minutes_used >= user.minutes_limit && (
+          {totalAvailable === 0 && (
             <Link
               to="/app/pricing"
-              className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-primary-600 to-accent-500 px-3 py-1.5 text-xs font-semibold text-white shadow-glow-sm press"
+              onClick={() => play("tick")}
+              className="inline-flex items-center gap-2 rounded-full bg-acid-300 text-ink-900 px-4 py-2 text-[12px] font-semibold hover:bg-acid-200 transition-colors"
             >
-              <Icon icon={Zap} size={12} />
               Увеличить
             </Link>
           )}

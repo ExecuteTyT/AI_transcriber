@@ -59,6 +59,7 @@ describe("Upload — source tabs (Free user)", () => {
 
   it("has language selector", () => {
     renderUpload();
-    expect(screen.getByLabelText(/Язык записи/)).toBeInTheDocument();
+    // Лейбл переделан на mono uppercase «Язык» — не «Язык записи:»
+    expect(screen.getByLabelText(/Язык/)).toBeInTheDocument();
   });
 });
