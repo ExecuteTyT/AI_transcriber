@@ -68,7 +68,7 @@ export function AudioPlayerBar({
 
   return (
     <div className="sticky top-top-bar z-20 md:top-0 -mx-4 md:mx-0 md:rounded-2xl overflow-hidden">
-      <div className="relative border-b border-gray-200/70 md:border bg-white/90 backdrop-blur-xl px-4 py-3 md:px-5 md:py-4 md:shadow-raised">
+      <div className="relative border-b border-[var(--border)] md:border bg-[var(--bg-elevated)]/90 backdrop-blur-xl px-4 py-3 md:px-5 md:py-4">
         <audio ref={audioRef} src={src} preload="metadata" />
         <div className="flex items-center gap-3">
           <motion.button
@@ -77,26 +77,26 @@ export function AudioPlayerBar({
             aria-label={isPlaying ? "Пауза" : "Воспроизведение"}
             whileTap={{ scale: 0.92 }}
             transition={springTight}
-            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-glow-sm hover:shadow-glow transition-shadow duration-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-acid-300 text-ink-900 shadow-[0_0_0_1px_rgba(197,240,20,0.3),0_8px_24px_-6px_rgba(197,240,20,0.4)] hover:bg-acid-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid-300/50"
           >
-            <Icon icon={isPlaying ? Pause : Play} size={18} strokeWidth={2.5} />
+            <Icon icon={isPlaying ? Pause : Play} size={18} strokeWidth={2} />
           </motion.button>
 
           <button
             type="button"
             onClick={() => onSkip(-10)}
-            className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-surface-100 transition-colors duration-fast press"
+            className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-muted)] transition-colors duration-fast"
             aria-label="Назад 10 секунд"
           >
-            <Icon icon={Rewind} size={16} />
+            <Icon icon={Rewind} size={16} strokeWidth={1.75} />
           </button>
           <button
             type="button"
             onClick={() => onSkip(10)}
-            className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-surface-100 transition-colors duration-fast press"
+            className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-muted)] transition-colors duration-fast"
             aria-label="Вперёд 10 секунд"
           >
-            <Icon icon={FastForward} size={16} />
+            <Icon icon={FastForward} size={16} strokeWidth={1.75} />
           </button>
 
           <div className="flex-1 min-w-0">
@@ -123,30 +123,28 @@ export function AudioPlayerBar({
                     key={i}
                     className={cn(
                       "flex-1 rounded-full transition-colors duration-fast",
-                      active
-                        ? "bg-gradient-to-t from-primary-500 to-accent-400"
-                        : "bg-surface-200"
+                      active ? "bg-acid-300" : "bg-[var(--border-strong)]"
                     )}
                     style={{ height: `${Math.max(18, h * 100)}%` }}
                   />
                 );
               })}
             </div>
-            <div className="mt-1 flex items-center justify-between text-[11px] font-medium text-gray-500 tabular">
+            <div className="mt-1 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--fg-subtle)] tabular">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-0.5 rounded-full bg-surface-100 p-0.5 text-[11px] font-semibold text-gray-500">
+          <div className="hidden md:flex items-center gap-0.5 rounded-full border border-[var(--border)] bg-[var(--bg-muted)] p-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--fg-subtle)] tabular">
             {RATE_OPTIONS.map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => onRate(r)}
                 className={cn(
-                  "rounded-full px-2 py-0.5 transition-colors duration-fast tabular",
-                  rate === r ? "bg-white text-gray-900 shadow-card" : "hover:text-gray-700"
+                  "rounded-full px-2 py-0.5 transition-colors duration-fast",
+                  rate === r ? "bg-acid-300 text-ink-900" : "hover:text-[var(--fg)]"
                 )}
               >
                 {r}x
@@ -160,7 +158,7 @@ export function AudioPlayerBar({
               const next = RATE_OPTIONS[(idx + 1) % RATE_OPTIONS.length];
               onRate(next);
             }}
-            className="md:hidden rounded-full bg-surface-100 px-2.5 py-1 text-[11px] font-semibold text-gray-600 tabular press"
+            className="md:hidden rounded-full border border-[var(--border)] bg-[var(--bg-muted)] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--fg-muted)] tabular"
           >
             {rate}x
           </button>
