@@ -245,7 +245,10 @@ export default function Landing() {
       </Helmet>
 
       {/* ─── Header (dark-first, editorial) ─── */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${scrolled ? "bg-[var(--bg)]/80 backdrop-blur-2xl border-b border-[var(--border)]" : "bg-transparent border-b border-transparent"}`}>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${scrolled ? "bg-[var(--bg)]/80 backdrop-blur-2xl border-b border-[var(--border)]" : "bg-transparent border-b border-transparent"}`}
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
             <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(197,240,20,0.55)]" aria-hidden />
@@ -288,7 +291,13 @@ export default function Landing() {
 
       {/* ─── Mobile Menu ─── */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] md:hidden">
+        <div
+          className="fixed inset-0 z-[60] md:hidden"
+          style={{
+            paddingTop: "env(safe-area-inset-top)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}
+        >
           <div className="absolute inset-0 bg-[var(--bg)]/95 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)} />
           <nav className="relative flex flex-col items-center justify-center h-full gap-6 font-display text-2xl text-[var(--fg)]">
             <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-acid-300 transition py-2 px-4 touch-target">Возможности</a>

@@ -20,7 +20,7 @@ const app = (
               position="top-center"
               richColors
               closeButton
-              offset={16}
+              offset="calc(16px + env(safe-area-inset-top))"
               toastOptions={{ className: "!font-sans" }}
             />
           </BrowserRouter>
