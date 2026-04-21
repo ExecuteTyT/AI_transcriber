@@ -485,22 +485,22 @@ function CurrentPlanBar({
   return (
     <motion.div
       variants={fadeUp}
-      className="relative overflow-hidden rounded-2xl border border-primary-100/80 bg-gradient-to-br from-primary-50 via-white to-accent-50/40 p-4 md:p-5"
+      className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-4 md:p-5"
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-glow-sm">
-          <Icon icon={Check} size={18} strokeWidth={2.5} />
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-acid-300/10 text-acid-300 border border-acid-300/20">
+          <Icon icon={Check} size={18} strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold text-gray-900">
+          <p className="text-[13px] font-semibold text-[var(--fg)]">
             Текущий план:{" "}
-            <span className="font-bold text-primary-700">
+            <span className="font-bold text-acid-300">
               {PLAN_NAMES[user.plan] || user.plan}
             </span>
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-[var(--fg-muted)]">
             Использовано{" "}
-            <span className="font-semibold tabular text-gray-800">
+            <span className="font-semibold tabular text-[var(--fg)]">
               {user.minutes_used}
             </span>{" "}
             из{" "}
@@ -508,13 +508,13 @@ function CurrentPlanBar({
           </p>
         </div>
         {low && (
-          <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+          <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] font-semibold text-amber-400 ring-1 ring-amber-500/30">
             <Icon icon={Zap} size={12} />
             Лимит заканчивается
           </span>
         )}
       </div>
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/70">
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
@@ -525,7 +525,7 @@ function CurrentPlanBar({
               ? percent >= 100
                 ? "bg-rose-500"
                 : "bg-amber-500"
-              : "bg-gradient-to-r from-primary-500 to-accent-400"
+              : "bg-acid-300"
           )}
         />
       </div>
@@ -561,7 +561,7 @@ function PlanCard({
       whileHover={{ y: -2 }}
       transition={springTight}
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-3xl p-6 md:p-7 border",
+        "relative flex flex-col overflow-hidden rounded-3xl p-5 xs:p-6 md:p-7 border",
         cardStyle
       )}
     >
@@ -598,7 +598,7 @@ function PlanCard({
         </p>
         <h3
           className={cn(
-            "font-display text-3xl md:text-4xl leading-none tracking-[-0.01em]",
+            "font-display text-[28px] xs:text-3xl md:text-4xl leading-none tracking-[-0.01em] break-words",
             isPopular ? "text-ink-900" : "text-[var(--fg)]"
           )}
         >
@@ -616,7 +616,7 @@ function PlanCard({
         <div className="mt-6 flex items-baseline gap-1.5">
           <span
             className={cn(
-              "font-display text-5xl md:text-6xl leading-none tabular tracking-[-0.02em]",
+              "font-display text-[44px] xs:text-5xl md:text-6xl leading-none tabular tracking-[-0.02em]",
               isPopular ? "text-ink-900" : "text-[var(--fg)]"
             )}
           >
@@ -735,13 +735,13 @@ function FaqRow({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-start justify-between gap-6 py-6 text-left group"
+        className="flex w-full items-start justify-between gap-3 md:gap-6 py-6 text-left group"
       >
-        <div className="flex items-start gap-5 flex-1 min-w-0">
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] pt-1.5">
+        <div className="flex items-start gap-3 md:gap-5 flex-1 min-w-0">
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] pt-1.5 flex-shrink-0">
             Q
           </span>
-          <span className="font-display text-xl md:text-2xl leading-[1.15] text-[var(--fg)] text-left">
+          <span className="font-display text-lg xs:text-xl md:text-2xl leading-[1.2] text-[var(--fg)] text-left break-words">
             {question}
           </span>
         </div>
@@ -766,7 +766,7 @@ function FaqRow({
             transition={{ duration: 0.28, ease: [0.25, 1, 0.5, 1] }}
             className="overflow-hidden"
           >
-            <div className="pl-[3rem] md:pl-[3.5rem] pb-6 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
+            <div className="pl-[1.75rem] md:pl-[3.5rem] pb-6 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
               {answer}
             </div>
           </motion.div>
