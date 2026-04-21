@@ -36,29 +36,30 @@ import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { fadeUp, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 
+// Editorial dark speaker palette — мягкие тона на ink, хорошо читаются.
 const SPEAKER_COLORS = [
-  "bg-blue-50 text-blue-700 ring-blue-200",
-  "bg-violet-50 text-violet-700 ring-violet-200",
-  "bg-amber-50 text-amber-700 ring-amber-200",
-  "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  "bg-pink-50 text-pink-700 ring-pink-200",
-  "bg-teal-50 text-teal-700 ring-teal-200",
+  "bg-blue-500/15 text-blue-300 ring-blue-500/25",
+  "bg-violet-500/15 text-violet-300 ring-violet-500/25",
+  "bg-amber-500/15 text-amber-300 ring-amber-500/25",
+  "bg-emerald-500/15 text-emerald-300 ring-emerald-500/25",
+  "bg-pink-500/15 text-pink-300 ring-pink-500/25",
+  "bg-teal-500/15 text-teal-300 ring-teal-500/25",
 ];
 const SPEAKER_DOT = [
-  "bg-blue-500",
-  "bg-violet-500",
-  "bg-amber-500",
-  "bg-emerald-500",
-  "bg-pink-500",
-  "bg-teal-500",
+  "bg-blue-400",
+  "bg-violet-400",
+  "bg-amber-400",
+  "bg-emerald-400",
+  "bg-pink-400",
+  "bg-teal-400",
 ];
 const SPEAKER_BORDER = [
-  "border-l-blue-400",
-  "border-l-violet-400",
-  "border-l-amber-400",
-  "border-l-emerald-400",
-  "border-l-pink-400",
-  "border-l-teal-400",
+  "border-l-blue-400/60",
+  "border-l-violet-400/60",
+  "border-l-amber-400/60",
+  "border-l-emerald-400/60",
+  "border-l-pink-400/60",
+  "border-l-teal-400/60",
 ];
 
 type Tab = "transcript" | "summary" | "key_points" | "action_items" | "chat";
@@ -255,7 +256,7 @@ export default function Transcription() {
     );
     return parts.map((part, i) =>
       part.toLowerCase() === query.toLowerCase() ? (
-        <mark key={i} className="rounded bg-yellow-200/80 px-0.5 text-gray-900">
+        <mark key={i} className="rounded bg-yellow-200/80 px-0.5 text-[var(--fg)]">
           {part}
         </mark>
       ) : (
@@ -348,13 +349,13 @@ export default function Transcription() {
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
-        <div className="h-7 w-2/5 rounded-xl bg-surface-100" />
-        <div className="h-4 w-1/4 rounded-xl bg-surface-100" />
-        <div className="mt-6 space-y-3 rounded-2xl border border-gray-200/60 bg-white p-6 md:p-8">
+        <div className="h-7 w-2/5 rounded-xl bg-[var(--bg-muted)]" />
+        <div className="h-4 w-1/4 rounded-xl bg-[var(--bg-muted)]" />
+        <div className="mt-6 space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 md:p-8">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-4 rounded-full bg-surface-100"
+              className="h-4 rounded-full bg-[var(--bg-muted)]"
               style={{ width: `${60 + i * 10}%` }}
             />
           ))}
@@ -370,7 +371,7 @@ export default function Transcription() {
         title="Транскрипция не найдена"
         description="Возможно, она была удалена или ссылка неверна."
         action={
-          <Link to="/dashboard" className="btn-primary inline-flex items-center gap-2">
+          <Link to="/dashboard" className="btn-accent inline-flex items-center gap-2">
             <Icon icon={ChevronLeft} size={16} />К списку
           </Link>
         }
@@ -396,11 +397,11 @@ export default function Transcription() {
           <h2 className="mb-1 text-xl font-bold tracking-tight">
             {transcription.status === "queued" ? "В очереди" : "Обрабатываем…"}
           </h2>
-          <p className="text-sm text-gray-500">{transcription.original_filename}</p>
-          <p className="mt-2 text-xs text-gray-400">Обычно занимает 1–3 минуты</p>
+          <p className="text-sm text-[var(--fg-muted)]">{transcription.original_filename}</p>
+          <p className="mt-2 text-xs text-[var(--fg-subtle)]">Обычно занимает 1–3 минуты</p>
           <Link
             to="/dashboard"
-            className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700"
+            className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-acid-300 hover:text-acid-300"
           >
             <Icon icon={ChevronLeft} size={14} />К списку транскрипций
           </Link>
@@ -417,7 +418,7 @@ export default function Transcription() {
           description={transcription.error_message || "Попробуйте загрузить файл заново."}
         />
         <div className="flex items-center gap-3">
-          <Link to="/upload" className="btn-primary">
+          <Link to="/upload" className="btn-accent">
             Загрузить заново
           </Link>
           <Link to="/dashboard" className="btn-secondary">
@@ -462,25 +463,25 @@ export default function Transcription() {
           <h1 className="truncate text-xl font-bold tracking-tight md:text-2xl">
             {transcription.title}
           </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px] text-gray-500">
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px] text-[var(--fg-muted)]">
             {transcription.language && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-surface-100 px-2.5 py-1 font-semibold text-gray-700">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2.5 py-1 font-semibold text-[var(--fg-muted)]">
                 {transcription.language.toUpperCase()}
               </span>
             )}
             {transcription.duration_sec && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-surface-100 px-2.5 py-1 tabular">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2.5 py-1 tabular">
                 <Icon icon={Clock} size={12} />
                 {formatTime(transcription.duration_sec)}
               </span>
             )}
             {transcription.full_text && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-surface-100 px-2.5 py-1 tabular">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2.5 py-1 tabular">
                 {transcription.full_text.split(/\s+/).length} слов
               </span>
             )}
             {uniqueSpeakers.length > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-surface-100 px-2.5 py-1">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2.5 py-1">
                 <Icon icon={Users} size={12} />
                 {uniqueSpeakers.length} спикеров
               </span>
@@ -541,7 +542,7 @@ export default function Transcription() {
         aria-label="Разделы транскрипции"
         className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0 scrollbar-hide"
       >
-        <div className="inline-flex items-center gap-1 rounded-full bg-surface-100 p-1 text-sm font-semibold">
+        <div className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] p-1 text-sm font-semibold">
           {TABS.map(({ key, label, proOnly }) => {
             const locked = proOnly && actionItemsLocked;
             const active = tab === key;
@@ -557,8 +558,8 @@ export default function Transcription() {
                   active
                     ? "text-white"
                     : locked
-                    ? "text-gray-400"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? "text-[var(--fg-subtle)]"
+                    : "text-[var(--fg-muted)] hover:text-[var(--fg)]"
                 )}
                 aria-current={active ? "page" : undefined}
               >
@@ -591,7 +592,7 @@ export default function Transcription() {
           >
             {uniqueSpeakers.length > 1 && (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-[var(--fg-subtle)]">
                   Спикеры
                 </span>
                 {uniqueSpeakers.map((speaker) => {
@@ -604,7 +605,7 @@ export default function Transcription() {
                         onClick={() => toggleSpeaker(speaker)}
                         className={cn(
                           "inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 transition-all duration-fast press",
-                          isActive ? style.chip : "bg-gray-100 text-gray-400 ring-gray-200 opacity-60"
+                          isActive ? style.chip : "bg-gray-100 text-[var(--fg-subtle)] ring-gray-200 opacity-60"
                         )}
                       >
                         <span
@@ -630,7 +631,7 @@ export default function Transcription() {
                   <button
                     type="button"
                     onClick={() => setActiveSpeakers(null)}
-                    className="ml-1 text-xs font-semibold text-primary-600 hover:text-primary-700"
+                    className="ml-1 text-xs font-semibold text-acid-300 hover:text-acid-300"
                   >
                     Показать всех
                   </button>
@@ -642,7 +643,7 @@ export default function Transcription() {
               <Icon
                 icon={Search}
                 size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--fg-subtle)]"
               />
               <input
                 type="search"
@@ -655,7 +656,7 @@ export default function Transcription() {
 
             <div
               ref={transcriptContainerRef}
-              className="space-y-1 rounded-2xl border border-gray-200/60 bg-white p-3 md:p-5"
+              className="space-y-1 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-3 md:p-5"
             >
               {filteredSegments.length === 0 ? (
                 <EmptyState
@@ -679,8 +680,8 @@ export default function Transcription() {
                         "group -mx-2 flex items-start gap-2 rounded-xl px-2 py-2 transition-all duration-fast md:gap-3",
                         style && `border-l-2 ${style.border}`,
                         isActive
-                          ? "bg-primary-50/70 ring-1 ring-primary-200 shadow-glow-sm"
-                          : "hover:bg-surface-50"
+                          ? "bg-acid-300/10/70 ring-1 ring-acid-300/30 shadow-glow-sm"
+                          : "hover:bg-[var(--bg-muted)]"
                       )}
                     >
                       <button
@@ -688,7 +689,7 @@ export default function Transcription() {
                         onClick={() => audioUrl && player.seek(seg.start)}
                         className={cn(
                           "w-12 flex-shrink-0 pt-0.5 text-right text-[11px] font-mono tabular transition-colors duration-fast",
-                          audioUrl ? "cursor-pointer text-primary-500 hover:text-primary-700" : "text-gray-400"
+                          audioUrl ? "cursor-pointer text-acid-300 hover:text-acid-300" : "text-[var(--fg-subtle)]"
                         )}
                         aria-label={audioUrl ? `Перейти к ${formatTime(seg.start)}` : undefined}
                         disabled={!audioUrl}
@@ -709,7 +710,7 @@ export default function Transcription() {
                       <span
                         className={cn(
                           "text-[15px] leading-relaxed",
-                          isActive ? "font-medium text-gray-900" : "text-gray-800"
+                          isActive ? "font-medium text-[var(--fg)]" : "text-[var(--fg)]"
                         )}
                       >
                         {highlightSearch(seg.text, search)}
@@ -731,7 +732,7 @@ export default function Transcription() {
             transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
           >
             {analysisLoading ? (
-              <div className="space-y-3 rounded-2xl border border-gray-200/60 bg-white p-5 md:p-8">
+              <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-5 md:p-8">
                 {[0, 1, 2, 3].map((i) => (
                   <div
                     key={i}
@@ -743,10 +744,10 @@ export default function Transcription() {
                     }}
                   />
                 ))}
-                <p className="pt-2 text-xs text-gray-400">Генерируем анализ с помощью AI…</p>
+                <p className="pt-2 text-xs text-[var(--fg-subtle)]">Генерируем анализ с помощью AI…</p>
               </div>
             ) : analysis ? (
-              <div className="rounded-2xl border border-gray-200/60 bg-white p-5 md:p-8">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-5 md:p-8">
                 <MarkdownContent content={analysis.content} />
               </div>
             ) : analysisError ? (
@@ -774,7 +775,7 @@ export default function Transcription() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
-            className="flex h-[calc(100dvh-18rem)] min-h-[320px] flex-col overflow-hidden rounded-2xl border border-gray-200/60 bg-white"
+            className="flex h-[calc(100dvh-18rem)] min-h-[320px] flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)]"
           >
             <div className="flex-1 min-h-0 space-y-3 overflow-y-auto p-4 md:space-y-4 md:p-6">
               {chatMessages.length === 0 && !chatLoading && (
@@ -792,12 +793,12 @@ export default function Transcription() {
               <div ref={chatEndRef} />
             </div>
 
-            <div className="flex-shrink-0 border-t border-gray-100 p-3 pb-safe md:p-4">
+            <div className="flex-shrink-0 border-t border-[var(--border)] p-3 pb-safe md:p-4">
               {chatError && <p className="mb-2 text-sm text-red-500">{chatError}</p>}
               {chatRemaining === 0 ? (
-                <p className="py-2 text-center text-sm text-gray-500">
+                <p className="py-2 text-center text-sm text-[var(--fg-muted)]">
                   Лимит вопросов исчерпан.{" "}
-                  <Link to="/app/pricing" className="font-semibold text-primary-600 hover:underline">
+                  <Link to="/app/pricing" className="font-semibold text-acid-300 hover:underline">
                     Перейти на Про
                   </Link>
                 </p>
@@ -824,7 +825,7 @@ export default function Transcription() {
                 </div>
               )}
               {chatRemaining > 0 && (
-                <p className="mt-1 text-center text-xs text-gray-400">
+                <p className="mt-1 text-center text-xs text-[var(--fg-subtle)]">
                   Осталось вопросов: <span className="tabular">{chatRemaining}</span>
                 </p>
               )}
@@ -840,9 +841,9 @@ export default function Transcription() {
               key={fmt}
               type="button"
               onClick={() => handleExport(fmt)}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-gray-700 transition-colors hover:bg-gray-50 active:bg-gray-100 touch-target"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[var(--fg-muted)] transition-colors hover:bg-gray-50 active:bg-gray-100 touch-target"
             >
-              <Icon icon={Download} size={18} className="text-gray-400" />
+              <Icon icon={Download} size={18} className="text-[var(--fg-subtle)]" />
               <span className="text-[15px] font-medium">Скачать {fmt.toUpperCase()}</span>
             </button>
           ))}
@@ -869,7 +870,7 @@ export default function Transcription() {
               className="input-field mb-4"
               placeholder="Имя спикера"
             />
-            <button type="submit" className="btn-primary w-full">
+            <button type="submit" className="btn-accent w-full">
               Сохранить
             </button>
           </form>
@@ -899,7 +900,7 @@ function ChatBubble({
           "max-w-[85%] rounded-2xl px-4 py-3 md:max-w-[75%]",
           isUser
             ? "bg-gradient-to-br from-primary-600 to-primary-500 text-white shadow-glow-sm"
-            : "bg-surface-50 text-gray-800 ring-1 ring-primary-100/60"
+            : "bg-[var(--bg-muted)] text-[var(--fg)] ring-1 ring-primary-100/60"
         )}
       >
         <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{message.content}</p>
@@ -910,7 +911,7 @@ function ChatBubble({
                 key={i}
                 className={cn(
                   "text-xs",
-                  isUser ? "text-white/80" : "text-gray-500"
+                  isUser ? "text-white/80" : "text-[var(--fg-muted)]"
                 )}
               >
                 {ref.start_time != null && (
@@ -929,7 +930,7 @@ function ChatBubble({
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="flex items-center gap-1 rounded-2xl bg-surface-50 px-4 py-3 ring-1 ring-primary-100/60">
+      <div className="flex items-center gap-1 rounded-2xl bg-[var(--bg-muted)] px-4 py-3 ring-1 ring-primary-100/60">
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}
