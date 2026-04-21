@@ -13,7 +13,20 @@ export default function MobileTopBar() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
+    let ticking = false;
+    let prev = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const next = window.scrollY > 4;
+        if (next !== prev) {
+          prev = next;
+          setScrolled(next);
+        }
+        ticking = false;
+      });
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -23,8 +36,8 @@ export default function MobileTopBar() {
     <header
       className={`fixed inset-x-0 top-0 z-30 h-top-bar transition-colors duration-base md:hidden ${
         scrolled
-          ? "bg-white/90 backdrop-blur-xl border-b border-gray-200/70"
-          : "bg-white/40 backdrop-blur-sm border-b border-transparent"
+          ? "bg-[var(--bg)]/85 backdrop-blur-xl border-b border-[var(--border)]"
+          : "bg-[var(--bg)]/50 backdrop-blur-sm border-b border-transparent"
       }`}
     >
       <div className="flex items-center gap-1 h-full px-2">
@@ -36,11 +49,11 @@ export default function MobileTopBar() {
             <Icon icon={ChevronLeft} size="md" />
           </IconButton>
         ) : (
-          <div className="flex items-center gap-2 px-2.5">
-            <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 flex items-center justify-center shadow-glow-sm">
-              <span className="text-white font-bold text-[12px]">S</span>
-            </div>
-            <span className="text-[15px] font-bold tracking-tight gradient-text">Dicto</span>
+          <div className="flex items-center gap-2 px-3">
+            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_10px_rgba(197,240,20,0.6)]" aria-hidden />
+            <span className="font-display text-[20px] tracking-[-0.015em] text-[var(--fg)] leading-none">
+              Dicto
+            </span>
           </div>
         )}
         <AnimatePresence mode="wait">
@@ -50,7 +63,7 @@ export default function MobileTopBar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18 }}
-            className="flex-1 text-[15px] font-semibold text-gray-900 truncate"
+            className="flex-1 font-display text-[17px] text-[var(--fg)] truncate"
           >
             {meta.showBack ? meta.title : ""}
           </motion.h1>
