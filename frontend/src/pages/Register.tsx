@@ -37,7 +37,7 @@ export default function Register() {
     try {
       await register(email, password, name);
       play("confirm");
-      toast.success("🎉 Добро пожаловать! +180 бонусных минут", { duration: 5000 });
+      toast.success("🎉 Добро пожаловать! +180 минут на тест", { duration: 5000 });
       navigate("/dashboard");
     } catch {
       setError("Ошибка регистрации. Возможно, email уже занят.");
@@ -48,7 +48,7 @@ export default function Register() {
 
   return (
     <AuthLayout
-      eyebrow="30 мин + 180 бонус — без карты"
+      eyebrow="180 минут бесплатно — без карты"
       title={<>Создайте <em className="italic text-acid-300">аккаунт</em>.</>}
       subtitle="Транскрибация, разметка спикеров, AI-саммари и тезисы. Бесплатно."
       footer={

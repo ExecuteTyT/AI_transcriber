@@ -51,7 +51,7 @@ const PLANS: Plan[] = [
         title: "Минуты",
         items: [
           { label: "180 мин бонус при регистрации", included: true },
-          { label: "30 минут в месяц", included: true },
+          { label: "180 минут при регистрации (единоразово)", included: true },
           { label: "Файлы до 15 минут", included: true },
         ],
       },
@@ -416,7 +416,7 @@ export default function Pricing() {
               Готовы <em className="italic text-acid-300">сэкономить</em> часы?
             </h3>
             <p className="text-[15px] text-[var(--fg-muted)] leading-[1.55] mb-8 max-w-[44ch]">
-              30 минут + 180 бонусных при регистрации. Без карты, без подписки на пробный период.
+              180 минут на тест при регистрации. Без карты, без подписки на пробный период.
             </p>
             <Link
               to={user ? "/upload" : "/register"}
@@ -438,7 +438,7 @@ export default function Pricing() {
         <title>Тарифы Dicto — транскрибация от 500 ₽/мес</title>
         <meta
           name="description"
-          content="Тарифы Dicto: Free (30 мин + 180 бонус), Старт (500 ₽/мес, 10 часов), Про (820 ₽/мес, 25 часов), Бизнес (2 300 ₽, 60 часов), Премиум (4 600 ₽, 120 часов). AI-саммари, разметка спикеров, экспорт."
+          content="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 часов), Про (820 ₽/мес, 25 часов), Бизнес (2 300 ₽, 60 часов), Премиум (4 600 ₽, 120 часов). AI-саммари, разметка спикеров, экспорт."
         />
         <link rel="canonical" href="https://dicto.pro/pricing" />
       </Helmet>

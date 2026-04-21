@@ -14,7 +14,10 @@ class User(Base, UUIDMixin, TimestampMixin):
     name: Mapped[str] = mapped_column(String(255), default="")
     plan: Mapped[str] = mapped_column(String(20), default="free")  # free/start/pro
     minutes_used: Mapped[int] = mapped_column(Integer, default=0)
-    minutes_limit: Mapped[int] = mapped_column(Integer, default=15)
+    # Free план не получает ежемесячных минут — только bonus_minutes (180 при
+    # регистрации). Платные планы выставляют minutes_limit при активации
+    # подписки в payment.activate_subscription.
+    minutes_limit: Mapped[int] = mapped_column(Integer, default=0)
 
     # Email verification
     is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False)

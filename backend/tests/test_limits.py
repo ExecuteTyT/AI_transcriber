@@ -27,7 +27,7 @@ async def test_upload_when_limit_exhausted(client: AsyncClient, db_session: Asyn
     me = await client.get("/api/auth/me", headers=_auth_headers(token))
     user_id = me.json()["id"]
 
-    # Исчерпаем и бонус, и месячный лимит (free: 30 мин, bonus по умолчанию 180)
+    # Исчерпаем и бонус, и месячный лимит (free: 0 мин/мес, bonus 180 единоразово)
     from sqlalchemy import select
     result = await db_session.execute(select(User).where(User.id == uuid.UUID(user_id)))
     user = result.scalar_one()
@@ -88,7 +88,9 @@ def test_plan_configs():
     assert {"free", "start", "pro", "business", "premium"} <= set(PLANS.keys())
 
     free = get_plan("free")
-    assert free.minutes_limit == 30
+    # Free больше не получает ежемесячных минут — все 180 приходят
+    # из bonus_minutes (единоразово при регистрации).
+    assert free.minutes_limit == 0
     assert free.max_file_duration_sec == 15 * 60
     assert free.price_rub == 0
     assert free.ai_summaries == 5
@@ -116,4 +118,4 @@ def test_plan_configs():
 
     # Неизвестный план → free
     unknown = get_plan("unknown")
-    assert unknown.minutes_limit == 30
+    assert unknown.minutes_limit == 0

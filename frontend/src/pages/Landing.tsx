@@ -233,7 +233,7 @@ export default function Landing() {
     <div className="min-h-screen overflow-hidden bg-[var(--bg)] text-[var(--fg)]">
       <Helmet>
         <title>Dicto — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
-        <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатно 30 мин + 180 бонусных при регистрации. Тарифы от 500 ₽/мес." />
+        <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. 180 бесплатных минут при регистрации, без карты. Тарифы от 500 ₽/мес." />
         <link rel="canonical" href="https://dicto.pro/" />
         <meta property="og:title" content="Dicto — Транскрибация аудио и видео в текст онлайн" />
         <meta property="og:description" content="Превращайте аудио и видео в текст, саммари и ключевые тезисы с помощью ИИ. Разметка спикеров, таймкоды, экспорт. Бесплатно 15 мин/мес." />
@@ -340,7 +340,7 @@ export default function Landing() {
           </div>
 
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mt-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            Без карты · 30 мин бесплатно + 180 бонусных при регистрации
+            Без карты · 180 минут бесплатно при регистрации
           </p>
 
           {/* Mic demo — signature interactive moment */}
@@ -493,7 +493,7 @@ export default function Landing() {
                 <p className="text-[13px] text-[var(--fg-muted)]">для знакомства</p>
               </div>
               <ul className="space-y-3 text-[14px] text-[var(--fg-muted)] mb-8">
-                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>30 мин/мес + 180 бонус</li>
+                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>180 минут при регистрации</li>
                 <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>5 AI-саммари</li>
                 <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>Спикеры до 3</li>
                 <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>Экспорт TXT / SRT</li>
@@ -594,7 +594,7 @@ export default function Landing() {
             Ваша следующая запись — <em className="italic text-acid-300">текст за две минуты</em>.
           </h2>
           <p className="text-[var(--fg-muted)] text-lg md:text-xl max-w-[40ch] mb-10 leading-[1.5]">
-            Зарегистрируйтесь бесплатно, получите 30 минут + 180 бонусных и попробуйте на своей записи.
+            Зарегистрируйтесь бесплатно — 180 минут на тест без карты, и попробуйте на своей записи.
           </p>
           <Link
             ref={finalCtaRef}

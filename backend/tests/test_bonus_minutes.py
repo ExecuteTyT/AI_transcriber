@@ -36,9 +36,10 @@ async def test_upload_allowed_when_only_bonus(client: AsyncClient, db_session: A
     token, email = await _register(client)
     result = await db_session.execute(select(User).where(User.email == email))
     user = result.scalar_one()
-    # Обнулим monthly, оставим bonus
-    user.minutes_limit = 30
-    user.minutes_used = 30
+    # Симулируем реальный Free state: monthly=0 (нет ежемесячных минут),
+    # bonus=180 (стартовые единоразовые при регистрации).
+    user.minutes_limit = 0
+    user.minutes_used = 0
     user.bonus_minutes = 180
     await db_session.commit()
 
@@ -53,12 +54,12 @@ async def test_upload_allowed_when_only_bonus(client: AsyncClient, db_session: A
 
 @pytest.mark.asyncio
 async def test_upload_blocked_when_all_zero(client: AsyncClient, db_session: AsyncSession):
-    """monthly=0 И bonus=0 → 403."""
+    """monthly=0 И bonus=0 → 403 (Free-юзер исчерпал стартовый bonus)."""
     token, email = await _register(client)
     result = await db_session.execute(select(User).where(User.email == email))
     user = result.scalar_one()
-    user.minutes_limit = 30
-    user.minutes_used = 30
+    user.minutes_limit = 0
+    user.minutes_used = 0
     user.bonus_minutes = 0
     await db_session.commit()
 

@@ -26,7 +26,8 @@ export const PLANS: readonly Plan[] = [
     name: "Free",
     tagline: "Попробуйте без риска",
     priceRub: 0,
-    minutesLimit: 30,
+    // Free: 0 ежемесячных минут — все 180 приходят разово из bonus_minutes.
+    minutesLimit: 0,
     maxFileDurationMin: 15,
     aiSummaries: 5,
     maxSpeakers: 3,

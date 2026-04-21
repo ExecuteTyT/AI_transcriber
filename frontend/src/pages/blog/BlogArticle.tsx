@@ -183,7 +183,7 @@ export default function BlogArticle() {
             Попробуйте <em className="italic text-acid-300">Dicto</em> бесплатно
           </h3>
           <p className="text-[14px] text-[var(--fg-muted)] mb-6 max-w-[44ch]">
-            30 минут + 180 бонусных при регистрации. AI-саммари, разметка спикеров — без карты.
+            180 минут на тест при регистрации. AI-саммари, разметка спикеров — без карты.
           </p>
           <Link to="/register" className="btn-accent">
             Начать бесплатно <span aria-hidden>→</span>

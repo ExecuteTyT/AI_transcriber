@@ -33,7 +33,10 @@ class PlanConfig:
 
 PLANS: dict[str, PlanConfig] = {
     "free": PlanConfig(
-        minutes_limit=30,
+        # Free план: 0 минут ежемесячно. Все активные минуты приходят
+        # из bonus_minutes (180 при регистрации, единоразово). После их
+        # исчерпания — только overage с баланса или переход на платный план.
+        minutes_limit=0,
         max_file_duration_sec=15 * 60,             # 15 мин
         ai_summaries=5,
         speakers=True,
