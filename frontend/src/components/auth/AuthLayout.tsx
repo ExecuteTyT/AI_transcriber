@@ -25,7 +25,10 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
   return (
     <div className="min-h-dvh bg-[var(--bg)] text-[var(--fg)] flex flex-col">
       {/* Top bar */}
-      <header className="border-b border-[var(--border)]">
+      <header
+        className="border-b border-[var(--border)]"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 md:px-8">
           <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
             <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(197,240,20,0.55)]" aria-hidden />
@@ -63,7 +66,10 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
       </main>
 
       {/* Footer line */}
-      <footer className="border-t border-[var(--border)] py-5">
+      <footer
+        className="border-t border-[var(--border)] py-5"
+        style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
+      >
         <div className="mx-auto max-w-7xl px-5 md:px-8 flex flex-wrap items-center justify-between gap-3">
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
             © 2026 dicto.pro

@@ -238,19 +238,19 @@ export default function Upload() {
             <div
               {...getRootProps()}
               className={cn(
-                "group relative overflow-hidden rounded-3xl border-2 border-dashed p-8 md:p-12 text-center transition-all duration-base cursor-pointer",
+                "group relative overflow-hidden rounded-3xl border-2 border-dashed p-6 xs:p-8 md:p-12 text-center transition-all duration-base cursor-pointer",
                 isDragActive
                   ? "border-acid-300 bg-acid-300/5"
                   : "border-[var(--border-strong)] bg-[var(--bg-elevated)] hover:border-acid-300/40"
               )}
             >
               <input {...getInputProps()} />
-              <div className="relative space-y-5">
+              <div className="relative space-y-4 xs:space-y-5">
                 <motion.div
                   animate={{ scale: isDragActive ? 1.08 : 1 }}
                   transition={{ type: "spring", stiffness: 320, damping: 24 }}
                   className={cn(
-                    "mx-auto flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl border transition-colors",
+                    "mx-auto flex h-14 w-14 xs:h-16 xs:w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl border transition-colors",
                     isDragActive
                       ? "bg-acid-300/15 border-acid-300/50 text-acid-300"
                       : "bg-acid-300/10 border-acid-300/20 text-acid-300"
@@ -259,7 +259,7 @@ export default function Upload() {
                   <Icon icon={UploadIcon} size={isDragActive ? 30 : 26} strokeWidth={1.5} />
                 </motion.div>
                 <div>
-                  <p className="font-display text-2xl md:text-3xl leading-tight tracking-[-0.01em] text-[var(--fg)]">
+                  <p className="font-display text-xl xs:text-2xl md:text-3xl leading-tight tracking-[-0.01em] text-[var(--fg)] break-words">
                     {isDragActive ? "Отпустите — загружаем" : "Перетащите файл сюда"}
                   </p>
                   <p className="mt-2 text-[13px] text-[var(--fg-muted)]">
@@ -305,7 +305,7 @@ export default function Upload() {
             transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
           >
             {!canUseUrl ? (
-              <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-8 md:p-10 text-center">
+              <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 xs:p-8 md:p-10 text-center">
                 <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-acid-300/25 bg-acid-300/10 text-acid-300">
                   <Icon icon={Lock} size={22} strokeWidth={1.5} />
                 </div>

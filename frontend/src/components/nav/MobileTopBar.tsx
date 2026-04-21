@@ -34,13 +34,14 @@ export default function MobileTopBar() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-30 h-top-bar transition-colors duration-base md:hidden ${
+      className={`fixed inset-x-0 top-0 z-30 transition-colors duration-base md:hidden ${
         scrolled
-          ? "bg-[var(--bg)]/85 backdrop-blur-xl border-b border-[var(--border)]"
-          : "bg-[var(--bg)]/50 backdrop-blur-sm border-b border-transparent"
+          ? "bg-[var(--bg)]/95 backdrop-blur-xl border-b border-[var(--border)]"
+          : "bg-[var(--bg)] border-b border-transparent"
       }`}
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
-      <div className="flex items-center gap-1 h-full px-2">
+      <div className="flex items-center gap-1 h-top-bar px-2">
         {meta.showBack ? (
           <IconButton
             aria-label="Назад"

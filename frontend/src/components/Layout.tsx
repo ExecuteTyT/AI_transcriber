@@ -16,8 +16,9 @@ export default function Layout() {
       {/* Desktop sidebar */}
       <DesktopSidebar />
 
-      {/* Main content area */}
-      <main className="pt-top-bar md:pt-0 md:pl-[240px] min-h-screen">
+      {/* Main content area.
+          Mobile padding-top = top bar (56px) + iOS safe-area, иначе контент заезжает под фиксированный хедер на устройствах с челкой. */}
+      <main className="pt-[calc(56px+env(safe-area-inset-top))] md:pt-0 md:pl-[240px] min-h-screen">
         <div className="px-4 py-4 md:p-8 lg:p-10">
           <div className="max-w-5xl md:mx-auto">
             <AnimatePresence mode="wait">
