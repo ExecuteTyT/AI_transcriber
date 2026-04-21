@@ -1,14 +1,17 @@
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import HeroWaveform from "@/components/HeroWaveform";
-import HeroLiveDemo from "@/components/HeroLiveDemo";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
-import MicDemoButton from "@/components/MicDemoButton";
-import LiveInsightsSection from "@/components/landing/LiveInsightsSection";
 import { useSound } from "@/lib/sound";
 import { useMagnetic } from "@/hooks/useMagnetic";
+
+// Heavy client-only компоненты — lazy. В SSR они не рендерятся (Suspense fallback null),
+// значит их JS не грузится в main bundle — только когда юзер реально докрутит до них.
+const HeroLiveDemo = lazy(() => import("@/components/HeroLiveDemo"));
+const MicDemoButton = lazy(() => import("@/components/MicDemoButton"));
+const LiveInsightsSection = lazy(() => import("@/components/landing/LiveInsightsSection"));
 
 /* ─── useCountUp hook ─── */
 function useCountUp(target: number, duration = 1500) {
@@ -346,13 +349,17 @@ export default function Landing() {
 
           {/* Mic demo — signature interactive moment */}
           <div className="mt-10 md:mt-12 animate-fade-up" style={{ animationDelay: "0.25s" }}>
-            <MicDemoButton />
+            <Suspense fallback={<div className="h-8" />}>
+              <MicDemoButton />
+            </Suspense>
           </div>
         </div>
 
         {/* Live transcription demo */}
         <div id="demo">
-          <HeroLiveDemo />
+          <Suspense fallback={<div className="h-[420px]" aria-hidden />}>
+            <HeroLiveDemo />
+          </Suspense>
         </div>
       </section>
 
@@ -444,7 +451,9 @@ export default function Landing() {
       </section>
 
       {/* ─── Live insights scroll-section ─── */}
-      <LiveInsightsSection />
+      <Suspense fallback={<div className="h-[600px]" aria-hidden />}>
+        <LiveInsightsSection />
+      </Suspense>
 
       {/* ─── Use cases (editorial cards on ink) ─── */}
       <section id="use-cases" className="py-24 md:py-32 bg-[var(--bg-elevated)] border-t border-[var(--border)]">
