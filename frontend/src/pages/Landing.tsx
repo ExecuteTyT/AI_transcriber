@@ -244,7 +244,7 @@ export default function Landing() {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${scrolled ? "bg-[var(--bg)]/80 backdrop-blur-2xl border-b border-[var(--border)]" : "bg-transparent border-b border-transparent"}`}>
         <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
-            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(212,255,61,0.55)]" aria-hidden />
+            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(197,240,20,0.55)]" aria-hidden />
             Dicto
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[var(--fg-muted)]">
@@ -311,7 +311,7 @@ export default function Landing() {
         <div className="relative max-w-6xl mx-auto px-6">
           {/* Eyebrow */}
           <p className="eyebrow mb-6 animate-fade-up">
-            <span className="inline-block w-2 h-2 rounded-full bg-acid-300 align-middle mr-2 shadow-[0_0_12px_rgba(212,255,61,0.7)]" aria-hidden />
+            <span className="inline-block w-2 h-2 rounded-full bg-acid-300 align-middle mr-2 shadow-[0_0_12px_rgba(197,240,20,0.7)]" aria-hidden />
             Транскрибация · AI-саммари · RAG-чат
           </p>
 

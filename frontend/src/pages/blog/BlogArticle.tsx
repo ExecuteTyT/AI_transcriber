@@ -1,6 +1,8 @@
 import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { getArticleBySlug, articles } from "./articles";
+import ThemeToggle from "@/components/ui/ThemeToggle";
+import SoundToggle from "@/components/ui/SoundToggle";
 
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
@@ -8,10 +10,13 @@ export default function BlogArticle() {
 
   if (!article) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Статья не найдена</h1>
-          <Link to="/blog" className="text-primary-600 hover:underline">Все статьи</Link>
+      <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] flex items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <p className="eyebrow mb-4">404</p>
+          <h1 className="font-display text-4xl mb-3">
+            Статья <em className="italic text-acid-300">не найдена</em>
+          </h1>
+          <Link to="/blog" className="btn-editorial-ghost">← Все статьи</Link>
         </div>
       </div>
     );
@@ -21,26 +26,35 @@ export default function BlogArticle() {
     .map((s) => articles.find((a) => a.slug === s))
     .filter(Boolean);
 
-  // Convert markdown-like content to HTML sections
+  // Markdown-light renderer with editorial typographic rhythm.
   const renderContent = (content: string) => {
     return content.split("\n").map((line, i) => {
       if (line.startsWith("## ")) {
-        return <h2 key={i} className="text-2xl font-bold mt-10 mb-4">{line.replace("## ", "")}</h2>;
+        return (
+          <h2 key={i} className="font-display text-3xl md:text-4xl leading-[1.05] tracking-[-0.01em] text-[var(--fg)] mt-12 mb-5">
+            {line.replace("## ", "")}
+          </h2>
+        );
       }
       if (line.startsWith("### ")) {
-        return <h3 key={i} className="text-xl font-semibold mt-8 mb-3">{line.replace("### ", "")}</h3>;
+        return (
+          <h3 key={i} className="font-display text-2xl text-[var(--fg)] mt-8 mb-3">
+            {line.replace("### ", "")}
+          </h3>
+        );
       }
       if (line.startsWith("| ")) {
-        // Table rows — simplified render
         const cells = line.split("|").filter((c) => c.trim());
         const isHeader = cells.some((c) => c.includes("---"));
         if (isHeader) return null;
         return (
-          <div key={i} className="grid gap-2 text-sm py-1.5 border-b border-gray-100" style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}>
+          <div
+            key={i}
+            className="grid gap-2 text-[13px] py-2 border-b border-[var(--border)] text-[var(--fg-muted)]"
+            style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}
+          >
             {cells.map((cell, j) => (
-              <span key={j} className={`${i === 0 ? "font-medium text-gray-900" : "text-gray-600"}`}>
-                {cell.trim().replace(/\*\*/g, "")}
-              </span>
+              <span key={j} className="font-sans">{cell.trim().replace(/\*\*/g, "")}</span>
             ))}
           </div>
         );
@@ -50,58 +64,84 @@ export default function BlogArticle() {
         const match = line.match(/^- \*\*(.+?)\*\*\s*[—–-]\s*(.+)$/);
         if (match) {
           return (
-            <div key={i} className="flex items-start gap-2 mb-2">
-              <span className="text-primary-500 mt-1 flex-shrink-0">&#8226;</span>
-              <span className="text-gray-700"><strong className="font-semibold">{match[1]}</strong> — {match[2]}</span>
+            <div key={i} className="flex items-start gap-2.5 mb-2.5">
+              <span className="text-acid-300 mt-1.5 flex-shrink-0 text-[10px]">●</span>
+              <span className="text-[15px] leading-[1.55] text-[var(--fg-muted)]">
+                <strong className="font-semibold text-[var(--fg)]">{match[1]}</strong> — {match[2]}
+              </span>
             </div>
           );
         }
       }
       if (line.startsWith("- ")) {
         return (
-          <div key={i} className="flex items-start gap-2 mb-1.5">
-            <span className="text-primary-500 mt-1 flex-shrink-0">&#8226;</span>
-            <span className="text-gray-700" dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+          <div key={i} className="flex items-start gap-2.5 mb-2">
+            <span className="text-acid-300 mt-1.5 flex-shrink-0 text-[10px]">●</span>
+            <span
+              className="text-[15px] leading-[1.55] text-[var(--fg-muted)]"
+              dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.+?)\*\*/g, "<strong class='font-semibold text-[var(--fg)]'>$1</strong>") }}
+            />
           </div>
         );
       }
       if (line.match(/^\d+\./)) {
         return (
-          <div key={i} className="flex items-start gap-2 mb-1.5">
-            <span className="text-primary-600 font-medium flex-shrink-0">{line.match(/^\d+/)![0]}.</span>
-            <span className="text-gray-700" dangerouslySetInnerHTML={{ __html: line.replace(/^\d+\.\s*/, "").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+          <div key={i} className="flex items-start gap-3 mb-2">
+            <span className="font-mono text-[12px] text-[var(--fg-subtle)] flex-shrink-0 mt-1">{line.match(/^\d+/)![0]}.</span>
+            <span
+              className="text-[15px] leading-[1.55] text-[var(--fg-muted)]"
+              dangerouslySetInnerHTML={{ __html: line.replace(/^\d+\.\s*/, "").replace(/\*\*(.+?)\*\*/g, "<strong class='font-semibold text-[var(--fg)]'>$1</strong>") }}
+            />
           </div>
         );
       }
-      if (line.trim() === "") return <div key={i} className="h-3" />;
-      // Regular paragraph
+      if (line.trim() === "") return <div key={i} className="h-4" />;
       return (
-        <p key={i} className="text-gray-700 leading-relaxed mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`(.+?)`/g, '<code class="bg-surface-100 px-1.5 py-0.5 rounded text-sm font-mono text-primary-700">$1</code>') }} />
+        <p
+          key={i}
+          className="text-[15px] leading-[1.65] text-[var(--fg-muted)] mb-2"
+          dangerouslySetInnerHTML={{
+            __html: line
+              .replace(/\*\*(.+?)\*\*/g, "<strong class='font-semibold text-[var(--fg)]'>$1</strong>")
+              .replace(/`(.+?)`/g, '<code class="font-mono text-[13px] text-acid-300 bg-[var(--bg-elevated)] px-1.5 py-0.5 rounded">$1</code>'),
+          }}
+        />
       );
     });
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       {/* Header */}
-      <header className="glass border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold gradient-text">Dicto</Link>
-          <div className="flex items-center gap-3">
-            <Link to="/blog" className="btn-ghost text-sm">Блог</Link>
-            <Link to="/register" className="btn-primary text-sm !py-2.5 !px-5">Попробовать</Link>
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
+            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(197,240,20,0.55)]" aria-hidden />
+            Dicto
+          </Link>
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1.5">
+              <SoundToggle />
+              <ThemeToggle />
+            </div>
+            <Link to="/blog" className="text-[13px] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors hidden sm:inline-flex px-3 py-2">
+              Все статьи
+            </Link>
+            <Link to="/register" className="btn-accent !py-2.5 !px-5 !text-[13px]">
+              Попробовать
+            </Link>
           </div>
         </div>
       </header>
 
       {/* Breadcrumbs */}
-      <nav className="max-w-3xl mx-auto px-6 py-4">
-        <ol className="flex items-center gap-2 text-sm text-gray-400">
-          <li><Link to="/" className="hover:text-gray-600">Главная</Link></li>
-          <li>/</li>
-          <li><Link to="/blog" className="hover:text-gray-600">Блог</Link></li>
-          <li>/</li>
-          <li className="text-gray-600 truncate max-w-[200px]">{article.title}</li>
+      <nav className="max-w-3xl mx-auto px-5 md:px-8 pt-5">
+        <ol className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+          <li><Link to="/" className="hover:text-[var(--fg)]">Главная</Link></li>
+          <li aria-hidden>/</li>
+          <li><Link to="/blog" className="hover:text-[var(--fg)]">Блог</Link></li>
+          <li aria-hidden>/</li>
+          <li className="text-[var(--fg-muted)] truncate max-w-[200px]">{article.title}</li>
         </ol>
       </nav>
 
@@ -116,48 +156,82 @@ export default function BlogArticle() {
       </Helmet>
 
       {/* Article */}
-      <article className="max-w-3xl mx-auto px-6 pb-20">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="badge bg-primary-50 text-primary-700">{article.category}</span>
-            <span className="text-sm text-gray-400">{article.date}</span>
-            <span className="text-sm text-gray-400">{article.readTime}</span>
+      <article className="max-w-3xl mx-auto px-5 md:px-8 pt-10 pb-20">
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+            <span>{article.category}</span>
+            <span aria-hidden>·</span>
+            <span>{article.date}</span>
+            <span aria-hidden>·</span>
+            <span>{article.readTime}</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight mb-4">
+          <h1 className="font-display text-4xl md:text-6xl leading-[0.98] tracking-[-0.02em] text-[var(--fg)] mb-5">
             {article.title}
           </h1>
-          <p className="text-lg text-gray-500">{article.excerpt}</p>
+          <p className="text-[17px] md:text-lg text-[var(--fg-muted)] leading-[1.55] max-w-[60ch]">
+            {article.excerpt}
+          </p>
         </div>
 
-        <div className="prose-custom">
+        <div className="prose-editorial">
           {renderContent(article.content)}
         </div>
 
         {/* CTA */}
-        <div className="mt-16 rounded-2xl p-8 text-center bg-primary-950 bg-grid relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-primary-500/20 rounded-full blur-3xl" />
-          <div className="relative">
-            <h3 className="text-xl font-bold mb-2 text-white">Попробуйте Dicto бесплатно</h3>
-            <p className="text-primary-200/80 text-sm mb-6">15 минут транскрибации, AI-саммари и разметка спикеров — без карты.</p>
-            <Link to="/register" className="inline-block bg-white text-primary-950 px-6 py-3 rounded-xl font-medium hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5">Начать бесплатно</Link>
-          </div>
+        <div className="mt-16 rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] px-7 py-10 md:px-10 md:py-12">
+          <h3 className="font-display text-3xl md:text-4xl leading-[0.98] tracking-[-0.01em] text-[var(--fg)] mb-3">
+            Попробуйте <em className="italic text-acid-300">Dicto</em> бесплатно
+          </h3>
+          <p className="text-[14px] text-[var(--fg-muted)] mb-6 max-w-[44ch]">
+            30 минут + 180 бонусных при регистрации. AI-саммари, разметка спикеров — без карты.
+          </p>
+          <Link to="/register" className="btn-accent">
+            Начать бесплатно <span aria-hidden>→</span>
+          </Link>
         </div>
 
         {/* Related */}
         {relatedArticles.length > 0 && (
-          <div className="mt-16">
-            <h3 className="text-xl font-bold mb-6">Похожие статьи</h3>
+          <div className="mt-20">
+            <p className="eyebrow mb-4">Похожие статьи</p>
+            <h3 className="font-display text-3xl md:text-4xl leading-[0.98] tracking-[-0.01em] text-[var(--fg)] mb-8">
+              Читать <em className="italic text-acid-300">дальше</em>
+            </h3>
             <div className="grid md:grid-cols-2 gap-4">
               {relatedArticles.map((related) => related && (
-                <Link key={related.slug} to={`/blog/${related.slug}`} className="card-hover p-5 group hover:glow-ring">
-                  <span className="badge bg-surface-100 text-gray-500 text-xs mb-2">{related.category}</span>
-                  <h4 className="font-semibold group-hover:text-primary-600 transition">{related.title}</h4>
+                <Link
+                  key={related.slug}
+                  to={`/blog/${related.slug}`}
+                  className="block p-6 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] transition-colors group"
+                >
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mb-3">
+                    {related.category}
+                  </div>
+                  <h4 className="font-display text-xl leading-tight text-[var(--fg)] group-hover:text-acid-300 transition-colors">
+                    {related.title}
+                  </h4>
                 </Link>
               ))}
             </div>
           </div>
         )}
       </article>
+
+      {/* Footer */}
+      <footer className="border-t border-[var(--border)] py-10">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300" aria-hidden />
+            <span className="font-display text-xl text-[var(--fg)] leading-none">Dicto</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] ml-3">© 2026</span>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-[var(--fg-muted)]">
+            <Link to="/blog" className="hover:text-[var(--fg)] transition">Все статьи</Link>
+            <Link to="/pricing" className="hover:text-[var(--fg)] transition">Тарифы</Link>
+            <Link to="/register" className="hover:text-[var(--fg)] transition">Регистрация</Link>
+          </div>
+        </div>
+      </footer>
 
       {/* Schema.org Article */}
       <script

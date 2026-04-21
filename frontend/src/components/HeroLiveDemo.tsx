@@ -169,8 +169,8 @@ export default function HeroLiveDemo() {
           </div>
         </div>
 
-        {/* Transcript area */}
-        <div className="p-4 md:px-6 md:py-5 min-h-[200px] md:min-h-[220px] relative">
+        {/* Transcript area — фиксируем min-height чтобы typing не двигал layout страницы */}
+        <div className="p-4 md:px-6 md:py-5 min-h-[300px] md:min-h-[280px] relative">
           {/* Tab bar */}
           <div className="flex gap-1.5 mb-4">
             {["Транскрипт", "Саммари"].map((t, i) => (
@@ -217,12 +217,16 @@ export default function HeroLiveDemo() {
                     >
                       {line.speaker}
                     </span>
-                    <div className="flex-1 min-w-0">
-                      {isTyping ? (
-                        <TypingText text={line.text} speed={25} onDone={() => handleLineDone(idx)} />
-                      ) : (
-                        <span className="text-gray-300 text-[13px] md:text-sm leading-relaxed">{line.text}</span>
-                      )}
+                    <div className="flex-1 min-w-0 relative">
+                      {/* Невидимый ghost фиксирует высоту строки — typing не двигает layout */}
+                      <span aria-hidden className="invisible block text-gray-300 text-[13px] md:text-sm leading-relaxed pointer-events-none">{line.text}</span>
+                      <span className="absolute inset-0">
+                        {isTyping ? (
+                          <TypingText text={line.text} speed={25} onDone={() => handleLineDone(idx)} />
+                        ) : (
+                          <span className="text-gray-300 text-[13px] md:text-sm leading-relaxed">{line.text}</span>
+                        )}
+                      </span>
                     </div>
                   </div>
                 );

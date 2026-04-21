@@ -186,8 +186,8 @@ export default function MicDemoButton() {
               className="flex-1 rounded-full transition-[height,background-color] duration-75 ease-out"
               style={{
                 height: `${height}%`,
-                backgroundColor: isActive ? "rgb(212,255,61)" : "rgba(247,243,236,0.18)",
-                boxShadow: isActive ? "0 0 8px rgba(212,255,61,0.5)" : "none",
+                backgroundColor: isActive ? "rgb(197,240,20)" : "rgba(247,243,236,0.18)",
+                boxShadow: isActive ? "0 0 8px rgba(197,240,20,0.5)" : "none",
               }}
             />
           );

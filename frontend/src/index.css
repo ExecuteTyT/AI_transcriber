@@ -35,8 +35,8 @@
   --fg-muted: #c9bba4;
   --fg-subtle: #968b74;
   /* Акценты */
-  --accent: #d4ff3d;
-  --accent-hover: #c5f014;
+  --accent: #c5f014;
+  --accent-hover: #aee01a;
   --accent-fg: #0b0805;
   /* Границы */
   --border: rgba(247, 243, 236, 0.08);
@@ -113,8 +113,8 @@
            hover:bg-acid-200
            active:bg-acid-400
            transition-all duration-200 ease-out
-           shadow-[0_0_0_1px_rgba(212,255,61,0.3),0_8px_24px_-6px_rgba(212,255,61,0.4)]
-           hover:shadow-[0_0_0_1px_rgba(212,255,61,0.5),0_12px_32px_-6px_rgba(212,255,61,0.55)]
+           shadow-[0_0_0_1px_rgba(197,240,20,0.3),0_8px_24px_-6px_rgba(197,240,20,0.4)]
+           hover:shadow-[0_0_0_1px_rgba(197,240,20,0.5),0_12px_32px_-6px_rgba(197,240,20,0.55)]
            hover:-translate-y-px active:translate-y-0;
   }
 

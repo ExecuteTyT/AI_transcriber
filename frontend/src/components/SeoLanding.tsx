@@ -51,7 +51,7 @@ export default function SeoLanding({
       <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
-            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(212,255,61,0.55)]" aria-hidden />
+            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(197,240,20,0.55)]" aria-hidden />
             Dicto
           </Link>
           <div className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export default function SeoLanding({
       {/* ─── Hero ─── */}
       <section className="max-w-5xl mx-auto px-5 md:px-8 pt-8 md:pt-16 pb-16 md:pb-24">
         <p className="eyebrow mb-6">
-          <span className="inline-block w-2 h-2 rounded-full bg-acid-300 align-middle mr-2 shadow-[0_0_10px_rgba(212,255,61,0.6)]" aria-hidden />
+          <span className="inline-block w-2 h-2 rounded-full bg-acid-300 align-middle mr-2 shadow-[0_0_10px_rgba(197,240,20,0.6)]" aria-hidden />
           {breadcrumb[breadcrumb.length - 1]?.label}
         </p>
         <h1 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] max-w-[18ch] mb-8">
