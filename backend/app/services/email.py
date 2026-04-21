@@ -1,8 +1,10 @@
 """Сервис отправки email через SMTP (async-safe, fire-and-forget friendly)."""
 
 import asyncio
+import email.utils
 import logging
 import smtplib
+from datetime import datetime, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from functools import partial
@@ -13,11 +15,23 @@ logger = logging.getLogger(__name__)
 
 
 def _build_message(to_email: str, subject: str, html_body: str, text_body: str) -> MIMEMultipart:
-    """Собирает MIME-сообщение."""
+    """Собирает MIME-сообщение с корректными headers для deliverability.
+
+    Явно задаём Message-ID с нашим доменом (иначе SMTP-сервер подставит
+    UUID что выглядит подозрительно для спам-фильтров), Date в правильном
+    RFC-формате, Reply-To и базовый X-Mailer.
+    """
+    sender_domain = settings.SMTP_FROM_EMAIL.split("@")[-1] if "@" in settings.SMTP_FROM_EMAIL else "dicto.pro"
+
     msg = MIMEMultipart("alternative")
     msg["From"] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_FROM_EMAIL}>"
     msg["To"] = to_email
     msg["Subject"] = subject
+    msg["Reply-To"] = settings.SMTP_FROM_EMAIL
+    msg["Message-ID"] = email.utils.make_msgid(domain=sender_domain)
+    msg["Date"] = email.utils.format_datetime(datetime.now(timezone.utc))
+    msg["X-Mailer"] = "Dicto"
+    msg["MIME-Version"] = "1.0"
     msg.attach(MIMEText(text_body, "plain", "utf-8"))
     msg.attach(MIMEText(html_body, "html", "utf-8"))
     return msg
