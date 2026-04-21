@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Gift, Sparkles } from "lucide-react";
-import { Icon } from "@/components/Icon";
 import { fadeUp, easeOutQuart } from "@/lib/motion";
 
 interface UsageCardProps {
@@ -40,7 +38,6 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
   const monthlyRemaining = Math.max(0, minutesLimit - minutesUsed);
   const totalAvailable = bonusMinutes + monthlyRemaining;
   const totalCapacity = bonusMinutes + minutesLimit;
-  // Free-юзер (minutes_limit=0 но bonus>0): "план активен" = bonus не истрачен.
   const isBonusOnly = minutesLimit === 0 && bonusMinutes > 0;
   const usedPercent = totalCapacity > 0
     ? Math.min(100, ((totalCapacity - totalAvailable) / totalCapacity) * 100)
@@ -49,7 +46,7 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
 
   const animated = useCountUp(totalAvailable);
 
-  const radius = 56;
+  const radius = 58;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (usedPercent / 100) * circumference;
 
@@ -58,35 +55,22 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
       variants={fadeUp}
       initial="hidden"
       animate="visible"
-      className="relative overflow-hidden rounded-3xl border border-gray-200/60 bg-white shadow-raised"
+      className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)]"
       aria-label="Использование минут"
     >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-60"
-        aria-hidden
-        style={{
-          background:
-            "radial-gradient(120% 100% at 100% 0%, rgba(249,115,22,0.08) 0%, transparent 55%), radial-gradient(80% 80% at 0% 100%, rgba(99,102,241,0.08) 0%, transparent 55%)",
-        }}
-      />
-      <div className="relative flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:gap-6 md:p-6">
-        <div className="flex items-center gap-4">
-          <div className="relative h-32 w-32 shrink-0">
+      <div className="relative flex flex-col gap-6 p-5 sm:flex-row sm:items-center sm:gap-8 md:p-7">
+        {/* ── Progress ring ── */}
+        <div className="flex items-center gap-5">
+          <div className="relative h-36 w-36 shrink-0">
             <svg viewBox="0 0 140 140" className="h-full w-full -rotate-90">
-              <defs>
-                <linearGradient id="usage-progress" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6366f1" />
-                  <stop offset="100%" stopColor="#f97316" />
-                </linearGradient>
-              </defs>
-              <circle cx="70" cy="70" r={radius} fill="none" stroke="#f1f5f9" strokeWidth="10" />
+              <circle cx="70" cy="70" r={radius} fill="none" stroke="var(--border)" strokeWidth="4" />
               <motion.circle
                 cx="70"
                 cy="70"
                 r={radius}
                 fill="none"
-                stroke={low ? "#f87171" : "url(#usage-progress)"}
-                strokeWidth="10"
+                stroke={low ? "#f87171" : "#c5f014"}
+                strokeWidth="4"
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 initial={{ strokeDashoffset: circumference }}
@@ -95,50 +79,62 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold tracking-tight text-gray-900 tabular">{animated}</span>
-              <span className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">минут</span>
+              <span className="font-display text-4xl leading-none tracking-tight text-[var(--fg)] tabular">
+                {animated}
+              </span>
+              <span className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)]">
+                минут
+              </span>
             </div>
           </div>
-          <div className="flex flex-col gap-1 sm:hidden">
-            <span className="inline-flex items-center gap-1 self-start rounded-full bg-primary-50 px-2.5 py-0.5 text-[11px] font-semibold text-primary-700">
-              {planName}
-            </span>
-            <p className="text-sm font-semibold text-gray-900">осталось</p>
-            <p className="text-xs text-gray-500">
+          <div className="flex flex-col gap-1.5 sm:hidden">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)]">
+              {planName} · {isBonusOnly ? "бонус" : "план"}
+            </p>
+            <p className="font-display text-xl leading-tight text-[var(--fg)]">
+              {low ? "Минуты заканчиваются" : "У вас всё под контролем"}
+            </p>
+            <p className="text-[12px] text-[var(--fg-muted)]">
               {isBonusOnly
-                ? `${bonusMinutes} мин бонуса`
-                : `из ${totalCapacity} мин`}
+                ? `${bonusMinutes} мин стартового бонуса`
+                : `из ${totalCapacity} мин на счету`}
             </p>
           </div>
         </div>
 
+        {/* ── Right column ── */}
         <div className="flex-1">
-          <div className="hidden items-center gap-2 sm:flex">
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-2.5 py-0.5 text-[11px] font-semibold text-primary-700">
-              {planName}
-            </span>
-            <span className="text-xs font-medium text-gray-400">план активен</span>
-          </div>
-          <h3 className="mt-0 text-lg font-bold tracking-tight text-gray-900 sm:mt-2 sm:text-xl">
-            {low ? "Минуты подходят к концу" : "У вас всё под контролем"}
-          </h3>
-          <p className="mt-1 text-sm leading-relaxed text-gray-500">
-            {low
-              ? "Увеличьте лимит, чтобы не потерять новые идеи и встречи."
-              : "Загружайте записи — транскрибация и AI-анализ под рукой."}
+          <p className="hidden sm:block font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--fg-subtle)] mb-3">
+            {planName} · {isBonusOnly ? "бонус" : "план активен"}
           </p>
+          <h3 className="hidden sm:block font-display text-3xl leading-[1.1] tracking-[-0.01em] text-[var(--fg)]">
+            {low ? (
+              <>Минуты подходят <em className="italic text-acid-300">к концу</em></>
+            ) : (
+              <>У вас всё <em className="italic text-acid-300">под контролем</em></>
+            )}
+          </h3>
+          <p className="mt-2 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
+            {low
+              ? "Увеличьте лимит — чтобы не потерять новые записи и идеи."
+              : "Загружайте записи: транскрибация и AI-анализ под рукой."}
+          </p>
+
+          {/* Bonus chip — видимая инфо-линия, тратится первым */}
           {bonusMinutes > 0 && (
-            <div className="mt-3 flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 px-3 py-2 ring-1 ring-amber-200/60">
-              <Icon icon={Gift} size={14} strokeWidth={2} className="text-amber-600" />
-              <span className="text-[12px] font-semibold text-amber-800">
-                Бонус <span className="tabular">{bonusMinutes}</span> мин
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-acid-300/25 bg-acid-300/10 px-3 py-2">
+              <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_8px_rgba(197,240,20,0.6)]" aria-hidden />
+              <span className="text-[12px] text-[var(--fg)]">
+                Бонус <span className="tabular font-medium">{bonusMinutes}</span> мин
               </span>
-              <span className="ml-auto text-[10px] font-medium text-amber-700/80">
+              <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
                 тратится первым
               </span>
             </div>
           )}
-          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+
+          {/* Micro-stats row */}
+          <div className="mt-5 grid grid-cols-3 gap-px rounded-xl border border-[var(--border)] overflow-hidden bg-[var(--border)]">
             <MicroStat label="Записей" value={totalRecords.toString()} />
             <MicroStat label="Потрачено" value={`${minutesUsed}`} unit="мин" />
             {isBonusOnly ? (
@@ -147,13 +143,13 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
               <MicroStat label="Лимит" value={`${minutesLimit}`} unit="мин" />
             )}
           </div>
+
           <Link
             to="/app/pricing"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-700 hover:text-primary-600 transition-colors press"
+            className="mt-5 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] hover:text-acid-300 transition-colors group"
           >
-            <Icon icon={Sparkles} size={14} strokeWidth={2} />
             {low ? "Апгрейдить план" : "Посмотреть тарифы"}
-            <Icon icon={ChevronRight} size={14} strokeWidth={2.25} />
+            <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
         </div>
       </div>
@@ -163,11 +159,11 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
 
 function MicroStat({ label, value, unit }: { label: string; value: string; unit?: string }) {
   return (
-    <div className="rounded-xl bg-surface-50/80 p-2.5">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
-      <p className="mt-0.5 text-base font-bold text-gray-900 tabular">
+    <div className="bg-[var(--bg-elevated)] p-3">
+      <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--fg-subtle)]">{label}</p>
+      <p className="mt-1 font-display text-xl leading-none text-[var(--fg)] tabular">
         {value}
-        {unit && <span className="ml-0.5 text-[10px] font-medium text-gray-400">{unit}</span>}
+        {unit && <span className="ml-1 font-mono text-[10px] text-[var(--fg-subtle)]">{unit}</span>}
       </p>
     </div>
   );

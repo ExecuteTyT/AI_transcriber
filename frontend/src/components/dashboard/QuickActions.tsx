@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Upload, MessageSquareText, Download, ChevronRight } from "lucide-react";
+import { Upload, MessageSquareText, Download } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Icon } from "@/components/Icon";
 import { fadeUp, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
+import { useSound } from "@/lib/sound";
 
 interface QuickActionsProps {
   lastTranscriptionId?: string | null;
@@ -16,41 +17,33 @@ type ActionTile = {
   title: string;
   description: string;
   icon: LucideIcon;
-  tone: "primary" | "accent" | "neutral";
+  accent?: boolean;
   disabled?: boolean;
 };
 
-const TONES: Record<ActionTile["tone"], string> = {
-  primary:
-    "from-primary-500 via-primary-600 to-primary-700 text-white shadow-glow-sm hover:shadow-glow",
-  accent:
-    "from-accent-500 to-accent-600 text-white shadow-glow-accent",
-  neutral: "from-white to-surface-50 text-gray-900 border border-gray-200/70 shadow-card",
-};
-
 export function QuickActions({ lastTranscriptionId, canExport }: QuickActionsProps) {
+  const { play } = useSound();
+
   const tiles: ActionTile[] = [
     {
       to: "/upload",
       title: "Новая запись",
-      description: "Загрузить файл",
+      description: "Загрузить файл или ссылку",
       icon: Upload,
-      tone: "primary",
+      accent: true,
     },
     {
       to: lastTranscriptionId ? `/transcription/${lastTranscriptionId}` : "/dashboard",
       title: "Чат с записью",
-      description: lastTranscriptionId ? "Открыть последнюю" : "Нет записей",
+      description: lastTranscriptionId ? "Открыть последнюю" : "Нет готовых записей",
       icon: MessageSquareText,
-      tone: "accent",
       disabled: !lastTranscriptionId,
     },
     {
       to: "/dashboard",
       title: "Экспорт",
-      description: canExport ? "Из истории" : "Скоро",
+      description: canExport ? "Из истории транскрипций" : "Скоро",
       icon: Download,
-      tone: "neutral",
       disabled: !canExport,
     },
   ];
@@ -60,56 +53,72 @@ export function QuickActions({ lastTranscriptionId, canExport }: QuickActionsPro
       variants={fadeUp}
       initial="hidden"
       animate="visible"
-      className="-mx-4 md:mx-0 overflow-x-auto scrollbar-hide"
+      className="-mx-5 md:mx-0 overflow-x-auto scrollbar-hide"
     >
-      <div className="flex gap-2.5 px-4 md:grid md:grid-cols-3 md:gap-3 md:px-0">
+      <div className="flex gap-3 px-5 md:grid md:grid-cols-3 md:gap-4 md:px-0">
         {tiles.map((tile) => {
           const content = (
             <div
               className={cn(
-                "relative flex min-w-[180px] flex-col gap-3 overflow-hidden rounded-2xl bg-gradient-to-br p-4 transition-shadow duration-base md:min-w-0",
-                TONES[tile.tone],
-                tile.disabled && "opacity-60 pointer-events-none"
+                "relative flex h-full min-w-[200px] flex-col justify-between gap-6 overflow-hidden rounded-2xl p-5 transition-colors duration-base md:min-w-0",
+                tile.accent
+                  ? "bg-acid-300 text-ink-900 hover:bg-acid-200"
+                  : "bg-[var(--bg-elevated)] text-[var(--fg)] border border-[var(--border)] hover:border-[var(--border-strong)]",
+                tile.disabled && "opacity-50 pointer-events-none"
               )}
             >
-              <span
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl",
-                  tile.tone === "neutral"
-                    ? "bg-primary-50 text-primary-600"
-                    : "bg-white/15 text-white backdrop-blur"
-                )}
-                aria-hidden
-              >
-                <Icon icon={tile.icon} size={20} strokeWidth={2} />
-              </span>
+              <div className="flex items-start justify-between">
+                <span
+                  className={cn(
+                    "flex h-9 w-9 items-center justify-center rounded-xl",
+                    tile.accent
+                      ? "bg-ink-900/15 text-ink-900"
+                      : "bg-acid-300/10 text-acid-300 border border-acid-300/20"
+                  )}
+                  aria-hidden
+                >
+                  <Icon icon={tile.icon} size={18} strokeWidth={1.75} />
+                </span>
+                <span
+                  className={cn(
+                    "font-mono text-[10px] uppercase tracking-[0.2em]",
+                    tile.accent ? "text-ink-900/65" : "text-[var(--fg-subtle)]"
+                  )}
+                >
+                  {tile.accent ? "primary" : tile.disabled ? "locked" : "action"}
+                </span>
+              </div>
               <div>
-                <p className="text-[15px] font-bold leading-tight">{tile.title}</p>
+                <p className="font-display text-2xl leading-tight tracking-[-0.01em]">
+                  {tile.title}
+                </p>
                 <p
                   className={cn(
-                    "mt-0.5 text-[12px] font-medium",
-                    tile.tone === "neutral" ? "text-gray-500" : "text-white/85"
+                    "mt-1 text-[13px]",
+                    tile.accent ? "text-ink-900/75" : "text-[var(--fg-muted)]"
                   )}
                 >
                   {tile.description}
                 </p>
               </div>
-              <Icon
-                icon={ChevronRight}
-                size={16}
-                className={cn(
-                  "absolute right-3 top-3",
-                  tile.tone === "neutral" ? "text-gray-300" : "text-white/70"
-                )}
-              />
             </div>
           );
           return (
-            <motion.div key={tile.title} whileTap={{ scale: 0.97 }} transition={springTight}>
+            <motion.div
+              key={tile.title}
+              whileTap={{ scale: 0.98 }}
+              transition={springTight}
+              className="snap-start"
+            >
               {tile.disabled ? (
                 <div aria-disabled>{content}</div>
               ) : (
-                <Link to={tile.to} aria-label={tile.title}>
+                <Link
+                  to={tile.to}
+                  onClick={() => play("tick")}
+                  aria-label={tile.title}
+                  className="block h-full"
+                >
                   {content}
                 </Link>
               )}

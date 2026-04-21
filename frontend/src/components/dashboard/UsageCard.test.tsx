@@ -32,7 +32,8 @@ describe("UsageCard", () => {
 
   it("shows plan name", () => {
     renderCard({ planName: "Старт" });
-    expect(screen.getAllByText("Старт").length).toBeGreaterThan(0);
+    // Plan name теперь в составе "<planName> · <план активен|бонус>"
+    expect(screen.getAllByText(/Старт/).length).toBeGreaterThan(0);
   });
 
   it("shows pricing link", () => {
@@ -43,12 +44,14 @@ describe("UsageCard", () => {
 
   it("shows upgrade CTA when usage >= 80% and no bonus", () => {
     renderCard({ bonusMinutes: 0, minutesUsed: 28, minutesLimit: 30 });
-    expect(screen.getByText(/Минуты подходят к концу/)).toBeInTheDocument();
+    // "Минуты подходят к концу" разбито italic em на «Минуты подходят» + «к концу»
+    expect(screen.getByText(/Минуты подходят/)).toBeInTheDocument();
     expect(screen.getByText(/Апгрейдить план/)).toBeInTheDocument();
   });
 
   it("shows stable state when bonus is available (not warning even at high usage)", () => {
     renderCard({ bonusMinutes: 100, minutesUsed: 28, minutesLimit: 30 });
-    expect(screen.getByText(/У вас всё под контролем/)).toBeInTheDocument();
+    // "У вас всё под контролем" разбито на «У вас всё» + «под контролем»
+    expect(screen.getAllByText(/У вас всё/).length).toBeGreaterThan(0);
   });
 });

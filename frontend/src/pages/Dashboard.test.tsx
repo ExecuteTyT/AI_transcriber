@@ -29,7 +29,9 @@ function renderDashboard() {
 describe("Dashboard", () => {
   it("renders greeting with user name", () => {
     renderDashboard();
-    expect(screen.getByText(/Привет, Тест/)).toBeInTheDocument();
+    // Greeting uses <em> для italic акцента → ищем обе части
+    expect(screen.getByText(/Привет,/)).toBeInTheDocument();
+    expect(screen.getByText(/Тест/)).toBeInTheDocument();
   });
 
   it("renders upload button", () => {

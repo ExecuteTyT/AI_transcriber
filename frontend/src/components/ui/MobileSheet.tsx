@@ -70,14 +70,14 @@ export default function MobileSheet({ open, onClose, title, children }: MobileSh
               }
             }}
           >
-            <div className="bg-white rounded-t-3xl max-h-[85dvh] overflow-y-auto">
+            <div className="bg-[var(--bg-elevated)] text-[var(--fg)] rounded-t-3xl max-h-[85dvh] overflow-y-auto border-t border-x border-[var(--border-strong)]">
               {/* Handle */}
-              <div className="sheet-handle" />
+              <div className="mx-auto mt-2 mb-1 h-1 w-10 rounded-full bg-[var(--border-strong)]" />
 
               {/* Title */}
               {title && (
-                <div className="px-5 pt-2 pb-3 border-b border-gray-100">
-                  <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+                <div className="px-5 pt-2 pb-3 border-b border-[var(--border)]">
+                  <h2 className="font-display text-xl leading-tight text-[var(--fg)] truncate">{title}</h2>
                 </div>
               )}
 

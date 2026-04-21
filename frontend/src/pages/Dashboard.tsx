@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Clock, FileText, Mic, Plus, RotateCw, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useSound } from "@/lib/sound";
 import { transcriptionApi, type TranscriptionListItem } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
 import MobileSheet from "@/components/ui/MobileSheet";
@@ -22,6 +23,7 @@ type FilterKey = "all" | "active" | "completed";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
+  const { play } = useSound();
   const [items, setItems] = useState<TranscriptionListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -119,26 +121,27 @@ export default function Dashboard() {
   });
 
   return (
-    <motion.div variants={staggerChildren(0.06)} initial="hidden" animate="visible" className="space-y-6">
-      <motion.header variants={fadeUp} className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
+    <motion.div variants={staggerChildren(0.06)} initial="hidden" animate="visible" className="space-y-8 md:space-y-10">
+      <motion.header variants={fadeUp} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary-500">
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--fg-subtle)]">
             {today}
           </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
-            {firstName ? `Привет, ${firstName}` : "Добро пожаловать"}
+          <h1 className="mt-3 font-display text-4xl md:text-5xl leading-[1.02] tracking-[-0.02em] text-[var(--fg)]">
+            {firstName ? <>Привет, <em className="italic text-acid-300">{firstName}</em></> : "Добро пожаловать"}
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-3 text-[14px] text-[var(--fg-muted)] leading-[1.5]">
             {total > 0
-              ? `У вас ${total} ${pluralize(total, ["запись", "записи", "записей"])}`
+              ? `${total} ${pluralize(total, ["запись", "записи", "записей"])} в вашей истории`
               : "Давайте превратим первую запись в текст"}
           </p>
         </div>
         <Link
           to="/upload"
-          className="hidden sm:inline-flex btn-primary items-center gap-2"
+          onClick={() => play("tick")}
+          className="hidden sm:inline-flex btn-accent items-center gap-2"
         >
-          <Icon icon={Plus} size={16} strokeWidth={2.25} />
+          <Icon icon={Plus} size={15} strokeWidth={2} />
           Загрузить
         </Link>
       </motion.header>
@@ -159,12 +162,12 @@ export default function Dashboard() {
       />
 
       {items.length > 0 && (
-        <motion.div variants={fadeUp} className="space-y-3">
+        <motion.div variants={fadeUp} className="space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold tracking-tight text-gray-900 md:text-lg">
-                История
-              </h2>
+            <div className="flex items-center gap-3">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--fg-subtle)]">
+                /история
+              </p>
               <motion.button
                 type="button"
                 onClick={handleManualRefresh}
@@ -173,19 +176,19 @@ export default function Dashboard() {
                 disabled={refreshing}
                 aria-label="Обновить список"
                 className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors duration-fast hover:bg-surface-100 hover:text-gray-700",
-                  refreshing && "pointer-events-none text-primary-500"
+                  "flex h-7 w-7 items-center justify-center rounded-full text-[var(--fg-subtle)] transition-colors duration-fast hover:bg-[var(--bg-elevated)] hover:text-[var(--fg)]",
+                  refreshing && "pointer-events-none text-acid-300"
                 )}
               >
                 <Icon
                   icon={RotateCw}
-                  size={14}
-                  strokeWidth={2}
+                  size={13}
+                  strokeWidth={1.75}
                   className={cn("transition-transform", refreshing && "animate-spin")}
                 />
               </motion.button>
             </div>
-            <div className="flex gap-1 rounded-full bg-surface-100 p-0.5 text-xs font-semibold text-gray-500">
+            <div className="flex gap-px rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] p-[3px] font-mono text-[10px] uppercase tracking-[0.14em]">
               {(
                 [
                   { key: "all" as const, label: "Все" },
@@ -196,12 +199,16 @@ export default function Dashboard() {
                 <button
                   key={opt.key}
                   type="button"
-                  onClick={() => setFilter(opt.key)}
-                  className={`rounded-full px-3 py-1 transition-colors duration-fast ${
+                  onClick={() => {
+                    play("focus");
+                    setFilter(opt.key);
+                  }}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 transition-colors duration-fast",
                     filter === opt.key
-                      ? "bg-white text-gray-900 shadow-card"
-                      : "hover:text-gray-700"
-                  }`}
+                      ? "bg-acid-300 text-ink-900"
+                      : "text-[var(--fg-muted)] hover:text-[var(--fg)]"
+                  )}
                 >
                   {opt.label}
                 </button>
@@ -212,15 +219,15 @@ export default function Dashboard() {
           <div className="relative">
             <Icon
               icon={Search}
-              size={16}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              size={15}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--fg-subtle)]"
             />
             <input
               type="search"
               placeholder="Найти по названию или файлу…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input-field !pl-11 !py-3 !bg-white"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-11 py-3 text-[14px] text-[var(--fg)] placeholder:text-[var(--fg-subtle)] focus:outline-none focus:border-acid-300/40 transition-colors"
               aria-label="Поиск транскрипций"
             />
           </div>
@@ -235,8 +242,8 @@ export default function Dashboard() {
           title="Начните с первой записи"
           description="Загрузите аудио или видео — AI превратит его в текст с саммари, тезисами и задачами за пару минут."
           action={
-            <Link to="/upload" className="btn-primary inline-flex items-center gap-2 !px-7">
-              <Icon icon={Plus} size={18} strokeWidth={2.25} />
+            <Link to="/upload" onClick={() => play("tick")} className="btn-accent inline-flex items-center gap-2">
+              <Icon icon={Plus} size={16} strokeWidth={2} />
               Загрузить файл
             </Link>
           }
@@ -249,7 +256,7 @@ export default function Dashboard() {
           description="Попробуйте изменить фильтр или поисковый запрос."
         />
       ) : (
-        <div className="space-y-2">
+        <div className="border-t border-[var(--border)]">
           {filteredItems.map((item, idx) => (
             <TranscriptionRow
               key={item.id}
@@ -266,19 +273,20 @@ export default function Dashboard() {
       {user && user.data_retention_days != null && items.length > 0 && (
         <motion.div
           variants={fadeUp}
-          className="flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-xs text-amber-800 ring-1 ring-amber-100"
+          className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3"
         >
-          <Icon icon={Clock} size={14} className="flex-shrink-0 text-amber-600" />
-          <span className="flex-1">
+          <Icon icon={Clock} size={14} className="flex-shrink-0 text-[var(--fg-subtle)]" />
+          <span className="flex-1 text-[12px] text-[var(--fg-muted)]">
             По истечении{" "}
-            <span className="font-semibold tabular">{user.data_retention_days}</span>{" "}
-            {pluralizeDays(user.data_retention_days)} данные безвозвратно удаляются.
+            <span className="font-medium text-[var(--fg)] tabular">{user.data_retention_days}</span>{" "}
+            {pluralizeDays(user.data_retention_days)} данные безвозвратно удаляются
           </span>
           <Link
             to="/profile"
-            className="font-semibold text-amber-900 hover:underline underline-offset-2"
+            onClick={() => play("focus")}
+            className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] hover:text-acid-300 transition-colors"
           >
-            Настроить
+            Настроить →
           </Link>
         </motion.div>
       )}
@@ -288,10 +296,13 @@ export default function Dashboard() {
           <div className="space-y-1">
             <Link
               to={`/transcription/${actionItem.id}`}
-              onClick={() => setActionItem(null)}
-              className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors touch-target"
+              onClick={() => {
+                play("tick");
+                setActionItem(null);
+              }}
+              className="flex items-center gap-3 px-3 py-3 rounded-xl text-[var(--fg)] hover:bg-[var(--bg-muted)] transition-colors touch-target"
             >
-              <Icon icon={FileText} size={18} className="text-gray-400" />
+              <Icon icon={FileText} size={18} className="text-[var(--fg-subtle)]" />
               <span className="text-[15px] font-medium">Открыть</span>
             </Link>
             <button
@@ -300,7 +311,7 @@ export default function Dashboard() {
                 setDeleteConfirm(actionItem);
                 setActionItem(null);
               }}
-              className="flex items-center gap-3 px-3 py-3 rounded-xl text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors w-full touch-target"
+              className="flex items-center gap-3 px-3 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors w-full touch-target"
             >
               <Icon icon={Trash2} size={18} />
               <span className="text-[15px] font-medium">Удалить</span>
@@ -316,14 +327,14 @@ export default function Dashboard() {
       >
         {deleteConfirm && (
           <div>
-            <p className="text-gray-500 mb-4">
+            <p className="text-[14px] text-[var(--fg-muted)] mb-5 leading-[1.5]">
               «{deleteConfirm.title}» будет удалена без возможности восстановления.
             </p>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setDeleteConfirm(null)}
-                className="btn-secondary flex-1"
+                className="btn-editorial-ghost flex-1 justify-center"
               >
                 Отмена
               </button>
@@ -331,7 +342,7 @@ export default function Dashboard() {
                 type="button"
                 onClick={() => handleDelete(deleteConfirm)}
                 disabled={deletingId === deleteConfirm.id}
-                className="btn-primary !bg-red-600 hover:!bg-red-500 active:!bg-red-700 flex-1 !shadow-none"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-red-500/90 px-5 py-3 text-[14px] font-semibold text-white hover:bg-red-500 transition-colors disabled:opacity-50"
               >
                 {deletingId === deleteConfirm.id ? "Удаление…" : "Удалить"}
               </button>
