@@ -22,11 +22,18 @@ export default function DesktopSidebar() {
     return location.pathname === item.to;
   };
 
-  const usagePercent = user
-    ? Math.min(100, Math.round((user.minutes_used / user.minutes_limit) * 100))
+  // Всего доступно = bonus_minutes + остаток месячного лимита.
+  // Для Free-юзера minutes_limit = 0, но bonus_minutes = 180 до первой транскрипции —
+  // показывать "0 из 0" было бы ложью.
+  const bonusMinutes = user?.bonus_minutes ?? 0;
+  const monthlyRemaining = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
+  const totalAvailable = bonusMinutes + monthlyRemaining;
+  const totalCapacity = bonusMinutes + (user?.minutes_limit ?? 0);
+  const usagePercent = totalCapacity > 0
+    ? Math.min(100, Math.round(((totalCapacity - totalAvailable) / totalCapacity) * 100))
     : 0;
-  const minutesLeft = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
-  const lowUsage = user ? usagePercent >= 80 : false;
+  const minutesLeft = totalAvailable;
+  const lowUsage = totalAvailable <= Math.max(10, Math.round(totalCapacity * 0.2));
 
   const radius = 26;
   const circumference = 2 * Math.PI * radius;
@@ -113,7 +120,9 @@ export default function DesktopSidebar() {
                 </div>
                 <div className="flex items-baseline gap-1 mt-0.5">
                   <span className="text-xl font-bold text-white tabular">{minutesLeft}</span>
-                  <span className="text-[11px] text-gray-500">из {user.minutes_limit} мин</span>
+                  <span className="text-[11px] text-gray-500">
+                    из {totalCapacity} мин{bonusMinutes > 0 && user.minutes_limit === 0 ? " (бонус)" : ""}
+                  </span>
                 </div>
                 {lowUsage && (
                   <Link

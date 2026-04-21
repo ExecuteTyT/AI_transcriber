@@ -72,11 +72,18 @@ async def register(request: Request, data: RegisterRequest, db: AsyncSession = D
     await db.commit()
     await db.refresh(user)
 
-    # Приветственное письмо (неблокирующее, async)
-    try:
-        await send_welcome_email(user.email, user.name)
-    except Exception:
-        logger.warning("Не удалось отправить welcome email: %s", user.email)
+    # Приветственное письмо — fire-and-forget в фоне. НЕ блокируем ответ
+    # клиенту: SMTP может занять 3-30 секунд (connect, TLS, login, send).
+    # Если SMTP упал — логируется через logger.exception в send_email.
+    import asyncio as _asyncio
+
+    async def _send_welcome_background(email: str, name: str):
+        try:
+            await send_welcome_email(email, name)
+        except Exception:
+            logger.warning("Welcome email failed for %s (background)", email)
+
+    _asyncio.create_task(_send_welcome_background(user.email, user.name))
 
     return TokenResponse(
         access_token=create_access_token(str(user.id)),
@@ -227,7 +234,16 @@ async def request_password_reset(
         )
         await db.commit()
 
-        await send_password_reset_email(user.email, token)
+        # Fire-and-forget чтобы не держать клиента в ожидании SMTP-ответа.
+        import asyncio as _asyncio
+
+        async def _send_reset_background(email: str, _token: str):
+            try:
+                await send_password_reset_email(email, _token)
+            except Exception:
+                logger.warning("Password reset email failed for %s (background)", email)
+
+        _asyncio.create_task(_send_reset_background(user.email, token))
 
     return MessageResponse(message="Если аккаунт существует, мы отправили ссылку для сброса пароля")
 

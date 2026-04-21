@@ -39,8 +39,13 @@ function useCountUp(target: number, duration = 900, trigger = true) {
 export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, totalRecords }: UsageCardProps) {
   const monthlyRemaining = Math.max(0, minutesLimit - minutesUsed);
   const totalAvailable = bonusMinutes + monthlyRemaining;
-  const usedPercent = minutesLimit > 0 ? Math.min(100, (minutesUsed / minutesLimit) * 100) : 0;
-  const low = bonusMinutes === 0 && usedPercent >= 80;
+  const totalCapacity = bonusMinutes + minutesLimit;
+  // Free-юзер (minutes_limit=0 но bonus>0): "план активен" = bonus не истрачен.
+  const isBonusOnly = minutesLimit === 0 && bonusMinutes > 0;
+  const usedPercent = totalCapacity > 0
+    ? Math.min(100, ((totalCapacity - totalAvailable) / totalCapacity) * 100)
+    : 0;
+  const low = totalAvailable <= Math.max(10, Math.round(totalCapacity * 0.2));
 
   const animated = useCountUp(totalAvailable);
 
@@ -99,7 +104,11 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
               {planName}
             </span>
             <p className="text-sm font-semibold text-gray-900">осталось</p>
-            <p className="text-xs text-gray-500">из {minutesLimit} мин в месяце</p>
+            <p className="text-xs text-gray-500">
+              {isBonusOnly
+                ? `${bonusMinutes} мин бонуса`
+                : `из ${totalCapacity} мин`}
+            </p>
           </div>
         </div>
 
@@ -132,7 +141,11 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
           <div className="mt-3 grid grid-cols-3 gap-2 text-center">
             <MicroStat label="Записей" value={totalRecords.toString()} />
             <MicroStat label="Потрачено" value={`${minutesUsed}`} unit="мин" />
-            <MicroStat label="Лимит" value={`${minutesLimit}`} unit="мин" />
+            {isBonusOnly ? (
+              <MicroStat label="Бонус" value={`${bonusMinutes}`} unit="мин" />
+            ) : (
+              <MicroStat label="Лимит" value={`${minutesLimit}`} unit="мин" />
+            )}
           </div>
           <Link
             to="/app/pricing"

@@ -119,13 +119,19 @@ async def activate_subscription(
     await db.commit()
     await db.refresh(subscription)
 
-    # Email-уведомление об активации
+    # Email-уведомление об активации — fire-and-forget чтобы не блокировать
+    # YooKassa webhook-ответ (webhook ожидает ответа за ~30 сек, SMTP может не успеть).
     if user:
-        try:
-            from app.services.email import send_subscription_email
-            await send_subscription_email(user.email, plan)
-        except Exception:
-            logger.warning("Не удалось отправить email подписки: user=%s", user_id)
+        import asyncio as _asyncio
+        from app.services.email import send_subscription_email
+
+        async def _send_subscription_background(email: str, _plan: str):
+            try:
+                await send_subscription_email(email, _plan)
+            except Exception:
+                logger.warning("Subscription email failed for %s (background)", email)
+
+        _asyncio.create_task(_send_subscription_background(user.email, plan))
 
     logger.info("Subscription activated: user=%s plan=%s yookassa_id=%s", user_id, plan, yookassa_id)
     return subscription

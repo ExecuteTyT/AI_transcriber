@@ -1,4 +1,4 @@
-"""Сервис отправки email через SMTP (async-safe)."""
+"""Сервис отправки email через SMTP (async-safe, fire-and-forget friendly)."""
 
 import asyncio
 import logging
@@ -52,85 +52,179 @@ async def send_email(to_email: str, subject: str, html_body: str, text_body: str
     )
 
 
-# --- Шаблоны писем ---
+# ─── Стили ──────────────────────────────────────────────────────────────────
+# Editorial-dark с cream-акцентом — соответствует бренду dicto.pro.
+# Inline-стили, потому что в письмах нельзя <style> надёжно.
+_BG = "#0b0805"
+_BG_ELEV = "#141009"
+_FG = "#f7f3ec"
+_FG_MUTED = "#c9bba4"
+_FG_SUBTLE = "#968b74"
+_ACCENT = "#c5f014"
+_ACCENT_FG = "#0b0805"
+_BORDER = "rgba(247,243,236,0.12)"
+
+
+def _wrap_html(content: str, preheader: str = "") -> str:
+    """Каркас: hero-card на ink-фоне, editorial-serif заголовок, footer."""
+    return f"""
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:{_BG};font-family:'Helvetica Neue',Inter,-apple-system,sans-serif;color:{_FG};">
+    <span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">{preheader}</span>
+    <div style="background:{_BG};padding:32px 16px;">
+        <div style="max-width:540px;margin:0 auto;background:{_BG_ELEV};border:1px solid {_BORDER};border-radius:24px;overflow:hidden;">
+            <div style="padding:28px 32px;border-bottom:1px solid {_BORDER};">
+                <span style="display:inline-flex;align-items:center;gap:8px;">
+                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{_ACCENT};"></span>
+                    <span style="font-family:Georgia,'Instrument Serif',serif;font-size:24px;color:{_FG};letter-spacing:-0.5px;">Dicto</span>
+                </span>
+            </div>
+            <div style="padding:36px 32px;">
+                {content}
+            </div>
+            <div style="padding:20px 32px;border-top:1px solid {_BORDER};">
+                <p style="margin:0;font-size:11px;color:{_FG_SUBTLE};text-transform:uppercase;letter-spacing:2px;">
+                    Dicto · транскрибация с AI-инсайтами · dicto.pro
+                </p>
+            </div>
+        </div>
+        <p style="text-align:center;margin:20px auto 0;max-width:540px;font-size:11px;color:{_FG_SUBTLE};">
+            Это автоматическое письмо от сервиса Dicto. Если вы его не ожидали, просто проигнорируйте.
+        </p>
+    </div>
+</body>
+</html>
+    """
+
+
+def _btn(href: str, label: str) -> str:
+    return (
+        f'<a href="{href}" style="display:inline-block;background:{_ACCENT};color:{_ACCENT_FG};'
+        f'padding:14px 28px;border-radius:999px;text-decoration:none;font-weight:600;'
+        f'font-size:14px;letter-spacing:-0.01em;">{label}</a>'
+    )
+
+
+def _h(text: str) -> str:
+    return (
+        f'<h1 style="font-family:Georgia,\'Instrument Serif\',serif;font-size:32px;line-height:1.1;'
+        f'letter-spacing:-0.5px;color:{_FG};margin:0 0 16px;font-weight:400;">{text}</h1>'
+    )
+
+
+def _p(text: str) -> str:
+    return f'<p style="font-size:15px;line-height:1.55;color:{_FG_MUTED};margin:0 0 16px;">{text}</p>'
+
+
+def _mono(text: str) -> str:
+    return (
+        f'<p style="font-family:\'JetBrains Mono\',\'SF Mono\',monospace;font-size:11px;'
+        f'color:{_FG_SUBTLE};text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;">{text}</p>'
+    )
+
+
+# ─── Шаблоны ────────────────────────────────────────────────────────────────
 
 async def send_password_reset_email(to_email: str, reset_token: str) -> bool:
     """Письмо со ссылкой для сброса пароля."""
     reset_url = f"{settings.APP_URL}/reset-password?token={reset_token}&email={to_email}"
-    subject = "Сброс пароля — AI Voice"
-    html = f"""
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 0;">
-        <h2 style="color: #1a1a1a; margin-bottom: 16px;">Сброс пароля</h2>
-        <p style="color: #555; line-height: 1.6;">
-            Вы запросили сброс пароля для аккаунта AI Voice. Нажмите кнопку ниже, чтобы установить новый пароль:
-        </p>
-        <p style="text-align: center; margin: 32px 0;">
-            <a href="{reset_url}"
-               style="background: #4c6ef5; color: #fff; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; display: inline-block;">
-                Сбросить пароль
-            </a>
-        </p>
-        <p style="color: #999; font-size: 13px; line-height: 1.5;">
-            Ссылка действительна {settings.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES} минут.<br>
-            Если вы не запрашивали сброс — просто проигнорируйте это письмо.
-        </p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
-        <p style="color: #bbb; font-size: 12px;">AI Voice — сервис транскрибации аудио и видео</p>
-    </div>
-    """
-    text = f"Сброс пароля AI Voice\n\nПерейдите по ссылке: {reset_url}\n\nСсылка действительна {settings.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES} минут."
-    return await send_email(to_email, subject, html, text)
+    subject = "Сброс пароля — Dicto"
+    content = (
+        _mono("Восстановление доступа")
+        + _h("Сбросьте пароль")
+        + _p(
+            "Вы запросили сброс пароля для аккаунта Dicto. Нажмите кнопку ниже, чтобы задать новый — "
+            f"ссылка действительна {settings.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES} минут."
+        )
+        + f'<p style="margin:28px 0;">{_btn(reset_url, "Сбросить пароль →")}</p>'
+        + _p(
+            f'<span style="color:{_FG_SUBTLE};">Если вы не запрашивали сброс — просто проигнорируйте это письмо. '
+            "Ваш аккаунт останется в безопасности.</span>"
+        )
+    )
+    text = (
+        f"Сброс пароля Dicto\n\n"
+        f"Перейдите по ссылке: {reset_url}\n\n"
+        f"Ссылка действительна {settings.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES} минут.\n"
+        f"Если вы не запрашивали сброс — проигнорируйте это письмо."
+    )
+    return await send_email(to_email, subject, _wrap_html(content, "Ссылка для сброса пароля"), text)
 
 
 async def send_welcome_email(to_email: str, name: str) -> bool:
     """Приветственное письмо после регистрации."""
-    subject = "Добро пожаловать в AI Voice!"
-    html = f"""
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 0;">
-        <h2 style="color: #1a1a1a; margin-bottom: 16px;">Добро пожаловать{', ' + name if name else ''}!</h2>
-        <p style="color: #555; line-height: 1.6;">
-            Вы зарегистрировались в AI Voice — сервисе транскрибации аудио и видео в текст с помощью нейросетей.
-        </p>
-        <p style="color: #555; line-height: 1.6;">Что доступно на бесплатном тарифе:</p>
-        <ul style="color: #555; line-height: 1.8;">
-            <li>15 минут транскрибации в месяц</li>
-            <li>3 AI-саммари</li>
-            <li>Экспорт в TXT</li>
-        </ul>
-        <p style="text-align: center; margin: 32px 0;">
-            <a href="{settings.APP_URL}/upload"
-               style="background: #4c6ef5; color: #fff; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; display: inline-block;">
-                Загрузить первый файл
-            </a>
-        </p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
-        <p style="color: #bbb; font-size: 12px;">AI Voice — сервис транскрибации аудио и видео</p>
-    </div>
-    """
-    text = f"Добро пожаловать в AI Voice{', ' + name if name else ''}!\n\n15 мин бесплатной транскрибации в месяц.\n\nЗагрузите файл: {settings.APP_URL}/upload"
-    return await send_email(to_email, subject, html, text)
+    greeting = f"Привет, {name}" if name else "Добро пожаловать"
+    subject = "180 минут ждут вас — Dicto"
+    content = (
+        _mono("Добро пожаловать в Dicto")
+        + _h(f"{greeting}.")
+        + _p(
+            "Вы зарегистрировались в Dicto — сервисе транскрибации аудио и видео с AI-инсайтами. "
+            "На счёте уже <strong>180 минут бонуса</strong> — этого хватит чтобы протестировать продукт "
+            "на реальных записях без карты и подписки."
+        )
+        + _p(
+            "Что можно сделать прямо сейчас:"
+        )
+        + (
+            f'<ul style="margin:0 0 20px;padding:0 0 0 18px;color:{_FG_MUTED};font-size:15px;line-height:1.8;">'
+            '<li>Загрузить запись совещания или интервью</li>'
+            '<li>Получить текст с таймкодами и разметкой спикеров</li>'
+            '<li>Прочитать AI-саммари и action items за 30 секунд</li>'
+            '<li>Задать вопрос транскрипту через RAG-чат</li>'
+            '</ul>'
+        )
+        + f'<p style="margin:28px 0;">{_btn(settings.APP_URL + "/upload", "Загрузить первый файл →")}</p>'
+        + _p(
+            f'<span style="color:{_FG_SUBTLE};">Техническая поддержка и вопросы: '
+            f'<a href="mailto:support@dicto.pro" style="color:{_FG};text-decoration:underline;text-decoration-color:{_BORDER};">support@dicto.pro</a>'
+            "</span>"
+        )
+    )
+    text = (
+        f"{greeting}.\n\n"
+        "Вы зарегистрировались в Dicto — на счёте 180 бонусных минут транскрибации.\n\n"
+        "Что сделать прямо сейчас:\n"
+        "- Загрузить запись (MP3, WAV, MP4, OGG и ещё 8 форматов)\n"
+        "- Получить текст с таймкодами и спикерами\n"
+        "- Прочитать AI-саммари и action items\n"
+        "- Задать вопрос транскрипту через RAG-чат\n\n"
+        f"Начать: {settings.APP_URL}/upload\n\n"
+        "Поддержка: support@dicto.pro"
+    )
+    return await send_email(to_email, subject, _wrap_html(content, "180 бонусных минут на счёте"), text)
 
 
 async def send_subscription_email(to_email: str, plan: str) -> bool:
     """Уведомление об активации подписки."""
-    plan_names = {"start": "Старт (290 ₽/мес)", "pro": "Про (590 ₽/мес)"}
-    plan_name = plan_names.get(plan, plan)
-    subject = f"Подписка {plan_name} активирована — AI Voice"
-    html = f"""
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 0;">
-        <h2 style="color: #1a1a1a; margin-bottom: 16px;">Подписка активирована!</h2>
-        <p style="color: #555; line-height: 1.6;">
-            Ваш тариф <strong>{plan_name}</strong> успешно активирован. Теперь вам доступны все возможности тарифа.
-        </p>
-        <p style="text-align: center; margin: 32px 0;">
-            <a href="{settings.APP_URL}/dashboard"
-               style="background: #4c6ef5; color: #fff; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; display: inline-block;">
-                Перейти в кабинет
-            </a>
-        </p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
-        <p style="color: #bbb; font-size: 12px;">AI Voice — сервис транскрибации аудио и видео</p>
-    </div>
-    """
-    text = f"Подписка {plan_name} активирована!\n\nПерейти в кабинет: {settings.APP_URL}/dashboard"
-    return await send_email(to_email, subject, html, text)
+    plan_names = {
+        "start": "Старт — 500 ₽/мес · 10 часов",
+        "pro": "Про — 820 ₽/мес · 25 часов",
+        "business": "Бизнес — 2 300 ₽/мес · 60 часов",
+        "premium": "Премиум — 4 600 ₽/мес · 120 часов",
+    }
+    plan_display = plan_names.get(plan, plan)
+    subject = f"Подписка активирована — {plan_display}"
+    content = (
+        _mono(f"Тариф {plan}")
+        + _h("Подписка активна.")
+        + _p(
+            f"Ваш тариф <strong>{plan_display}</strong> успешно активирован. "
+            "Все функции тарифа доступны в кабинете, новые минуты обновляются ежемесячно."
+        )
+        + f'<p style="margin:28px 0;">{_btn(settings.APP_URL + "/dashboard", "Перейти в кабинет →")}</p>'
+        + _p(
+            f'<span style="color:{_FG_SUBTLE};">Платёжные документы приходят отдельным письмом от ЮKassa. '
+            f'Управление подпиской: <a href="{settings.APP_URL}/subscription" style="color:{_FG};text-decoration:underline;text-decoration-color:{_BORDER};">{settings.APP_URL}/subscription</a>'
+            "</span>"
+        )
+    )
+    text = (
+        f"Подписка активирована — {plan_display}\n\n"
+        f"Перейти в кабинет: {settings.APP_URL}/dashboard\n"
+        f"Управление подпиской: {settings.APP_URL}/subscription\n\n"
+        "Поддержка: support@dicto.pro"
+    )
+    return await send_email(to_email, subject, _wrap_html(content, "Подписка активирована"), text)
