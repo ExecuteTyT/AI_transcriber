@@ -23,6 +23,23 @@ def _build_message(to_email: str, subject: str, html_body: str, text_body: str) 
     return msg
 
 
+def _resolve_ipv4(host: str) -> str:
+    """Резолвим имя хоста только в A-записи (IPv4).
+
+    Зачем: многие SMTP-провайдеры публикуют AAAA-записи (IPv6), но Docker-контейнеры
+    на VPS часто не имеют IPv6-роутинга наружу — получаем OSError [Errno 101]
+    "Network is unreachable". Форсируем IPv4 чтобы этого избежать.
+    """
+    import socket as _socket
+    try:
+        infos = _socket.getaddrinfo(host, None, _socket.AF_INET, _socket.SOCK_STREAM)
+        if infos:
+            return infos[0][4][0]  # первый IPv4
+    except Exception:
+        pass
+    return host  # fallback — дадим smtplib резолвить самому
+
+
 def _send_email_sync(to_email: str, subject: str, html_body: str, text_body: str) -> bool:
     """Синхронная отправка email через SMTP."""
     if not settings.SMTP_HOST:
@@ -30,17 +47,22 @@ def _send_email_sync(to_email: str, subject: str, html_body: str, text_body: str
         return False
 
     msg = _build_message(to_email, subject, html_body, text_body)
+    host_ipv4 = _resolve_ipv4(settings.SMTP_HOST)
     try:
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+        with smtplib.SMTP(host_ipv4, settings.SMTP_PORT, timeout=15) as server:
+            # Отдаём hostname (не IP) для EHLO/HELO — некоторые SMTP серверы
+            # требуют чтобы SNI/HELO совпадал с оригинальным хостом.
+            server.ehlo(settings.SMTP_HOST)
             if settings.SMTP_USE_TLS:
                 server.starttls()
+                server.ehlo(settings.SMTP_HOST)
             if settings.SMTP_USER:
                 server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.send_message(msg)
         logger.info("Email отправлен: to=%s subject=%s", to_email, subject)
         return True
     except Exception:
-        logger.exception("Ошибка отправки email: to=%s", to_email)
+        logger.exception("Ошибка отправки email: to=%s host=%s", to_email, host_ipv4)
         return False
 
 
