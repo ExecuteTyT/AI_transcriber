@@ -2,16 +2,16 @@ import { useCallback, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileAudio, FolderOpen, Languages, Link2, Lock, Upload as UploadIcon } from "lucide-react";
+import { FileAudio, FolderOpen, Link2, Lock, Upload as UploadIcon } from "lucide-react";
 import { toast } from "sonner";
 import { transcriptionApi } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { PipelineSteps, type PipelineStage } from "@/components/upload/PipelineSteps";
 import { ErrorState } from "@/components/states/ErrorState";
+import { LanguageSelect } from "@/components/ui/LanguageSelect";
 import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
-import { LANGUAGES } from "@/lib/languages";
 import { useSound } from "@/lib/sound";
 
 const ACCEPTED_TYPES = {
@@ -203,26 +203,11 @@ export default function Upload() {
         </motion.div>
 
         {/* ── Language selector ── */}
-        <motion.div
-          variants={fadeUp}
-          className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3"
-        >
-          <Icon icon={Languages} size={16} className="text-[var(--fg-subtle)]" />
-          <label htmlFor="lang-select" className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] whitespace-nowrap">
+        <motion.div variants={fadeUp}>
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
             Язык
-          </label>
-          <select
-            id="lang-select"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="flex-1 bg-transparent text-[14px] font-medium text-[var(--fg)] focus:outline-none cursor-pointer"
-          >
-            {LANGUAGES.map((lang) => (
-              <option key={lang.code} value={lang.code} className="bg-[var(--bg-elevated)]">
-                {lang.flag} {lang.label}
-              </option>
-            ))}
-          </select>
+          </p>
+          <LanguageSelect value={language} onChange={setLanguage} label="Язык транскрипции" />
         </motion.div>
 
         {/* ── Tab content ── */}

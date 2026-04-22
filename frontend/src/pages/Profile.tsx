@@ -16,7 +16,7 @@ import { authApi } from "@/api/auth";
 import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { fadeUp, staggerChildren } from "@/lib/motion";
-import { LANGUAGES } from "@/lib/languages";
+import { LanguageSelect } from "@/components/ui/LanguageSelect";
 import { useSound } from "@/lib/sound";
 
 const PLAN_NAMES: Record<string, string> = {
@@ -230,21 +230,8 @@ export default function Profile() {
           <p className="mb-5 text-[13px] text-[var(--fg-muted)] leading-[1.55]">
             Применяется по умолчанию для новых загрузок. Перед каждой — можно переопределить.
           </p>
-          <label htmlFor="default-lang" className="label-editorial">
-            Язык по умолчанию
-          </label>
-          <select
-            id="default-lang"
-            value={defaultLang}
-            onChange={(e) => setDefaultLang(e.target.value)}
-            className="input-editorial cursor-pointer"
-          >
-            {LANGUAGES.map((lang) => (
-              <option key={lang.code} value={lang.code} className="bg-[var(--bg-elevated)]">
-                {lang.flag} {lang.label}
-              </option>
-            ))}
-          </select>
+          <p className="label-editorial">Язык по умолчанию</p>
+          <LanguageSelect value={defaultLang} onChange={setDefaultLang} label="Язык по умолчанию" />
           <button
             type="button"
             onClick={handleLangSave}

@@ -57,8 +57,10 @@
   --fg: #0b0805;
   --fg-muted: #3a342a;
   --fg-subtle: #5d5646;
-  --accent: #82a100;
-  --accent-hover: #617500;
+  /* Accent в светлой теме — глубокий олив, читаемый на cream
+     (acid-300 #c5f014 на cream давал контраст ~1.4 → нечитаемо). */
+  --accent: #3f5000;
+  --accent-hover: #2d3a00;
   --accent-fg: #faf7f2;
   --border: rgba(11, 8, 5, 0.1);
   --border-strong: rgba(11, 8, 5, 0.22);
