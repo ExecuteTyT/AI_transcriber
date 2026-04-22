@@ -43,26 +43,30 @@ async def generate_rag_response(
 
     context = "\n\n".join(context_parts)
 
-    prompt = f"{RAG_SYSTEM_PROMPT}\n\nКонтекст из транскрипции:\n\n{context}\n\n---\nВопрос: {question}"
+    user_prompt = f"Контекст из транскрипции:\n\n{context}\n\n---\nВопрос: {question}"
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent",
-            headers={"Content-Type": "application/json"},
-            params={"key": settings.GOOGLE_API_KEY},
+            "https://api.mistral.ai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {settings.MISTRAL_API_KEY}",
+                "Content-Type": "application/json",
+            },
             json={
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.3,
-                    "maxOutputTokens": 1000,
-                },
+                "model": settings.CHAT_MODEL,
+                "messages": [
+                    {"role": "system", "content": RAG_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "temperature": 0.3,
+                "max_tokens": 1000,
             },
             timeout=60,
         )
         if response.status_code >= 400:
             logger.error(
-                "Gemini generate (%s) %s: %s",
-                settings.GEMINI_MODEL,
+                "Mistral chat (%s) %s: %s",
+                settings.CHAT_MODEL,
                 response.status_code,
                 response.text[:500],
             )
@@ -70,12 +74,11 @@ async def generate_rag_response(
         data = response.json()
 
     try:
-        content = data["candidates"][0]["content"]["parts"][0]["text"]
+        content = data["choices"][0]["message"]["content"]
     except (KeyError, IndexError):
-        # Gemini мог вернуть пустой ответ (finishReason=SAFETY/RECITATION/…).
-        logger.error("Gemini empty response: %s", str(data)[:500])
-        raise ValueError("Gemini returned no candidates")
-    tokens = data.get("usageMetadata", {}).get("totalTokenCount", 0)
+        logger.error("Mistral empty response: %s", str(data)[:500])
+        raise ValueError("Mistral returned no choices")
+    tokens = data.get("usage", {}).get("total_tokens", 0)
     return content, references, tokens
 
 

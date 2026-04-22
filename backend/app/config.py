@@ -20,7 +20,11 @@ class Settings(BaseSettings):
     MISTRAL_API_KEY: str = ""
     TRANSCRIPTION_PROVIDER: str = "voxtral"
 
-    # Google Gemini (LLM — analysis & chat)
+    # Chat LLM — Mistral chat completions (единый провайдер с embeddings/voxtral).
+    # Gemini убран: Google блокирует API из РФ ("User location is not supported").
+    CHAT_MODEL: str = "mistral-small-latest"
+
+    # Deprecated — оставлено для совместимости со старым .env, не используется.
     GOOGLE_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.5-flash"
 

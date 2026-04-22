@@ -68,12 +68,7 @@ async def send_chat_message(
     if not settings.MISTRAL_API_KEY:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="RAG-чат временно недоступен: не настроен сервис embeddings.",
-        )
-    if not settings.GOOGLE_API_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="RAG-чат временно недоступен: не настроен LLM-сервис.",
+            detail="RAG-чат временно недоступен: не настроен AI-сервис.",
         )
 
     try:
