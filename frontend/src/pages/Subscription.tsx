@@ -131,13 +131,15 @@ export default function Subscription() {
       )}
 
       {/* ── Current plan card ── */}
+      {/* Pro использует contrast-flip: acid в dark, ink в light. Остальные планы —
+          обычная elevated-карточка. Это согласовано с /pricing. */}
       <motion.section variants={fadeUp}>
         <div
           className={cn(
             "relative overflow-hidden rounded-3xl p-6 md:p-8 border",
             isPopular
-              ? "bg-acid-300 text-ink-900 border-[var(--accent)]"
-              : "bg-[var(--bg-elevated)] text-[var(--fg)] border-[var(--border)]"
+              ? "bg-[var(--highlight-bg)] border-[var(--highlight-bg)]"
+              : "bg-[var(--bg-elevated)] border-[var(--border)]"
           )}
         >
           <div className="flex items-start justify-between gap-4">
@@ -145,7 +147,7 @@ export default function Subscription() {
               <p
                 className={cn(
                   "font-mono text-[10px] uppercase tracking-[0.22em]",
-                  isPopular ? "text-ink-900/70" : "text-[var(--fg-subtle)]"
+                  isPopular ? "text-[var(--highlight-fg-muted)]" : "text-[var(--fg-subtle)]"
                 )}
               >
                 /{sub.plan}
@@ -153,7 +155,7 @@ export default function Subscription() {
               <h2
                 className={cn(
                   "mt-3 font-display text-4xl md:text-5xl leading-none tracking-[-0.01em]",
-                  isPopular ? "text-ink-900" : "text-[var(--fg)]"
+                  isPopular ? "text-[var(--highlight-fg)]" : "text-[var(--fg)]"
                 )}
               >
                 {PLAN_NAMES[sub.plan] || sub.plan}
@@ -163,13 +165,13 @@ export default function Subscription() {
               <span
                 className={cn(
                   "inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em]",
-                  isPopular ? "text-ink-900/85" : "text-[var(--accent)]"
+                  isPopular ? "text-[var(--highlight-fg)]" : "text-[var(--accent)]"
                 )}
               >
                 <span
                   className={cn(
                     "h-1.5 w-1.5 rounded-full animate-pulse",
-                    isPopular ? "bg-ink-900" : "bg-acid-300"
+                    isPopular ? "bg-[var(--highlight-accent)]" : "bg-[var(--accent)]"
                   )}
                 />
                 Активна
@@ -181,7 +183,7 @@ export default function Subscription() {
             <p
               className={cn(
                 "mt-3 text-[13px]",
-                isPopular ? "text-ink-900/75" : "text-[var(--fg-muted)]"
+                isPopular ? "text-[var(--highlight-fg-muted)]" : "text-[var(--fg-muted)]"
               )}
             >
               Действует до{" "}
@@ -199,18 +201,18 @@ export default function Subscription() {
               <div
                 className={cn(
                   "mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em]",
-                  isPopular ? "text-ink-900/70" : "text-[var(--fg-subtle)]"
+                  isPopular ? "text-[var(--highlight-fg-muted)]" : "text-[var(--fg-subtle)]"
                 )}
               >
                 <span>Использовано</span>
-                <span className={cn(isPopular ? "text-ink-900" : "text-[var(--fg)]")}>
+                <span className={cn(isPopular ? "text-[var(--highlight-fg)]" : "text-[var(--fg)]")}>
                   {sub.minutes_used} / {sub.minutes_limit} мин
                 </span>
               </div>
               <div
                 className={cn(
                   "h-1.5 w-full overflow-hidden rounded-full",
-                  isPopular ? "bg-ink-900/15" : "bg-[var(--bg-muted)]"
+                  isPopular ? "bg-[var(--highlight-accent)]/15" : "bg-[var(--bg-muted)]"
                 )}
               >
                 <motion.div
@@ -220,12 +222,12 @@ export default function Subscription() {
                   className={cn(
                     "h-full rounded-full",
                     isPopular
-                      ? "bg-ink-900"
+                      ? "bg-[var(--highlight-accent)]"
                       : low
                       ? usagePercent >= 100
                         ? "bg-red-400"
                         : "bg-amber-400"
-                      : "bg-acid-300"
+                      : "bg-[var(--accent)]"
                   )}
                 />
               </div>
@@ -239,14 +241,17 @@ export default function Subscription() {
                 key={feature}
                 className={cn(
                   "flex items-start gap-2.5 text-[13px] leading-[1.5]",
-                  isPopular ? "text-ink-900/90" : "text-[var(--fg-muted)]"
+                  isPopular ? "text-[var(--highlight-fg-muted)]" : "text-[var(--fg-muted)]"
                 )}
               >
                 <Icon
                   icon={Check}
                   size={14}
                   strokeWidth={2}
-                  className={cn("mt-0.5 flex-shrink-0", isPopular ? "text-ink-900" : "text-[var(--accent)]")}
+                  className={cn(
+                    "mt-0.5 flex-shrink-0",
+                    isPopular ? "text-[var(--highlight-accent)]" : "text-[var(--accent)]"
+                  )}
                 />
                 {feature}
               </li>
@@ -264,7 +269,7 @@ export default function Subscription() {
               className={cn(
                 "inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-3 text-[13px] font-semibold transition-colors duration-base",
                 isPopular
-                  ? "bg-ink-900 text-[var(--accent)] hover:bg-ink-800"
+                  ? "bg-[var(--highlight-accent)] text-[var(--highlight-accent-fg)] hover:opacity-90"
                   : "bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]"
               )}
             >
@@ -278,7 +283,7 @@ export default function Subscription() {
                 className={cn(
                   "text-[13px] font-medium px-4 py-3 rounded-full transition-colors duration-fast disabled:opacity-50",
                   isPopular
-                    ? "text-ink-900/70 hover:bg-ink-900/10"
+                    ? "text-[var(--highlight-fg-muted)] hover:bg-[var(--highlight-accent)]/10"
                     : "text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-muted)]"
                 )}
               >

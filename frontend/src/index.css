@@ -30,6 +30,27 @@
 @tailwind utilities;
 
 /* ─── CSS-переменные темы ─── */
+/*
+ * Архитектура цвета:
+ *
+ * 1. Тема-зависимые токены (--bg/--fg/--accent/...) — адаптируются к dark/light.
+ *    Используй их для большинства поверхностей.
+ *
+ * 2. Тема-НЕзависимые "highlight"-токены (--highlight-bg/-fg/-accent) — всегда
+ *    контрастируют с текущей страницей, а не с дефолтным background.
+ *    В dark: highlight = acid-green на ink-тексте (яркая зелёная карточка).
+ *    В light: highlight = ink-900 на cream-тексте (глубокая тёмная карточка).
+ *
+ *    Используй на ОДНОЙ выделенной поверхности на экран:
+ *    - Popular pricing tile (Pro)
+ *    - PRIMARY action card ("Новая запись")
+ *    - CTA callouts на Landing
+ *    - Сегментные фильтры "Все/В работе/Готово"
+ *
+ *    Результат: каждая "подсветка" выглядит контрастно с фоном, и в светлой
+ *    теме не превращается в ядовито-лаймовое пятно поверх кремовой страницы.
+ */
+
 :root,
 [data-theme="dark"] {
   /* Фоны */
@@ -44,6 +65,14 @@
   --accent: #c5f014;
   --accent-hover: #aee01a;
   --accent-fg: #0b0805;
+  /* Highlight surface — в dark-теме это acid-green блок с ink-текстом */
+  --highlight-bg: #c5f014;
+  --highlight-bg-hover: #aee01a;
+  --highlight-fg: #0b0805;         /* основной текст на highlight */
+  --highlight-fg-muted: rgba(11, 8, 5, 0.72);
+  --highlight-fg-subtle: rgba(11, 8, 5, 0.55);
+  --highlight-accent: #0b0805;     /* вторичный акцент поверх highlight-bg (check marks, кнопка) */
+  --highlight-accent-fg: #c5f014;  /* текст кнопки-CTA на highlight */
   /* Границы */
   --border: rgba(247, 243, 236, 0.08);
   --border-strong: rgba(247, 243, 236, 0.18);
@@ -65,6 +94,16 @@
   --accent: #3f5000;
   --accent-hover: #2d3a00;
   --accent-fg: #faf7f2;
+  /* Highlight surface — в light-теме это тёмный ink-блок с cream-текстом.
+     Contrast-flip: выделенная карточка всегда контрастирует с цветом страницы.
+     Acid-green остаётся как вторичный акцент ПОВЕРХ ink (текст CTA, иконки). */
+  --highlight-bg: #0b0805;
+  --highlight-bg-hover: #1b1812;
+  --highlight-fg: #f7f3ec;
+  --highlight-fg-muted: rgba(247, 243, 236, 0.72);
+  --highlight-fg-subtle: rgba(247, 243, 236, 0.55);
+  --highlight-accent: #c5f014;
+  --highlight-accent-fg: #0b0805;
   --border: rgba(11, 8, 5, 0.12);
   --border-strong: rgba(11, 8, 5, 0.24);
   color-scheme: light;

@@ -182,14 +182,14 @@ export default function Upload() {
                 }}
                 className={cn(
                   "relative flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 transition-colors duration-fast",
-                  active ? "text-ink-900" : "text-[var(--fg-muted)] hover:text-[var(--fg)]"
+                  active ? "text-[var(--highlight-fg)]" : "text-[var(--fg-muted)] hover:text-[var(--fg)]"
                 )}
                 aria-current={active ? "page" : undefined}
               >
                 {active && (
                   <motion.span
                     layoutId="source-tab"
-                    className="absolute inset-0 rounded-full bg-acid-300"
+                    className="absolute inset-0 rounded-full bg-[var(--highlight-bg)]"
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
@@ -237,7 +237,7 @@ export default function Upload() {
                   className={cn(
                     "mx-auto flex h-14 w-14 xs:h-16 xs:w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl border transition-colors",
                     isDragActive
-                      ? "bg-acid-300/15 border-[var(--accent)]/50 text-[var(--accent)]"
+                      ? "bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] border-[var(--accent)]/50 text-[var(--accent)]"
                       : "bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] border-[var(--accent)]/20 text-[var(--accent)]"
                   )}
                 >

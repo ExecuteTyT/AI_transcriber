@@ -179,10 +179,10 @@ export default function SeoLanding({
               <div className="font-display text-5xl text-[var(--fg)] leading-none mb-2">0&nbsp;₽</div>
               <p className="text-[12px] text-[var(--fg-muted)]">180 минут при регистрации</p>
             </div>
-            <div className="p-7 bg-acid-300 text-ink-900">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-900/70 mb-4">/start</p>
-              <div className="font-display text-5xl leading-none mb-2">500&nbsp;₽<span className="font-mono text-[14px] text-ink-900/65 ml-1">/мес</span></div>
-              <p className="text-[12px] text-ink-900/75">10 часов, спикеры, AI-инсайты</p>
+            <div className="p-7 bg-[var(--highlight-bg)] text-[var(--highlight-fg)]">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--highlight-fg-muted)] mb-4">/start</p>
+              <div className="font-display text-5xl leading-none mb-2">500&nbsp;₽<span className="font-mono text-[14px] text-[var(--highlight-fg-subtle)] ml-1">/мес</span></div>
+              <p className="text-[12px] text-[var(--highlight-fg-muted)]">10 часов, спикеры, AI-инсайты</p>
             </div>
             <div className="p-7 border-t md:border-t-0 md:border-l border-[var(--border)] bg-[var(--bg)]">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-4">/pro</p>

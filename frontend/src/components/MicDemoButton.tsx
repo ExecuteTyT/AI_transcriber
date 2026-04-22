@@ -152,9 +152,9 @@ export default function MicDemoButton() {
       {/* Header row */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${phase === "listening" ? "bg-acid-300" : "bg-[var(--fg-subtle)]"}`}>
+          <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${phase === "listening" ? "bg-[var(--accent)]" : "bg-[var(--fg-subtle)]"}`}>
             {phase === "listening" && (
-              <span className="absolute inset-0 rounded-full bg-acid-300 opacity-70 animate-ping" />
+              <span className="absolute inset-0 rounded-full bg-[var(--accent)] opacity-70 animate-ping" />
             )}
           </span>
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-muted)]">

@@ -254,7 +254,10 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
     a: (
       <>
         Да, в любой момент на странице{" "}
-        <Link to="/subscription" className="font-semibold text-primary-700 underline underline-offset-2 hover:text-primary-600">
+        <Link
+          to="/subscription"
+          className="font-semibold text-[var(--accent)] underline underline-offset-2 decoration-[var(--accent)]/40 hover:decoration-[var(--accent)]"
+        >
           Подписка
         </Link>
         . Доступ сохранится до конца оплаченного периода.
@@ -530,12 +533,52 @@ function CurrentPlanBar({
               ? percent >= 100
                 ? "bg-rose-500"
                 : "bg-amber-500"
-              : "bg-acid-300"
+              : "bg-[var(--accent)]"
           )}
         />
       </div>
     </motion.div>
   );
+}
+
+type PlanVariant = "default" | "popular" | "premium";
+
+// Тема-зависимая палитра для карточки:
+// - popular   → --highlight-* (в dark: acid bg + ink текст, в light: ink bg + cream текст)
+// - premium   → always-dark gradient + cream-50 текст + acid accent (инвариантно к теме)
+// - default   → обычная elevated cream/ink карточка
+function usePlanPalette(variant: PlanVariant) {
+  if (variant === "popular") {
+    return {
+      surface: "bg-[var(--highlight-bg)] border-[var(--highlight-bg)]",
+      fg: "text-[var(--highlight-fg)]",
+      fgMuted: "text-[var(--highlight-fg-muted)]",
+      fgSubtle: "text-[var(--highlight-fg-subtle)]",
+      accent: "text-[var(--highlight-accent)]",
+      ctaBg: "bg-[var(--highlight-accent)] text-[var(--highlight-accent-fg)] hover:opacity-90",
+      ctaDisabled: "bg-[var(--highlight-accent)]/15 text-[var(--highlight-fg-muted)]",
+    };
+  }
+  if (variant === "premium") {
+    return {
+      surface: "bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 border-ink-600/40",
+      fg: "text-cream-50",
+      fgMuted: "text-cream-50/75",
+      fgSubtle: "text-cream-50/55",
+      accent: "text-acid-300",
+      ctaBg: "bg-acid-300 text-ink-900 hover:bg-acid-400",
+      ctaDisabled: "bg-cream-50/10 text-cream-50/55",
+    };
+  }
+  return {
+    surface: "bg-[var(--bg-elevated)] border-[var(--border)]",
+    fg: "text-[var(--fg)]",
+    fgMuted: "text-[var(--fg-muted)]",
+    fgSubtle: "text-[var(--fg-subtle)]",
+    accent: "text-[var(--accent)]",
+    ctaBg: "border border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--bg-muted)]",
+    ctaDisabled: "bg-[var(--border)] text-[var(--fg-subtle)]",
+  };
 }
 
 function PlanCard({
@@ -551,95 +594,69 @@ function PlanCard({
   disabled: boolean;
   onSelect: () => void;
 }) {
-  const isPremium = plan.highlight === "premium";
-  const isPopular = plan.highlight === "popular";
-
-  // Acid-on-ink для популярного плана; ink-серый gradient для премиум; обычный elevated для остальных.
-  const cardStyle = isPopular
-    ? "bg-acid-300 text-ink-900 border-[var(--accent)]"
-    : isPremium
-    ? "bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 text-[var(--fg)] border-[var(--border-strong)]"
-    : "bg-[var(--bg-elevated)] text-[var(--fg)] border-[var(--border)]";
+  const variant: PlanVariant =
+    plan.highlight === "popular" ? "popular" : plan.highlight === "premium" ? "premium" : "default";
+  const p = usePlanPalette(variant);
 
   return (
     <motion.article
       whileHover={{ y: -2 }}
       transition={springTight}
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-3xl p-5 xs:p-6 md:p-7 border",
-        cardStyle
+        "relative flex min-w-0 flex-col overflow-hidden rounded-3xl border p-5 xs:p-6 md:p-7",
+        p.surface
       )}
     >
-      {isPopular && !isCurrent && (
-        <span className="absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-900/70">
+      {variant === "popular" && !isCurrent && (
+        <span className={cn("absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em]", p.fgMuted)}>
           Популярный
         </span>
       )}
-      {isPremium && !isCurrent && (
-        <span className="absolute top-5 right-5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--accent)]">
+      {variant === "premium" && !isCurrent && (
+        <span className="absolute top-5 right-5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-acid-300">
           <Icon icon={Crown} size={10} />
           Премиум
         </span>
       )}
       {isCurrent && (
-        <span
-          className={cn(
-            "absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em]",
-            isPopular ? "text-ink-900" : "text-[var(--accent)]"
-          )}
-        >
+        <span className={cn("absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em]", p.accent)}>
           ✓ Текущий
         </span>
       )}
 
-      <div className="relative flex flex-1 flex-col">
-        <p
-          className={cn(
-            "font-mono text-[10px] uppercase tracking-[0.2em] mb-4",
-            isPopular ? "text-ink-900/70" : "text-[var(--fg-subtle)]"
-          )}
-        >
+      <div className="relative flex min-w-0 flex-1 flex-col">
+        <p className={cn("mb-4 font-mono text-[10px] uppercase tracking-[0.2em]", p.fgSubtle)}>
           /{plan.id}
         </p>
+        {/* clamp(): название тарифа ужимается в узких колонках (5 cards @ xl),
+            чтобы "Премиум" не переносилось и не создавало ломаный лэйаут. */}
         <h3
-          className={cn(
-            "font-display text-[28px] xs:text-3xl md:text-4xl leading-none tracking-[-0.01em] break-words",
-            isPopular ? "text-ink-900" : "text-[var(--fg)]"
-          )}
+          className={cn("font-display leading-[1] tracking-[-0.01em]", p.fg)}
+          style={{ fontSize: "clamp(1.6rem, 1.1rem + 1.6vw, 2.25rem)" }}
         >
           {plan.name}
         </h3>
-        <p
-          className={cn(
-            "mt-2 text-[12px]",
-            isPopular ? "text-ink-900/70" : "text-[var(--fg-muted)]"
-          )}
-        >
-          {plan.tagline}
-        </p>
+        <p className={cn("mt-2 text-[12px] leading-[1.4]", p.fgMuted)}>{plan.tagline}</p>
 
-        <div className="mt-6 flex items-baseline gap-1.5">
+        <div className="mt-6 flex items-baseline gap-1.5 min-w-0">
           <span
-            className={cn(
-              "font-display text-[44px] xs:text-5xl md:text-6xl leading-none tabular tracking-[-0.02em]",
-              isPopular ? "text-ink-900" : "text-[var(--fg)]"
-            )}
+            className={cn("font-display leading-none tabular tracking-[-0.02em]", p.fg)}
+            style={{ fontSize: "clamp(2.25rem, 1.5rem + 3vw, 3.5rem)" }}
           >
             {plan.price === 0 ? "0" : plan.price.toLocaleString("ru-RU")}
           </span>
-          <span
-            className={cn(
-              "font-mono text-[12px]",
-              isPopular ? "text-ink-900/70" : "text-[var(--fg-muted)]"
-            )}
-          >
-            ₽{plan.period}
-          </span>
+          <span className={cn("font-mono text-[12px]", p.fgMuted)}>₽{plan.period}</span>
         </div>
 
         <div className="mt-7 flex-1 space-y-5">
           {plan.groups.map((group) => (
-            <FeatureGroupBlock key={group.title} group={group} popular={isPopular} />
+            <FeatureGroupBlock
+              key={group.title}
+              group={group}
+              fgSubtle={p.fgSubtle}
+              fgMuted={p.fgMuted}
+              accent={p.accent}
+            />
           ))}
         </div>
 
@@ -649,15 +666,7 @@ function PlanCard({
           disabled={isCurrent || disabled}
           className={cn(
             "mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-[13px] font-semibold transition-colors duration-base",
-            isCurrent
-              ? isPopular
-                ? "bg-ink-900/10 text-ink-900/60 cursor-default"
-                : "bg-[var(--border)] text-[var(--fg-subtle)] cursor-default"
-              : isPopular
-              ? "bg-ink-900 text-[var(--accent)] hover:bg-ink-800"
-              : isPremium
-              ? "bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]"
-              : "border border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--bg-muted)]",
+            isCurrent ? cn(p.ctaDisabled, "cursor-default") : p.ctaBg,
             disabled && !isCurrent && "opacity-60 cursor-wait"
           )}
         >
@@ -679,15 +688,20 @@ function PlanCard({
   );
 }
 
-function FeatureGroupBlock({ group, popular }: { group: FeatureGroup; popular: boolean }) {
+function FeatureGroupBlock({
+  group,
+  fgSubtle,
+  fgMuted,
+  accent,
+}: {
+  group: FeatureGroup;
+  fgSubtle: string;
+  fgMuted: string;
+  accent: string;
+}) {
   return (
     <div>
-      <div
-        className={cn(
-          "mb-2.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em]",
-          popular ? "text-ink-900/65" : "text-[var(--fg-subtle)]"
-        )}
-      >
+      <div className={cn("mb-2.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em]", fgSubtle)}>
         <Icon icon={group.icon} size={11} />
         {group.title}
       </div>
@@ -695,28 +709,12 @@ function FeatureGroupBlock({ group, popular }: { group: FeatureGroup; popular: b
         {group.items.map((item) => (
           <li
             key={item.label}
-            className={cn(
-              "flex items-start gap-2 text-[13px] leading-snug",
-              !item.included && "opacity-45"
-            )}
+            className={cn("flex items-start gap-2 text-[13px] leading-snug", !item.included && "opacity-45")}
           >
-            <span
-              className={cn(
-                "mt-[2px] flex-shrink-0",
-                item.included
-                  ? popular
-                    ? "text-ink-900"
-                    : "text-[var(--accent)]"
-                  : popular
-                  ? "text-ink-900/40"
-                  : "text-[var(--fg-subtle)]"
-              )}
-            >
+            <span className={cn("mt-[2px] flex-shrink-0", item.included ? accent : fgSubtle)}>
               {item.included ? "✓" : "✕"}
             </span>
-            <span className={cn(popular ? "text-ink-900/85" : "text-[var(--fg-muted)]")}>
-              {item.label}
-            </span>
+            <span className={fgMuted}>{item.label}</span>
           </li>
         ))}
       </ul>

@@ -554,28 +554,28 @@ export default function Landing() {
               </Link>
             </div>
 
-            {/* Pro — popular, acid highlight */}
-            <div className="relative p-8 md:p-10 bg-acid-300 text-ink-900">
-              <div className="absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-900/70">
+            {/* Pro — popular, contrast-flip highlight (acid в dark, ink в light) */}
+            <div className="relative p-8 md:p-10 bg-[var(--highlight-bg)] text-[var(--highlight-fg)]">
+              <div className="absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--highlight-fg-muted)]">
                 Популярный
               </div>
               <div className="flex items-center gap-2 mb-6">
-                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-900/70">/pro</span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--highlight-fg-muted)]">/pro</span>
               </div>
               <div className="mb-8">
                 <div className="font-display text-6xl leading-none mb-2">820&nbsp;₽</div>
-                <p className="text-[13px] text-ink-900/70">для бизнеса и продакшена</p>
+                <p className="text-[13px] text-[var(--highlight-fg-muted)]">для бизнеса и продакшена</p>
               </div>
-              <ul className="space-y-3 text-[14px] text-ink-900/85 mb-8">
-                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-ink-900">✓</span>1 500 мин (25 часов)</li>
-                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-ink-900">✓</span>Спикеры без лимита</li>
-                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-ink-900">✓</span>RAG-чат без лимита</li>
-                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-ink-900">✓</span>Action items</li>
+              <ul className="space-y-3 text-[14px] text-[var(--highlight-fg-muted)] mb-8">
+                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-[var(--highlight-fg)]">✓</span>1 500 мин (25 часов)</li>
+                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-[var(--highlight-fg)]">✓</span>Спикеры без лимита</li>
+                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-[var(--highlight-fg)]">✓</span>RAG-чат без лимита</li>
+                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-[var(--highlight-fg)]">✓</span>Action items</li>
               </ul>
               <Link
                 to="/register"
                 onClick={() => play("confirm")}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-5 py-3 text-[14px] font-semibold text-[var(--accent)] hover:bg-ink-800 transition-colors"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--highlight-accent)] px-5 py-3 text-[14px] font-semibold text-[var(--highlight-accent-fg)] hover:opacity-90 transition-opacity"
               >
                 Попробовать Про <span aria-hidden>→</span>
               </Link>

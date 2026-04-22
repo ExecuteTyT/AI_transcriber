@@ -207,7 +207,7 @@ function PlanRow({
             initial={{ width: 0 }}
             animate={{ width: `${widthPercent}%` }}
             transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-            className={`h-full ${isSelected ? "bg-acid-300" : fits ? "bg-[var(--border-strong)]" : "bg-[var(--border)]"}`}
+            className={`h-full ${isSelected ? "bg-[var(--accent)]" : fits ? "bg-[var(--border-strong)]" : "bg-[var(--border)]"}`}
           />
         </div>
         <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg-subtle)] tabular">

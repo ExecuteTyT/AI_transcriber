@@ -61,8 +61,10 @@ export function QuickActions({ lastTranscriptionId, canExport }: QuickActionsPro
             <div
               className={cn(
                 "relative flex h-full min-w-[200px] flex-col justify-between gap-6 overflow-hidden rounded-2xl p-5 transition-colors duration-base md:min-w-0",
+                // PRIMARY-плитка использует contrast-flip токены: в dark — acid-блок,
+                // в light — ink-блок. Обе темы дают одинаково контрастный highlight.
                 tile.accent
-                  ? "bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]"
+                  ? "bg-[var(--highlight-bg)] text-[var(--highlight-fg)] hover:bg-[var(--highlight-bg-hover)]"
                   : "bg-[var(--bg-elevated)] text-[var(--fg)] border border-[var(--border)] hover:border-[var(--border-strong)]",
                 tile.disabled && "opacity-50 pointer-events-none"
               )}
@@ -72,7 +74,7 @@ export function QuickActions({ lastTranscriptionId, canExport }: QuickActionsPro
                   className={cn(
                     "flex h-9 w-9 items-center justify-center rounded-xl",
                     tile.accent
-                      ? "bg-ink-900/15 text-ink-900"
+                      ? "bg-[var(--highlight-accent)]/15 text-[var(--highlight-fg)]"
                       : "bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)] border border-[var(--accent)]/20"
                   )}
                   aria-hidden
@@ -82,7 +84,7 @@ export function QuickActions({ lastTranscriptionId, canExport }: QuickActionsPro
                 <span
                   className={cn(
                     "font-mono text-[10px] uppercase tracking-[0.2em]",
-                    tile.accent ? "text-ink-900/65" : "text-[var(--fg-subtle)]"
+                    tile.accent ? "text-[var(--highlight-fg-subtle)]" : "text-[var(--fg-subtle)]"
                   )}
                 >
                   {tile.accent ? "primary" : tile.disabled ? "locked" : "action"}
@@ -95,7 +97,7 @@ export function QuickActions({ lastTranscriptionId, canExport }: QuickActionsPro
                 <p
                   className={cn(
                     "mt-1 text-[13px]",
-                    tile.accent ? "text-ink-900/75" : "text-[var(--fg-muted)]"
+                    tile.accent ? "text-[var(--highlight-fg-muted)]" : "text-[var(--fg-muted)]"
                   )}
                 >
                   {tile.description}

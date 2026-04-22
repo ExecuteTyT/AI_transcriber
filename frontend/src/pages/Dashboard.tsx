@@ -208,7 +208,7 @@ export default function Dashboard() {
                   className={cn(
                     "rounded-full px-3 py-1.5 transition-colors duration-fast",
                     filter === opt.key
-                      ? "bg-acid-300 text-ink-900"
+                      ? "bg-[var(--highlight-bg)] text-[var(--highlight-fg)]"
                       : "text-[var(--fg-muted)] hover:text-[var(--fg)]"
                   )}
                 >
