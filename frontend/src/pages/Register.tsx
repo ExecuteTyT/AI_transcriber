@@ -184,7 +184,7 @@ export default function Register() {
         <div className="flex items-center justify-center gap-5 pt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
           <span>Без карты</span>
           <span>·</span>
-          <span>30+180 мин</span>
+          <span>180 мин</span>
           <span>·</span>
           <span>Мгновенно</span>
         </div>

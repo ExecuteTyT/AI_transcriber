@@ -51,7 +51,6 @@ const PLANS: Plan[] = [
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "180 мин бонус при регистрации", included: true },
           { label: "180 минут при регистрации (единоразово)", included: true },
           { label: "Файлы до 15 минут", included: true },
         ],
