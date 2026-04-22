@@ -68,7 +68,7 @@ export function AudioPlayerBar({
 
   return (
     <div className="sticky top-top-bar z-20 md:top-0 -mx-4 md:mx-0 md:rounded-2xl overflow-hidden">
-      <div className="relative border-b border-[var(--border)] md:border bg-[var(--bg-elevated)]/90 backdrop-blur-xl px-4 py-3 md:px-5 md:py-4">
+      <div className="relative border-b border-[var(--border)] md:border bg-[var(--bg-elevated)] px-4 py-3 md:px-5 md:py-4">
         <audio ref={audioRef} src={src} preload="metadata" />
         <div className="flex items-center gap-3">
           <motion.button
@@ -77,7 +77,13 @@ export function AudioPlayerBar({
             aria-label={isPlaying ? "Пауза" : "Воспроизведение"}
             whileTap={{ scale: 0.92 }}
             transition={springTight}
-            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-acid-300 text-ink-900 shadow-[0_0_0_1px_rgba(197,240,20,0.3),0_8px_24px_-6px_rgba(197,240,20,0.4)] hover:bg-acid-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid-300/50"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2"
+            style={{
+              background: "var(--accent)",
+              color: "var(--accent-fg)",
+              boxShadow:
+                "0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent), 0 8px 24px -6px color-mix(in srgb, var(--accent) 40%, transparent)",
+            }}
           >
             <Icon icon={isPlaying ? Pause : Play} size={18} strokeWidth={2} />
           </motion.button>
@@ -121,11 +127,11 @@ export function AudioPlayerBar({
                 return (
                   <span
                     key={i}
-                    className={cn(
-                      "flex-1 rounded-full transition-colors duration-fast",
-                      active ? "bg-acid-300" : "bg-[var(--border-strong)]"
-                    )}
-                    style={{ height: `${Math.max(18, h * 100)}%` }}
+                    className="flex-1 rounded-full transition-colors duration-fast"
+                    style={{
+                      height: `${Math.max(18, h * 100)}%`,
+                      background: active ? "var(--accent)" : "var(--border-strong)",
+                    }}
                   />
                 );
               })}
@@ -144,8 +150,13 @@ export function AudioPlayerBar({
                 onClick={() => onRate(r)}
                 className={cn(
                   "rounded-full px-2 py-0.5 transition-colors duration-fast",
-                  rate === r ? "bg-acid-300 text-ink-900" : "hover:text-[var(--fg)]"
+                  rate === r ? "" : "hover:text-[var(--fg)]"
                 )}
+                style={
+                  rate === r
+                    ? { background: "var(--accent)", color: "var(--accent-fg)" }
+                    : undefined
+                }
               >
                 {r}x
               </button>

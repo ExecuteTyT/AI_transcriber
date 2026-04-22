@@ -59,10 +59,22 @@ async def generate_rag_response(
             },
             timeout=60,
         )
-        response.raise_for_status()
+        if response.status_code >= 400:
+            logger.error(
+                "Gemini generate (%s) %s: %s",
+                settings.GEMINI_MODEL,
+                response.status_code,
+                response.text[:500],
+            )
+            response.raise_for_status()
         data = response.json()
 
-    content = data["candidates"][0]["content"]["parts"][0]["text"]
+    try:
+        content = data["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError):
+        # Gemini мог вернуть пустой ответ (finishReason=SAFETY/RECITATION/…).
+        logger.error("Gemini empty response: %s", str(data)[:500])
+        raise ValueError("Gemini returned no candidates")
     tokens = data.get("usageMetadata", {}).get("totalTokenCount", 0)
     return content, references, tokens
 
@@ -82,6 +94,10 @@ async def embed_question(question: str) -> list[float]:
             },
             timeout=30,
         )
-        response.raise_for_status()
+        if response.status_code >= 400:
+            logger.error(
+                "Mistral embeddings %s: %s", response.status_code, response.text[:500]
+            )
+            response.raise_for_status()
         data = response.json()
         return data["data"][0]["embedding"]

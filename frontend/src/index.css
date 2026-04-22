@@ -105,17 +105,22 @@
            hover:-translate-y-px active:translate-y-0;
   }
 
-  /* ─── Новый акцентный CTA: acid green на ink, с лёгким свечением ─── */
+  /* ─── Акцентный CTA: acid green на ink (dark), тёмно-оливковый на cream (light) ─── */
   .btn-accent {
     @apply relative inline-flex items-center justify-center gap-2
-           bg-acid-300 text-ink-900 px-6 py-3.5 rounded-full
+           px-6 py-3.5 rounded-full
            font-semibold text-[15px] tracking-[-0.01em]
-           hover:bg-acid-200
-           active:bg-acid-400
            transition-all duration-200 ease-out
-           shadow-[0_0_0_1px_rgba(197,240,20,0.3),0_8px_24px_-6px_rgba(197,240,20,0.4)]
-           hover:shadow-[0_0_0_1px_rgba(197,240,20,0.5),0_12px_32px_-6px_rgba(197,240,20,0.55)]
            hover:-translate-y-px active:translate-y-0;
+    background: var(--accent);
+    color: var(--accent-fg);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
+                0 8px 24px -6px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  .btn-accent:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent),
+                0 12px 32px -6px color-mix(in srgb, var(--accent) 55%, transparent);
   }
 
   /* ─── Editorial ghost CTA ─── */
@@ -134,8 +139,8 @@
     text-wrap: balance;
   }
   .display-h1 em {
-    @apply italic text-acid-300;
     font-style: italic;
+    color: var(--accent);
   }
 
   /* Eyebrow (over-title ритм в editorial вёрстке) */
@@ -144,24 +149,41 @@
   }
 
   .btn-secondary {
-    @apply bg-white text-gray-600 px-5 py-3 rounded-xl font-medium text-[15px]
-           border border-gray-200/80
-           hover:bg-white hover:border-gray-300 hover:text-gray-900
-           hover:shadow-soft
-           transition-all duration-200 ease-out;
+    @apply px-5 py-3 rounded-xl font-medium text-[15px]
+           border transition-all duration-200 ease-out;
+    background: var(--bg-elevated);
+    color: var(--fg-muted);
+    border-color: var(--border-strong);
+  }
+  .btn-secondary:hover {
+    color: var(--fg);
+    border-color: var(--fg-subtle);
+    background: var(--bg-muted);
   }
 
   .btn-ghost {
-    @apply text-gray-600 px-4 py-2 rounded-xl font-medium
-           hover:bg-gray-100/80 transition-all duration-200;
+    @apply px-4 py-2 rounded-xl font-medium transition-all duration-200;
+    color: var(--fg-muted);
+  }
+  .btn-ghost:hover {
+    background: var(--bg-muted);
+    color: var(--fg);
   }
 
   /* ─── Inputs ─── */
   .input-field {
-    @apply w-full border border-gray-200/80 rounded-xl px-4 py-3
-           bg-white text-gray-900 text-base placeholder:text-gray-400
-           focus:outline-none focus:ring-2 focus:ring-primary-500/15 focus:border-primary-400
-           transition-all duration-200;
+    @apply w-full border rounded-xl px-4 py-3 text-base transition-all duration-200;
+    background: var(--bg-elevated);
+    color: var(--fg);
+    border-color: var(--border-strong);
+  }
+  .input-field::placeholder {
+    color: var(--fg-subtle);
+  }
+  .input-field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
   }
 
   /* ─── Editorial input (на ink-фоне, для auth-страниц) ─── */
@@ -169,8 +191,11 @@
     @apply w-full bg-transparent rounded-none px-0 py-3
            text-[var(--fg)] text-[15px] placeholder:text-[var(--fg-subtle)]
            border-0 border-b border-[var(--border-strong)]
-           focus:outline-none focus:border-acid-300
+           focus:outline-none
            transition-colors duration-200;
+  }
+  .input-editorial:focus {
+    border-color: var(--accent);
   }
   .input-editorial:autofill,
   .input-editorial:-webkit-autofill {
@@ -186,21 +211,22 @@
 
   /* ─── Cards ─── */
   .card {
-    @apply bg-white rounded-2xl border border-gray-200/60
-           shadow-card
-           transition-all duration-300;
+    @apply rounded-2xl border shadow-card transition-all duration-300;
+    background: var(--bg-elevated);
+    border-color: var(--border);
   }
 
   .card-hover {
-    @apply card
-           hover:shadow-elevated hover:border-gray-200;
+    @apply card hover:shadow-elevated;
+  }
+  .card-hover:hover {
+    border-color: var(--border-strong);
   }
 
   .bento-card {
-    @apply bg-white rounded-2xl border border-gray-200/60
-           shadow-card p-6
-           transition-all duration-300
-           hover:shadow-elevated;
+    @apply rounded-2xl border shadow-card p-6 transition-all duration-300 hover:shadow-elevated;
+    background: var(--bg-elevated);
+    border-color: var(--border);
   }
 
   /* ─── Glass Effects ─── */

@@ -10,9 +10,11 @@ type IconButtonProps = {
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children">;
 
 const variantClasses = {
-  ghost: "text-gray-600 hover:bg-gray-100/80 hover:text-gray-900 active:bg-gray-200/60",
-  solid: "bg-primary-600 text-white hover:bg-primary-500 active:bg-primary-700 shadow-sm",
-  danger: "text-gray-500 hover:bg-red-50 hover:text-red-600 active:bg-red-100",
+  ghost:
+    "text-[var(--fg-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--fg)] active:bg-[var(--bg-muted)]",
+  solid:
+    "bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] shadow-sm",
+  danger: "text-[var(--fg-subtle)] hover:bg-red-500/10 hover:text-red-500 active:bg-red-500/20",
 };
 
 const sizeClasses = {

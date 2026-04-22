@@ -389,8 +389,8 @@ export default function Transcription() {
       >
         <div className="text-center">
           <div className="relative mx-auto mb-8 h-16 w-16">
-            <div className="absolute inset-0 animate-ping rounded-full bg-acid-300/20 opacity-60" />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-acid-300/30 bg-acid-300/10 text-acid-300">
+            <div className="absolute inset-0 animate-ping rounded-full opacity-60" style={{ background: "color-mix(in srgb, var(--accent) 20%, transparent)" }} />
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border" style={{ borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)", background: "color-mix(in srgb, var(--accent) 10%, transparent)", color: "var(--accent)" }}>
               <Icon icon={Loader2} size={22} strokeWidth={1.75} className="animate-spin" />
             </div>
           </div>
@@ -404,7 +404,7 @@ export default function Transcription() {
           <p className="mt-2 text-xs text-[var(--fg-subtle)]">Обычно занимает 1–3 минуты</p>
           <Link
             to="/dashboard"
-            className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-acid-300 hover:text-acid-300"
+            className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)]"
           >
             <Icon icon={ChevronLeft} size={14} />К списку транскрипций
           </Link>
@@ -506,7 +506,7 @@ export default function Transcription() {
           >
             {copied ? (
               <>
-                <Icon icon={Check} size={13} className="text-acid-300" /> Скопировано
+                <Icon icon={Check} size={13} className="text-[var(--accent)]" /> Скопировано
               </>
             ) : (
               <>
@@ -533,7 +533,7 @@ export default function Transcription() {
           >
             {copied ? (
               <>
-                <Icon icon={Check} size={13} className="text-acid-300" /> Скопировано
+                <Icon icon={Check} size={13} className="text-[var(--accent)]" /> Скопировано
               </>
             ) : (
               <>
@@ -565,17 +565,19 @@ export default function Transcription() {
                 className={cn(
                   "relative inline-flex items-center gap-1.5 rounded-full px-4 py-2 whitespace-nowrap transition-colors duration-fast",
                   active
-                    ? "text-ink-900"
+                    ? ""
                     : locked
                     ? "text-[var(--fg-subtle)]"
                     : "text-[var(--fg-muted)] hover:text-[var(--fg)]"
                 )}
+                style={active ? { color: "var(--accent-fg)" } : undefined}
                 aria-current={active ? "page" : undefined}
               >
                 {active && (
                   <motion.span
                     layoutId="tab-chip"
-                    className="absolute inset-0 rounded-full bg-acid-300"
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: "var(--accent)" }}
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
@@ -614,13 +616,15 @@ export default function Transcription() {
                         onClick={() => toggleSpeaker(speaker)}
                         className={cn(
                           "inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 transition-all duration-fast press",
-                          isActive ? style.chip : "bg-gray-100 text-[var(--fg-subtle)] ring-gray-200 opacity-60"
+                          isActive
+                            ? style.chip
+                            : "bg-[var(--bg-muted)] text-[var(--fg-subtle)] ring-[var(--border)] opacity-70"
                         )}
                       >
                         <span
                           className={cn(
                             "h-2 w-2 rounded-full",
-                            isActive ? style.dot : "bg-gray-300"
+                            isActive ? style.dot : "bg-[var(--fg-subtle)]"
                           )}
                         />
                         {getDisplayName(speaker)}
@@ -640,7 +644,7 @@ export default function Transcription() {
                   <button
                     type="button"
                     onClick={() => setActiveSpeakers(null)}
-                    className="ml-1 text-xs font-semibold text-acid-300 hover:text-acid-300"
+                    className="ml-1 text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)]"
                   >
                     Показать всех
                   </button>
@@ -689,16 +693,24 @@ export default function Transcription() {
                         "group -mx-2 flex items-start gap-2 rounded-xl px-2 py-2 transition-all duration-fast md:gap-3",
                         style && `border-l-2 ${style.border}`,
                         isActive
-                          ? "bg-acid-300/10/70 ring-1 ring-acid-300/30 shadow-glow-sm"
+                          ? "ring-1 shadow-glow-sm"
                           : "hover:bg-[var(--bg-muted)]"
                       )}
+                      style={
+                        isActive
+                          ? {
+                              background: "color-mix(in srgb, var(--accent) 12%, transparent)",
+                              boxShadow: "0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent)",
+                            }
+                          : undefined
+                      }
                     >
                       <button
                         type="button"
                         onClick={() => audioUrl && player.seek(seg.start)}
                         className={cn(
                           "w-12 flex-shrink-0 pt-0.5 text-right text-[11px] font-mono tabular transition-colors duration-fast",
-                          audioUrl ? "cursor-pointer text-acid-300 hover:text-acid-300" : "text-[var(--fg-subtle)]"
+                          audioUrl ? "cursor-pointer text-[var(--accent)] hover:text-[var(--accent-hover)]" : "text-[var(--fg-subtle)]"
                         )}
                         aria-label={audioUrl ? `Перейти к ${formatTime(seg.start)}` : undefined}
                         disabled={!audioUrl}
@@ -745,8 +757,10 @@ export default function Transcription() {
                 {[0, 1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-4 animate-shimmer rounded-full bg-gradient-to-r from-surface-100 via-primary-50 to-surface-100"
+                    className="h-4 animate-shimmer rounded-full"
                     style={{
+                      background:
+                        "linear-gradient(to right, var(--bg-muted) 0%, color-mix(in srgb, var(--accent) 15%, var(--bg-muted)) 50%, var(--bg-muted) 100%)",
                       backgroundSize: "200% 100%",
                       width: `${60 + i * 10}%`,
                       animationDelay: `${i * 0.1}s`,
@@ -807,7 +821,7 @@ export default function Transcription() {
               {chatRemaining === 0 ? (
                 <p className="py-2 text-center text-sm text-[var(--fg-muted)]">
                   Лимит вопросов исчерпан.{" "}
-                  <Link to="/app/pricing" className="font-semibold text-acid-300 hover:underline">
+                  <Link to="/app/pricing" className="font-semibold text-[var(--accent)] hover:underline">
                     Перейти на Про
                   </Link>
                 </p>
@@ -850,7 +864,7 @@ export default function Transcription() {
               key={fmt}
               type="button"
               onClick={() => handleExport(fmt)}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[var(--fg-muted)] transition-colors hover:bg-gray-50 active:bg-gray-100 touch-target"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[var(--fg-muted)] transition-colors hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)] touch-target"
             >
               <Icon icon={Download} size={18} className="text-[var(--fg-subtle)]" />
               <span className="text-[15px] font-medium">Скачать {fmt.toUpperCase()}</span>
@@ -906,22 +920,33 @@ function ChatBubble({
     >
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl px-4 py-3 md:max-w-[75%]",
-          isUser
-            ? "bg-gradient-to-br from-primary-600 to-primary-500 text-white shadow-glow-sm"
-            : "bg-[var(--bg-muted)] text-[var(--fg)] ring-1 ring-primary-100/60"
+          "max-w-[85%] rounded-2xl px-4 py-3 md:max-w-[75%] ring-1",
+          isUser ? "shadow-glow-sm" : "bg-[var(--bg-muted)] text-[var(--fg)]"
         )}
+        style={
+          isUser
+            ? {
+                background: "var(--accent)",
+                color: "var(--accent-fg)",
+                boxShadow: "0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent)",
+              }
+            : { boxShadow: "0 0 0 1px var(--border)" }
+        }
       >
         <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{message.content}</p>
         {message.references && message.references.length > 0 && (
-          <div className="mt-2 space-y-1 border-t border-white/30 pt-2">
+          <div
+            className="mt-2 space-y-1 border-t pt-2"
+            style={{
+              borderColor: isUser
+                ? "color-mix(in srgb, var(--accent-fg) 30%, transparent)"
+                : "var(--border)",
+            }}
+          >
             {message.references.map((ref, i) => (
               <p
                 key={i}
-                className={cn(
-                  "text-xs",
-                  isUser ? "text-white/80" : "text-[var(--fg-muted)]"
-                )}
+                className={cn("text-xs", isUser ? "opacity-80" : "text-[var(--fg-muted)]")}
               >
                 {ref.start_time != null && (
                   <span className="font-mono tabular mr-1">[{formatTime(ref.start_time)}]</span>
@@ -939,11 +964,14 @@ function ChatBubble({
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="flex items-center gap-1 rounded-2xl bg-[var(--bg-muted)] px-4 py-3 ring-1 ring-primary-100/60">
+      <div
+        className="flex items-center gap-1 rounded-2xl bg-[var(--bg-muted)] px-4 py-3 ring-1"
+        style={{ boxShadow: "0 0 0 1px var(--border)" }}
+      >
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}
-            className="h-1.5 w-1.5 rounded-full bg-gray-400"
+            className="h-1.5 w-1.5 rounded-full bg-[var(--fg-subtle)]"
             animate={{ y: [0, -4, 0] }}
             transition={{
               duration: 0.9,

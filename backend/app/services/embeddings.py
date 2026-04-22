@@ -124,7 +124,14 @@ async def _generate_embeddings(texts: list[str]) -> list[list[float]]:
             },
             timeout=120,
         )
-        response.raise_for_status()
+        if response.status_code >= 400:
+            logger.error(
+                "Mistral embeddings batch (%d texts) %s: %s",
+                len(texts),
+                response.status_code,
+                response.text[:500],
+            )
+            response.raise_for_status()
         data = response.json()
         return [item["embedding"] for item in data["data"]]
 

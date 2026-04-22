@@ -79,7 +79,7 @@ async def send_chat_message(
     try:
         await ensure_embeddings(transcription_id, db)
     except Exception as e:
-        logger.error("Ошибка создания embeddings для %s: %s", transcription_id, e)
+        logger.exception("Ошибка создания embeddings для %s: %s", transcription_id, e)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Ошибка генерации embeddings. Попробуйте позже.",
@@ -98,7 +98,7 @@ async def send_chat_message(
         relevant_chunks = await search_similar_chunks(question_embedding, transcription_id, db)
         answer, references, tokens = await generate_rag_response(body.message, relevant_chunks)
     except Exception as e:
-        logger.error("Ошибка RAG-чата для %s: %s", transcription_id, e)
+        logger.exception("Ошибка RAG-чата для %s: %s", transcription_id, e)
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
