@@ -14,7 +14,7 @@ export default function BlogArticle() {
         <div className="text-center max-w-md">
           <p className="eyebrow mb-4">404</p>
           <h1 className="font-display text-4xl mb-3">
-            Статья <em className="italic text-acid-300">не найдена</em>
+            Статья <em className="italic text-[var(--accent)]">не найдена</em>
           </h1>
           <Link to="/blog" className="btn-editorial-ghost">← Все статьи</Link>
         </div>
@@ -65,7 +65,7 @@ export default function BlogArticle() {
         if (match) {
           return (
             <div key={i} className="flex items-start gap-2.5 mb-2.5">
-              <span className="text-acid-300 mt-1.5 flex-shrink-0 text-[10px]">●</span>
+              <span className="text-[var(--accent)] mt-1.5 flex-shrink-0 text-[10px]">●</span>
               <span className="text-[15px] leading-[1.55] text-[var(--fg-muted)]">
                 <strong className="font-semibold text-[var(--fg)]">{match[1]}</strong> — {match[2]}
               </span>
@@ -76,7 +76,7 @@ export default function BlogArticle() {
       if (line.startsWith("- ")) {
         return (
           <div key={i} className="flex items-start gap-2.5 mb-2">
-            <span className="text-acid-300 mt-1.5 flex-shrink-0 text-[10px]">●</span>
+            <span className="text-[var(--accent)] mt-1.5 flex-shrink-0 text-[10px]">●</span>
             <span
               className="text-[15px] leading-[1.55] text-[var(--fg-muted)]"
               dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.+?)\*\*/g, "<strong class='font-semibold text-[var(--fg)]'>$1</strong>") }}
@@ -103,7 +103,7 @@ export default function BlogArticle() {
           dangerouslySetInnerHTML={{
             __html: line
               .replace(/\*\*(.+?)\*\*/g, "<strong class='font-semibold text-[var(--fg)]'>$1</strong>")
-              .replace(/`(.+?)`/g, '<code class="font-mono text-[13px] text-acid-300 bg-[var(--bg-elevated)] px-1.5 py-0.5 rounded">$1</code>'),
+              .replace(/`(.+?)`/g, '<code class="font-mono text-[13px] text-[var(--accent)] bg-[var(--bg-elevated)] px-1.5 py-0.5 rounded">$1</code>'),
           }}
         />
       );
@@ -222,7 +222,7 @@ export default function BlogArticle() {
         {/* CTA */}
         <div className="mt-16 rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] px-7 py-10 md:px-10 md:py-12">
           <h3 className="font-display text-3xl md:text-4xl leading-[0.98] tracking-[-0.01em] text-[var(--fg)] mb-3">
-            Попробуйте <em className="italic text-acid-300">Dicto</em> бесплатно
+            Попробуйте <em className="italic text-[var(--accent)]">Dicto</em> бесплатно
           </h3>
           <p className="text-[14px] text-[var(--fg-muted)] mb-6 max-w-[44ch]">
             180 минут на тест при регистрации. AI-саммари, разметка спикеров — без карты.
@@ -237,7 +237,7 @@ export default function BlogArticle() {
           <div className="mt-20">
             <p className="eyebrow mb-4">Похожие статьи</p>
             <h3 className="font-display text-3xl md:text-4xl leading-[0.98] tracking-[-0.01em] text-[var(--fg)] mb-8">
-              Читать <em className="italic text-acid-300">дальше</em>
+              Читать <em className="italic text-[var(--accent)]">дальше</em>
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
               {relatedArticles.map((related) => related && (
@@ -249,7 +249,7 @@ export default function BlogArticle() {
                   <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mb-3">
                     {related.category}
                   </div>
-                  <h4 className="font-display text-xl leading-tight text-[var(--fg)] group-hover:text-acid-300 transition-colors">
+                  <h4 className="font-display text-xl leading-tight text-[var(--fg)] group-hover:text-[var(--accent)] transition-colors">
                     {related.title}
                   </h4>
                 </Link>

@@ -70,7 +70,7 @@ export default function LiveInsightsSection() {
         <div className="mb-16 md:mb-20 max-w-3xl">
           <p className="eyebrow mb-4">Живые инсайты</p>
           <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
-            От текста — <em className="italic text-acid-300">к решениям</em>
+            От текста — <em className="italic text-[var(--accent)]">к решениям</em>
           </h2>
           <p className="mt-5 text-[15px] text-[var(--fg-muted)] leading-[1.55] max-w-[52ch]">
             AI не просто расшифровывает, а структурирует: вытаскивает саммари, ключевые тезисы и задачи на исполнителях. Промотайте ниже — посмотрите как.
@@ -182,7 +182,7 @@ function InsightCard({
     >
       <div className="flex items-start justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-acid-300/25 bg-acid-300/10 text-acid-300">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--accent)]/25 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)]">
             <Icon icon={insight.icon} size={16} strokeWidth={1.75} />
           </div>
           <div>

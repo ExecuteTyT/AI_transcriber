@@ -62,7 +62,7 @@ export function QuickActions({ lastTranscriptionId, canExport }: QuickActionsPro
               className={cn(
                 "relative flex h-full min-w-[200px] flex-col justify-between gap-6 overflow-hidden rounded-2xl p-5 transition-colors duration-base md:min-w-0",
                 tile.accent
-                  ? "bg-acid-300 text-ink-900 hover:bg-acid-200"
+                  ? "bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]"
                   : "bg-[var(--bg-elevated)] text-[var(--fg)] border border-[var(--border)] hover:border-[var(--border-strong)]",
                 tile.disabled && "opacity-50 pointer-events-none"
               )}
@@ -73,7 +73,7 @@ export function QuickActions({ lastTranscriptionId, canExport }: QuickActionsPro
                     "flex h-9 w-9 items-center justify-center rounded-xl",
                     tile.accent
                       ? "bg-ink-900/15 text-ink-900"
-                      : "bg-acid-300/10 text-acid-300 border border-acid-300/20"
+                      : "bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)] border border-[var(--accent)]/20"
                   )}
                   aria-hidden
                 >

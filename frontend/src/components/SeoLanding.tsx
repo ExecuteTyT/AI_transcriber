@@ -131,7 +131,7 @@ export default function SeoLanding({
         <div className="max-w-5xl mx-auto px-5 md:px-8">
           <p className="eyebrow mb-4">Процесс</p>
           <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-12 max-w-[20ch]">
-            Как это <em className="italic text-acid-300">работает</em>
+            Как это <em className="italic text-[var(--accent)]">работает</em>
           </h2>
           <div className="grid md:grid-cols-3 gap-10 md:gap-12">
             {steps.map((step, i) => (
@@ -151,12 +151,12 @@ export default function SeoLanding({
       <section className="max-w-5xl mx-auto px-5 md:px-8 py-20 md:py-24">
         <p className="eyebrow mb-4">Преимущества</p>
         <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-12 max-w-[20ch]">
-          Что вы <em className="italic text-acid-300">получаете</em>
+          Что вы <em className="italic text-[var(--accent)]">получаете</em>
         </h2>
         <div className="grid md:grid-cols-2 gap-x-8 gap-y-1 border-t border-[var(--border)]">
           {benefits.map((b) => (
             <div key={b} className="flex items-start gap-3 py-4 border-b border-[var(--border)]">
-              <span className="text-acid-300 mt-1 flex-shrink-0">✓</span>
+              <span className="text-[var(--accent)] mt-1 flex-shrink-0">✓</span>
               <span className="text-[14px] text-[var(--fg-muted)] leading-[1.5]">{b}</span>
             </div>
           ))}
@@ -168,7 +168,7 @@ export default function SeoLanding({
         <div className="max-w-5xl mx-auto px-5 md:px-8">
           <p className="eyebrow mb-4">Тарифы</p>
           <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-3">
-            Простые <em className="italic text-acid-300">и прозрачные</em>
+            Простые <em className="italic text-[var(--accent)]">и прозрачные</em>
           </h2>
           <p className="text-[14px] text-[var(--fg-muted)] mb-10 max-w-[40ch]">
             Начните бесплатно. Переходите когда нужно больше минут.
@@ -190,7 +190,7 @@ export default function SeoLanding({
               <p className="text-[12px] text-[var(--fg-muted)]">25 часов, RAG-чат</p>
             </div>
           </div>
-          <Link to="/pricing" className="inline-flex items-center gap-2 mt-6 text-[13px] text-[var(--fg)] hover:text-acid-300 transition-colors">
+          <Link to="/pricing" className="inline-flex items-center gap-2 mt-6 text-[13px] text-[var(--fg)] hover:text-[var(--accent)] transition-colors">
             Все тарифы <span aria-hidden>→</span>
           </Link>
         </div>
@@ -200,7 +200,7 @@ export default function SeoLanding({
       <section className="max-w-3xl mx-auto px-5 md:px-8 py-20 md:py-24">
         <p className="eyebrow mb-4">FAQ</p>
         <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-10">
-          Частые <em className="italic text-acid-300">вопросы</em>
+          Частые <em className="italic text-[var(--accent)]">вопросы</em>
         </h2>
         <div className="border-t border-[var(--border)]">
           {faqs.map((faq) => (
@@ -210,7 +210,7 @@ export default function SeoLanding({
                   <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] pt-1.5">Q</span>
                   <span className="font-display text-xl md:text-2xl leading-[1.15] text-[var(--fg)]">{faq.q}</span>
                 </div>
-                <span className="text-[var(--fg-subtle)] group-open:text-acid-300 group-open:rotate-180 transition-all mt-2 flex-shrink-0">▾</span>
+                <span className="text-[var(--fg-subtle)] group-open:text-[var(--accent)] group-open:rotate-180 transition-all mt-2 flex-shrink-0">▾</span>
               </summary>
               <p className="mt-4 pl-[3rem] md:pl-[3.5rem] text-[14px] text-[var(--fg-muted)] leading-[1.55]">{faq.a}</p>
             </details>

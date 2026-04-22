@@ -138,9 +138,9 @@ export default function MicDemoButton() {
         onClick={start}
         className="group inline-flex items-center gap-2.5 font-mono text-[12px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] hover:text-[var(--fg)] transition-colors"
       >
-        <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border-strong)] group-hover:border-acid-300 group-hover:bg-acid-300/10 transition-all">
-          <Icon icon={Mic} size={14} className="group-hover:text-acid-300 transition-colors" />
-          <span className="absolute inset-0 rounded-full border border-acid-300 opacity-0 group-hover:opacity-60 group-hover:animate-ping" />
+        <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border-strong)] group-hover:border-[var(--accent)] group-hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] transition-all">
+          <Icon icon={Mic} size={14} className="group-hover:text-[var(--accent)] transition-colors" />
+          <span className="absolute inset-0 rounded-full border border-[var(--accent)] opacity-0 group-hover:opacity-60 group-hover:animate-ping" />
         </span>
         Попробовать со своим голосом
       </button>
@@ -217,7 +217,7 @@ export default function MicDemoButton() {
       {phase === "done" && (
         <div className="space-y-3">
           <p className="font-serif text-[22px] leading-tight text-[var(--fg)]">
-            Записалось <em className="italic text-acid-300">чисто</em> — хорошее аудио.
+            Записалось <em className="italic text-[var(--accent)]">чисто</em> — хорошее аудио.
           </p>
           <p className="text-[13px] text-[var(--fg-muted)]">
             Зарегистрируйтесь, загрузите реальную запись и получите полный транскрипт с AI-инсайтами.

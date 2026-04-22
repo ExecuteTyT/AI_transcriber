@@ -18,7 +18,7 @@ export default function NotFound() {
         {/* ASCII-waveform */}
         <pre
           aria-hidden
-          className="font-mono text-acid-300 text-xl md:text-2xl leading-tight tracking-[0.18em] select-none mb-8 animate-fade-up opacity-90"
+          className="font-mono text-[var(--accent)] text-xl md:text-2xl leading-tight tracking-[0.18em] select-none mb-8 animate-fade-up opacity-90"
         >
 {WAVE_FRAMES[0]}
 {WAVE_FRAMES[1]}
@@ -28,7 +28,7 @@ export default function NotFound() {
 
         <p className="eyebrow mb-4">Страница не найдена</p>
         <h1 className="font-display text-6xl md:text-7xl leading-[0.92] tracking-[-0.02em] text-[var(--fg)] mb-6">
-          Здесь <em className="italic text-acid-300">тихо</em>.
+          Здесь <em className="italic text-[var(--accent)]">тихо</em>.
         </h1>
         <p className="text-[15px] text-[var(--fg-muted)] leading-[1.55] max-w-[40ch] mb-10">
           Адрес, который вы открыли, не существует или страница была удалена.

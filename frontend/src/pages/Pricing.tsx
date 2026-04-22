@@ -331,7 +331,7 @@ export default function Pricing() {
         <motion.header variants={fadeUp} className="max-w-3xl">
           <p className="eyebrow mb-4">Тарифы</p>
           <h1 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
-            Простые <em className="italic text-acid-300">и прозрачные</em>
+            Простые <em className="italic text-[var(--accent)]">и прозрачные</em>
           </h1>
           <p className="mt-5 max-w-[44ch] text-[15px] text-[var(--fg-muted)] leading-[1.55]">
             Начните бесплатно. Переходите, когда понадобится больше минут. Без скрытых платежей и без карты.
@@ -373,7 +373,7 @@ export default function Pricing() {
             key={item.title}
             className="flex items-start gap-3 bg-[var(--bg-elevated)] p-5"
           >
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-acid-300/10 text-acid-300 border border-acid-300/20">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)] border border-[var(--accent)]/20">
               <Icon icon={item.icon} size={16} strokeWidth={1.75} />
             </div>
             <div>
@@ -391,7 +391,7 @@ export default function Pricing() {
           <div>
             <p className="eyebrow mb-3">FAQ</p>
             <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
-              Частые <em className="italic text-acid-300">вопросы</em>
+              Частые <em className="italic text-[var(--accent)]">вопросы</em>
             </h2>
           </div>
           <a
@@ -418,7 +418,7 @@ export default function Pricing() {
         <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] px-6 py-12 md:px-12 md:py-16">
           <div className="max-w-2xl">
             <h3 className="font-display text-4xl md:text-6xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-4">
-              Готовы <em className="italic text-acid-300">сэкономить</em> часы?
+              Готовы <em className="italic text-[var(--accent)]">сэкономить</em> часы?
             </h3>
             <p className="text-[15px] text-[var(--fg-muted)] leading-[1.55] mb-8 max-w-[44ch]">
               180 минут на тест при регистрации. Без карты, без подписки на пробный период.
@@ -493,13 +493,13 @@ function CurrentPlanBar({
       className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-4 md:p-5"
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-acid-300/10 text-acid-300 border border-acid-300/20">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)] border border-[var(--accent)]/20">
           <Icon icon={Check} size={18} strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-semibold text-[var(--fg)]">
             Текущий план:{" "}
-            <span className="font-bold text-acid-300">
+            <span className="font-bold text-[var(--accent)]">
               {PLAN_NAMES[user.plan] || user.plan}
             </span>
           </p>
@@ -556,7 +556,7 @@ function PlanCard({
 
   // Acid-on-ink для популярного плана; ink-серый gradient для премиум; обычный elevated для остальных.
   const cardStyle = isPopular
-    ? "bg-acid-300 text-ink-900 border-acid-300"
+    ? "bg-acid-300 text-ink-900 border-[var(--accent)]"
     : isPremium
     ? "bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 text-[var(--fg)] border-[var(--border-strong)]"
     : "bg-[var(--bg-elevated)] text-[var(--fg)] border-[var(--border)]";
@@ -576,7 +576,7 @@ function PlanCard({
         </span>
       )}
       {isPremium && !isCurrent && (
-        <span className="absolute top-5 right-5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-acid-300">
+        <span className="absolute top-5 right-5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--accent)]">
           <Icon icon={Crown} size={10} />
           Премиум
         </span>
@@ -585,7 +585,7 @@ function PlanCard({
         <span
           className={cn(
             "absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em]",
-            isPopular ? "text-ink-900" : "text-acid-300"
+            isPopular ? "text-ink-900" : "text-[var(--accent)]"
           )}
         >
           ✓ Текущий
@@ -654,9 +654,9 @@ function PlanCard({
                 ? "bg-ink-900/10 text-ink-900/60 cursor-default"
                 : "bg-[var(--border)] text-[var(--fg-subtle)] cursor-default"
               : isPopular
-              ? "bg-ink-900 text-acid-300 hover:bg-ink-800"
+              ? "bg-ink-900 text-[var(--accent)] hover:bg-ink-800"
               : isPremium
-              ? "bg-acid-300 text-ink-900 hover:bg-acid-200"
+              ? "bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]"
               : "border border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--bg-muted)]",
             disabled && !isCurrent && "opacity-60 cursor-wait"
           )}
@@ -706,7 +706,7 @@ function FeatureGroupBlock({ group, popular }: { group: FeatureGroup; popular: b
                 item.included
                   ? popular
                     ? "text-ink-900"
-                    : "text-acid-300"
+                    : "text-[var(--accent)]"
                   : popular
                   ? "text-ink-900/40"
                   : "text-[var(--fg-subtle)]"
@@ -755,7 +755,7 @@ function FaqRow({
           transition={{ duration: 0.22 }}
           className={cn(
             "mt-2 flex-shrink-0",
-            open ? "text-acid-300" : "text-[var(--fg-subtle)] group-hover:text-[var(--fg)]"
+            open ? "text-[var(--accent)]" : "text-[var(--fg-subtle)] group-hover:text-[var(--fg)]"
           )}
         >
           <Icon icon={ChevronDown} size={18} strokeWidth={1.5} />

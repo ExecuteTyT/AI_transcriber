@@ -26,13 +26,13 @@ const STATUS_META: Record<
   processing: {
     label: "Обработка",
     icon: Loader2,
-    color: "text-acid-300",
+    color: "text-[var(--accent)]",
     pulse: true,
   },
   completed: {
     label: "Готово",
     icon: CheckCircle2,
-    color: "text-acid-300",
+    color: "text-[var(--accent)]",
   },
   failed: {
     label: "Ошибка",
@@ -103,7 +103,7 @@ export function TranscriptionRow({ item, index, formatDuration, formatDate, onAc
 
         {/* Title + meta */}
         <div className="flex-1 min-w-0">
-          <h3 className="truncate font-display text-lg leading-tight text-[var(--fg)] group-hover:text-acid-300 transition-colors">
+          <h3 className="truncate font-display text-lg leading-tight text-[var(--fg)] group-hover:text-[var(--accent)] transition-colors">
             {item.title || "Без названия"}
           </h3>
           <div className="mt-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg-subtle)]">

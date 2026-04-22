@@ -41,7 +41,7 @@ export default function Privacy() {
         <article className="max-w-none">
           <p className="eyebrow">Юридический документ</p>
           <h1 className="mt-3 font-display text-4xl md:text-5xl leading-[0.98] tracking-[-0.02em] text-[var(--fg)]">
-            Политика обработки <em className="italic text-acid-300">персональных данных</em>
+            Политика обработки <em className="italic text-[var(--accent)]">персональных данных</em>
           </h1>
           <p className="mt-4 text-[13px] text-[var(--fg-subtle)]">
             Редакция от 15 апреля 2026 г. · Применяется с даты регистрации пользователя.
@@ -153,7 +153,7 @@ export default function Privacy() {
             </ul>
             <p>
               Обращения направляйте на{" "}
-              <a href="mailto:privacy@dicto.pro" className="text-acid-300 hover:text-acid-200 underline underline-offset-4 decoration-acid-300/40">
+              <a href="mailto:privacy@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
                 privacy@dicto.pro
               </a>
               . Срок ответа — не позднее 10 рабочих дней.
@@ -173,7 +173,7 @@ export default function Privacy() {
               ИП Сабирзянов Ислам<br />
               ИНН: [указать]<br />
               Email:{" "}
-              <a href="mailto:privacy@dicto.pro" className="text-acid-300 hover:text-acid-200 underline underline-offset-4 decoration-acid-300/40">
+              <a href="mailto:privacy@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
                 privacy@dicto.pro
               </a>
             </p>
@@ -187,7 +187,7 @@ export default function Privacy() {
           </section>
 
           <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-6 font-mono text-[11px] uppercase tracking-[0.18em]">
-            <Link to="/terms" className="text-acid-300 hover:text-acid-200 transition-colors">
+            <Link to="/terms" className="text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
               Пользовательское соглашение →
             </Link>
             <Link to="/" className="text-[var(--fg-subtle)] hover:text-[var(--fg)] transition-colors">

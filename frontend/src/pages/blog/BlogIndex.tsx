@@ -65,7 +65,7 @@ export default function BlogIndex() {
       <main className="max-w-4xl mx-auto px-5 md:px-8 py-16 md:py-24">
         <p className="eyebrow mb-4">Блог</p>
         <h1 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-5">
-          Статьи <em className="italic text-acid-300">и гайды</em>
+          Статьи <em className="italic text-[var(--accent)]">и гайды</em>
         </h1>
         <p className="text-[15px] text-[var(--fg-muted)] max-w-[55ch] leading-[1.55] mb-16">
           Транскрибация, нейросети, продуктивность — материалы от команды Dicto и редакции.
@@ -85,13 +85,13 @@ export default function BlogIndex() {
                 <span aria-hidden>·</span>
                 <span>{article.readTime}</span>
               </div>
-              <h2 className="font-display text-3xl md:text-4xl leading-[1.05] tracking-[-0.01em] text-[var(--fg)] group-hover:text-acid-300 transition-colors mb-3">
+              <h2 className="font-display text-3xl md:text-4xl leading-[1.05] tracking-[-0.01em] text-[var(--fg)] group-hover:text-[var(--accent)] transition-colors mb-3">
                 {article.title}
               </h2>
               <p className="text-[15px] text-[var(--fg-muted)] leading-[1.55] max-w-[60ch]">
                 {article.excerpt}
               </p>
-              <span className="inline-flex items-center gap-2 mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] group-hover:text-acid-300 transition-colors">
+              <span className="inline-flex items-center gap-2 mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] group-hover:text-[var(--accent)] transition-colors">
                 Читать <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
               </span>
             </Link>

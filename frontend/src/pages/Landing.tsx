@@ -104,7 +104,7 @@ function AccordionItem({ question, answer }: { question: string; answer: string 
           </span>
         </div>
         <svg
-          className={`w-5 h-5 flex-shrink-0 mt-2 text-[var(--fg-subtle)] transition-transform duration-300 ${open ? "rotate-180 text-acid-300" : "group-hover:text-[var(--fg)]"}`}
+          className={`w-5 h-5 flex-shrink-0 mt-2 text-[var(--fg-subtle)] transition-transform duration-300 ${open ? "rotate-180 text-[var(--accent)]" : "group-hover:text-[var(--fg)]"}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -309,10 +309,10 @@ export default function Landing() {
         >
           <div className="absolute inset-0 bg-[var(--bg)]/95 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)} />
           <nav className="relative flex flex-col items-center justify-center h-full gap-6 font-display text-2xl text-[var(--fg)]">
-            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-acid-300 transition py-2 px-4 touch-target">Возможности</a>
-            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="hover:text-acid-300 transition py-2 px-4 touch-target">Кому</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-acid-300 transition py-2 px-4 touch-target">Тарифы</a>
-            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-acid-300 transition py-2 px-4 touch-target">Блог</Link>
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Возможности</a>
+            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Кому</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Тарифы</a>
+            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Блог</Link>
             <div className="mt-4 flex items-center gap-3">
               <SoundToggle />
               <ThemeToggle />
@@ -405,7 +405,7 @@ export default function Landing() {
           <div className="mb-16 md:mb-20 max-w-3xl">
             <p className="eyebrow mb-4">Возможности</p>
             <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
-              Не просто текст&nbsp;— <em className="italic text-acid-300">структурированные инсайты</em>
+              Не просто текст&nbsp;— <em className="italic text-[var(--accent)]">структурированные инсайты</em>
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4 md:gap-5">
@@ -419,7 +419,7 @@ export default function Landing() {
                   /0{i + 1}
                 </div>
 
-                <div className="w-10 h-10 rounded-xl bg-acid-300/10 border border-acid-300/20 flex items-center justify-center text-acid-300 mb-6 group-hover:bg-acid-300/15 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] border border-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] mb-6 group-hover:bg-acid-300/15 transition-colors">
                   {f.icon}
                 </div>
                 <h3 className="font-display text-2xl md:text-3xl leading-tight text-[var(--fg)] mb-3">
@@ -448,7 +448,7 @@ export default function Landing() {
           <div className="mb-16 md:mb-20">
             <p className="eyebrow mb-4">Процесс</p>
             <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] max-w-[18ch]">
-              Три шага, <em className="italic text-acid-300">никаких</em> настроек
+              Три шага, <em className="italic text-[var(--accent)]">никаких</em> настроек
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-10 md:gap-14">
@@ -480,7 +480,7 @@ export default function Landing() {
           <div className="mb-16">
             <p className="eyebrow mb-4">Аудитория</p>
             <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] max-w-[20ch]">
-              Кому подходит <em className="italic text-acid-300">Dicto</em>
+              Кому подходит <em className="italic text-[var(--accent)]">Dicto</em>
             </h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
@@ -504,7 +504,7 @@ export default function Landing() {
             <div className="max-w-2xl">
               <p className="eyebrow mb-4">Тарифы</p>
               <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
-                Простые <em className="italic text-acid-300">и прозрачные</em>
+                Простые <em className="italic text-[var(--accent)]">и прозрачные</em>
               </h2>
             </div>
             <p className="text-[15px] text-[var(--fg-muted)] md:text-right md:max-w-[28ch]">
@@ -524,10 +524,10 @@ export default function Landing() {
                 <p className="text-[13px] text-[var(--fg-muted)]">для знакомства</p>
               </div>
               <ul className="space-y-3 text-[14px] text-[var(--fg-muted)] mb-8">
-                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>180 минут при регистрации</li>
-                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>5 AI-саммари</li>
-                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>Спикеры до 3</li>
-                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>Экспорт TXT / SRT</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>180 минут при регистрации</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>5 AI-саммари</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>Спикеры до 3</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>Экспорт TXT / SRT</li>
               </ul>
               <Link to="/register" onClick={() => play("tick")} className="btn-editorial-ghost w-full justify-center">
                 Начать бесплатно
@@ -544,10 +544,10 @@ export default function Landing() {
                 <p className="text-[13px] text-[var(--fg-muted)]">для подкастеров и фрилансеров</p>
               </div>
               <ul className="space-y-3 text-[14px] text-[var(--fg-muted)] mb-8">
-                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>600 мин (10 часов)</li>
-                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>AI-саммари без лимита</li>
-                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>Разметка до 10 спикеров</li>
-                <li className="flex items-start gap-2.5"><span className="text-acid-300 mt-0.5">✓</span>TXT / SRT / DOCX</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>600 мин (10 часов)</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>AI-саммари без лимита</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>Разметка до 10 спикеров</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>TXT / SRT / DOCX</li>
               </ul>
               <Link to="/register" onClick={() => play("tick")} className="btn-editorial-ghost w-full justify-center">
                 Оформить Старт
@@ -575,7 +575,7 @@ export default function Landing() {
               <Link
                 to="/register"
                 onClick={() => play("confirm")}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-5 py-3 text-[14px] font-semibold text-acid-300 hover:bg-ink-800 transition-colors"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-5 py-3 text-[14px] font-semibold text-[var(--accent)] hover:bg-ink-800 transition-colors"
               >
                 Попробовать Про <span aria-hidden>→</span>
               </Link>
@@ -588,7 +588,7 @@ export default function Landing() {
             </p>
             <Link
               to="/pricing"
-              className="inline-flex items-center gap-2 text-[14px] text-[var(--fg)] hover:text-acid-300 transition-colors group"
+              className="inline-flex items-center gap-2 text-[14px] text-[var(--fg)] hover:text-[var(--accent)] transition-colors group"
             >
               Все тарифы
               <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
@@ -605,7 +605,7 @@ export default function Landing() {
           <div className="mb-12 md:mb-16">
             <p className="eyebrow mb-4">FAQ</p>
             <h2 className="font-display text-5xl md:text-6xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)]">
-              Частые <em className="italic text-acid-300">вопросы</em>
+              Частые <em className="italic text-[var(--accent)]">вопросы</em>
             </h2>
           </div>
           <div className="border-t border-[var(--border)]">
@@ -622,7 +622,7 @@ export default function Landing() {
         <FadeInOnScroll>
         <div className="relative max-w-4xl mx-auto px-6">
           <h2 className="font-display text-6xl md:text-8xl leading-[0.92] tracking-[-0.02em] text-[var(--fg)] max-w-[14ch] mb-8">
-            Ваша следующая запись — <em className="italic text-acid-300">текст за две минуты</em>.
+            Ваша следующая запись — <em className="italic text-[var(--accent)]">текст за две минуты</em>.
           </h2>
           <p className="text-[var(--fg-muted)] text-lg md:text-xl max-w-[40ch] mb-10 leading-[1.5]">
             Зарегистрируйтесь бесплатно — 180 минут на тест без карты, и попробуйте на своей записи.

@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { describe, it, expect, vi } from "vitest";
 
 // Mock API and store before importing Dashboard
@@ -20,9 +21,11 @@ import Dashboard from "./Dashboard";
 
 function renderDashboard() {
   return render(
-    <BrowserRouter>
-      <Dashboard />
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <Dashboard />
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
 

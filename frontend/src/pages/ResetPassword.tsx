@@ -53,7 +53,7 @@ export default function ResetPassword() {
       <Seo title="Сброс пароля — Dicto" canonical="https://dicto.pro/reset-password" noindex />
       <AuthLayout
         eyebrow="Ссылка устарела"
-        title={<>Ссылка <em className="italic text-acid-300">недействительна</em>.</>}
+        title={<>Ссылка <em className="italic text-[var(--accent)]">недействительна</em>.</>}
         subtitle="Запросите новую — старая могла устареть или быть использована."
       >
         <Link to="/forgot-password" onClick={() => play("focus")} className="btn-accent w-full justify-center">
@@ -70,7 +70,7 @@ export default function ResetPassword() {
       <Seo title="Пароль обновлён — Dicto" canonical="https://dicto.pro/reset-password" noindex />
       <AuthLayout
         eyebrow="Готово"
-        title={<>Пароль <em className="italic text-acid-300">обновлён</em>.</>}
+        title={<>Пароль <em className="italic text-[var(--accent)]">обновлён</em>.</>}
         subtitle="Войдите с новым паролем — мы перенесём вас в кабинет."
       >
         <Link to="/login" onClick={() => play("confirm")} className="btn-accent w-full justify-center">
@@ -86,10 +86,10 @@ export default function ResetPassword() {
     <Seo title="Сброс пароля — Dicto" canonical="https://dicto.pro/reset-password" noindex />
     <AuthLayout
       eyebrow={`Сброс для ${email}`}
-      title={<>Новый <em className="italic text-acid-300">пароль</em>.</>}
+      title={<>Новый <em className="italic text-[var(--accent)]">пароль</em>.</>}
       subtitle="Минимум 8 символов. Старый пароль сразу перестаёт работать."
       footer={
-        <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-acid-300 transition-colors">
+        <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-[var(--accent)] transition-colors">
           ← Вернуться ко входу
         </Link>
       }

@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileAudio, FolderOpen, Link2, Lock, Upload as UploadIcon } from "lucide-react";
+import { FileAudio, FolderOpen, Link2, Upload as UploadIcon } from "lucide-react";
 import { toast } from "sonner";
 import { transcriptionApi } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
@@ -24,7 +24,6 @@ const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
 
 const FORMATS = ["MP3", "WAV", "FLAC", "OGG", "M4A", "MP4", "MOV", "WEBM"];
 const URL_SUPPORTED = ["YouTube", "VK Video", "Rutube", "OK", "Дзен"];
-const URL_PLAN_ALLOWED = new Set(["start", "pro", "business", "premium"]);
 
 type SourceTab = "file" | "url";
 
@@ -45,7 +44,6 @@ export default function Upload() {
   const monthlyRemaining = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
   const totalAvailable = bonusMinutes + monthlyRemaining;
   const totalCapacity = bonusMinutes + (user?.minutes_limit ?? 0);
-  const canUseUrl = Boolean(user?.is_admin) || URL_PLAN_ALLOWED.has(user?.plan || "");
 
   const onDrop = useCallback(
     async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
@@ -146,7 +144,7 @@ export default function Upload() {
       <motion.header variants={fadeUp}>
         <p className="eyebrow mb-3">Новая запись</p>
         <h1 className="font-display text-4xl md:text-5xl leading-[1.02] tracking-[-0.02em] text-[var(--fg)]">
-          Превратим в <em className="italic text-acid-300">текст</em>.
+          Превратим в <em className="italic text-[var(--accent)]">текст</em>.
         </h1>
         <p className="mt-3 text-[14px] text-[var(--fg-muted)] leading-[1.55] max-w-[48ch]">
           Загрузите аудио/видео или ссылку — AI расшифрует речь, разметит спикеров и выделит ключевые тезисы.
@@ -227,8 +225,8 @@ export default function Upload() {
               className={cn(
                 "group relative overflow-hidden rounded-3xl border-2 border-dashed p-6 xs:p-8 md:p-12 text-center transition-all duration-base cursor-pointer",
                 isDragActive
-                  ? "border-acid-300 bg-acid-300/5"
-                  : "border-[var(--border-strong)] bg-[var(--bg-elevated)] hover:border-acid-300/40"
+                  ? "border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_5%,transparent)]"
+                  : "border-[var(--border-strong)] bg-[var(--bg-elevated)] hover:border-[var(--accent)]/40"
               )}
             >
               <input {...getInputProps()} />
@@ -239,8 +237,8 @@ export default function Upload() {
                   className={cn(
                     "mx-auto flex h-14 w-14 xs:h-16 xs:w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl border transition-colors",
                     isDragActive
-                      ? "bg-acid-300/15 border-acid-300/50 text-acid-300"
-                      : "bg-acid-300/10 border-acid-300/20 text-acid-300"
+                      ? "bg-acid-300/15 border-[var(--accent)]/50 text-[var(--accent)]"
+                      : "bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] border-[var(--accent)]/20 text-[var(--accent)]"
                   )}
                 >
                   <Icon icon={UploadIcon} size={isDragActive ? 30 : 26} strokeWidth={1.5} />
@@ -291,24 +289,7 @@ export default function Upload() {
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
           >
-            {!canUseUrl ? (
-              <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 xs:p-8 md:p-10 text-center">
-                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-acid-300/25 bg-acid-300/10 text-acid-300">
-                  <Icon icon={Lock} size={22} strokeWidth={1.5} />
-                </div>
-                <p className="eyebrow mb-3">Доступ от тарифа Старт</p>
-                <h2 className="font-display text-2xl md:text-3xl leading-tight tracking-[-0.01em] text-[var(--fg)]">
-                  Транскрибация <em className="italic text-acid-300">по ссылке</em>
-                </h2>
-                <p className="mt-3 text-[14px] text-[var(--fg-muted)] leading-[1.55] max-w-[44ch] mx-auto">
-                  На Free-тарифе доступна загрузка файлов. Для YouTube, VK, Rutube и других источников — тариф Старт от 500 ₽/мес.
-                </p>
-                <Link to="/app/pricing" onClick={() => play("tick")} className="btn-accent mt-6">
-                  Перейти на Старт <span aria-hidden>→</span>
-                </Link>
-              </div>
-            ) : (
-              <form onSubmit={handleUrlSubmit} className="space-y-5 rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 md:p-8">
+            <form onSubmit={handleUrlSubmit} className="space-y-5 rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 md:p-8">
                 <div>
                   <label htmlFor="url-input" className="label-editorial">
                     Ссылка на видео или аудио
@@ -358,7 +339,6 @@ export default function Upload() {
                   Приватные, возрастные и live-трансляции — не поддерживаются.
                 </p>
               </form>
-            )}
           </motion.div>
         )}
         </AnimatePresence>
@@ -372,7 +352,7 @@ export default function Upload() {
           className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-5 py-4"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-acid-300/25 bg-acid-300/10 text-acid-300">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--accent)]/25 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)]">
               <Icon icon={FileAudio} size={17} strokeWidth={1.75} />
             </div>
             <div>
@@ -389,7 +369,7 @@ export default function Upload() {
             <Link
               to="/app/pricing"
               onClick={() => play("tick")}
-              className="inline-flex items-center gap-2 rounded-full bg-acid-300 text-ink-900 px-4 py-2 text-[12px] font-semibold hover:bg-acid-200 transition-colors"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] text-[var(--accent-fg)] px-4 py-2 text-[12px] font-semibold hover:bg-[var(--accent-hover)] transition-colors"
             >
               Увеличить
             </Link>

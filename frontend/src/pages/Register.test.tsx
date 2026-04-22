@@ -1,13 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { describe, it, expect } from "vitest";
 import Register from "./Register";
 
 function renderRegister() {
   return render(
-    <BrowserRouter>
-      <Register />
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <Register />
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
 

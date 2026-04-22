@@ -35,14 +35,14 @@ export default function ForgotPassword() {
       <Seo title="Восстановление пароля — Dicto" canonical="https://dicto.pro/forgot-password" noindex />
       <AuthLayout
         eyebrow="Письмо отправлено"
-        title={<>Проверьте <em className="italic text-acid-300">почту</em>.</>}
+        title={<>Проверьте <em className="italic text-[var(--accent)]">почту</em>.</>}
         subtitle={
           <>
             Если аккаунт с адресом <span className="text-[var(--fg)]">{email}</span> существует, мы прислали ссылку для сброса пароля.
           </>
         }
         footer={
-          <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-acid-300 transition-colors">
+          <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-[var(--accent)] transition-colors">
             ← Вернуться ко входу
           </Link>
         }
@@ -60,10 +60,10 @@ export default function ForgotPassword() {
     <Seo title="Восстановление пароля — Dicto" canonical="https://dicto.pro/forgot-password" noindex />
     <AuthLayout
       eyebrow="Восстановление доступа"
-      title={<>Забыли <em className="italic text-acid-300">пароль</em>?</>}
+      title={<>Забыли <em className="italic text-[var(--accent)]">пароль</em>?</>}
       subtitle="Введите email — пришлём ссылку для сброса."
       footer={
-        <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-acid-300 transition-colors">
+        <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-[var(--accent)] transition-colors">
           ← Вернуться ко входу
         </Link>
       }

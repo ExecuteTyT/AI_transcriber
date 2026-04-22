@@ -85,7 +85,7 @@ export default function DesktopSidebar() {
                     {active && (
                       <span className="absolute left-0 h-5 w-[2px] bg-acid-300 shadow-[0_0_8px_rgba(197,240,20,0.65)]" aria-hidden />
                     )}
-                    <Icon icon={item.Icon} size={17} strokeWidth={1.75} className={active ? "text-acid-300" : "text-[var(--fg-subtle)] group-hover:text-[var(--fg-muted)]"} />
+                    <Icon icon={item.Icon} size={17} strokeWidth={1.75} className={active ? "text-[var(--accent)]" : "text-[var(--fg-subtle)] group-hover:text-[var(--fg-muted)]"} />
                     <span className={active ? "font-medium" : ""}>{item.label}</span>
                   </Link>
                 );
@@ -101,7 +101,7 @@ export default function DesktopSidebar() {
           <Link
             to="/app/pricing"
             onClick={() => play("tick")}
-            className="block rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-elevated)] p-4 hover:border-acid-300/40 transition-colors group"
+            className="block rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-elevated)] p-4 hover:border-[var(--accent)]/40 transition-colors group"
           >
             <div className="flex items-center gap-3">
               <div className="relative shrink-0">
@@ -140,7 +140,7 @@ export default function DesktopSidebar() {
                 <p className="text-[13px] text-[var(--fg)] leading-tight">
                   {totalAvailable} из {totalCapacity}&nbsp;мин
                 </p>
-                <p className={`mt-1 text-[11px] ${lowUsage ? "text-red-400" : "text-[var(--fg-subtle)]"} group-hover:text-acid-300 transition-colors`}>
+                <p className={`mt-1 text-[11px] ${lowUsage ? "text-red-400" : "text-[var(--fg-subtle)]"} group-hover:text-[var(--accent)] transition-colors`}>
                   {lowUsage ? "Пополнить →" : "Посмотреть тарифы →"}
                 </p>
               </div>

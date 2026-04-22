@@ -115,8 +115,8 @@ URL_INGEST_ALLOWED_HOSTS: set[str] = {
     "dzen.ru", "zen.yandex.ru",
 }
 
-# URL-ingest запрещён на Free (защита от ToS-abuse).
-URL_INGEST_ALLOWED_PLANS: set[str] = {"start", "pro", "business", "premium"}
+# URL-ingest доступен на всех тарифах. Free всё равно ограничен по минутам —
+# чем тратить их на свой файл или на ссылку, пользователь решает сам.
 
 
 @router.post("/upload", response_model=TranscriptionUploadResponse, status_code=status.HTTP_201_CREATED)
@@ -237,14 +237,7 @@ async def upload_by_url(
     """
     from urllib.parse import urlparse
 
-    # 1. Plan-gate: Free не может.
-    if not user.is_admin and user.plan not in URL_INGEST_ALLOWED_PLANS:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Транскрибация по ссылке доступна с тарифа Старт. Перейдите на платный план.",
-        )
-
-    # 2. URL whitelist.
+    # 1. URL whitelist.
     parsed = urlparse(str(data.url))
     host = (parsed.hostname or "").lower()
     if not _is_allowed_url_host(host):
@@ -256,7 +249,7 @@ async def upload_by_url(
             ),
         )
 
-    # 3. Лимит минут (как у обычного upload — учитываем bonus + monthly).
+    # 2. Лимит минут (как у обычного upload — учитываем bonus + monthly).
     available_minutes = user.bonus_minutes + max(0, user.minutes_limit - user.minutes_used)
     if not user.is_admin and available_minutes <= 0:
         raise HTTPException(
@@ -264,7 +257,7 @@ async def upload_by_url(
             detail="Лимит минут исчерпан. Перейдите на более высокий тариф.",
         )
 
-    # 4. expires_at (как в обычном upload).
+    # 3. expires_at (как в обычном upload).
     from datetime import datetime, timedelta, timezone
     expires_at = None
     if user.data_retention_days is not None and user.data_retention_days > 0:
@@ -272,7 +265,7 @@ async def upload_by_url(
 
     normalized_lang = (data.language or "auto").lower().strip()
 
-    # 5. Создаём Transcription со статусом queued. file_key пустой —
+    # 4. Создаём Transcription со статусом queued. file_key пустой —
     # proставится в Celery task после скачивания через yt-dlp.
     transcription = Transcription(
         user_id=user.id,
@@ -288,7 +281,7 @@ async def upload_by_url(
     await db.commit()
     await db.refresh(transcription)
 
-    # 6. Ставим в очередь URL-task.
+    # 5. Ставим в очередь URL-task.
     try:
         from app.tasks.transcribe_url import process_url_transcription
         process_url_transcription.delay(str(transcription.id), str(data.url))

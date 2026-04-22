@@ -50,7 +50,7 @@ export default function PricingCalculator() {
         <div>
           <p className="eyebrow mb-3">Калькулятор</p>
           <h2 className="font-display text-3xl md:text-5xl leading-[1.02] tracking-[-0.02em] text-[var(--fg)]">
-            Сколько вам <em className="italic text-acid-300">реально нужно</em>?
+            Сколько вам <em className="italic text-[var(--accent)]">реально нужно</em>?
           </h2>
           <p className="mt-3 text-[14px] text-[var(--fg-muted)] leading-[1.5] max-w-[44ch]">
             Задвиньте ползунок — подберём оптимальный тариф с минимальной ценой за минуту.
@@ -60,7 +60,7 @@ export default function PricingCalculator() {
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--fg-subtle)] mb-2">
             Рекомендация
           </p>
-          <p className="font-display text-5xl md:text-6xl leading-none tabular text-acid-300">
+          <p className="font-display text-5xl md:text-6xl leading-none tabular text-[var(--accent)]">
             {selected.name}
           </p>
           <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-muted)]">
@@ -87,7 +87,7 @@ export default function PricingCalculator() {
           step={1}
           value={hours}
           onChange={(e) => handleSliderChange(Number(e.target.value))}
-          className="w-full cursor-pointer accent-acid-300"
+          className="w-full cursor-pointer accent-[var(--accent)]"
           aria-label="Часов в месяц"
         />
         <div className="mt-2 grid grid-cols-6 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--fg-subtle)] tabular">
@@ -135,7 +135,7 @@ export default function PricingCalculator() {
           <p className="text-[14px] text-[var(--fg)] leading-[1.55]">
             Вам нужно <span className="font-display tabular">{hours * 60}</span> мин, но даже у Премиума —{" "}
             {selected.minutesLimit}&nbsp;мин. Доплата за превышение:{" "}
-            <span className="font-display tabular text-acid-300">{overage.cost.toLocaleString("ru-RU")} ₽</span>{" "}
+            <span className="font-display tabular text-[var(--accent)]">{overage.cost.toLocaleString("ru-RU")} ₽</span>{" "}
             за {overage.min}&nbsp;мин по {selected.overageRubPerMin}&nbsp;₽/мин.
           </p>
         </motion.div>
@@ -189,14 +189,14 @@ function PlanRow({
   return (
     <div
       className={`relative flex items-center gap-4 rounded-xl px-4 py-3 transition-colors ${
-        isSelected ? "bg-acid-300/10 ring-1 ring-acid-300/40" : "hover:bg-[var(--bg-muted)]"
+        isSelected ? "bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] ring-1 ring-[var(--accent)]/40" : "hover:bg-[var(--bg-muted)]"
       }`}
     >
       <div className="flex-shrink-0 w-24">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
           /{planId}
         </p>
-        <p className={`font-display text-lg leading-none ${isSelected ? "text-acid-300" : "text-[var(--fg)]"}`}>
+        <p className={`font-display text-lg leading-none ${isSelected ? "text-[var(--accent)]" : "text-[var(--fg)]"}`}>
           {name}
         </p>
       </div>

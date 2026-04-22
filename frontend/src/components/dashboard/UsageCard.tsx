@@ -109,9 +109,9 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
           </p>
           <h3 className="hidden sm:block font-display text-3xl leading-[1.1] tracking-[-0.01em] text-[var(--fg)]">
             {low ? (
-              <>Минуты подходят <em className="italic text-acid-300">к концу</em></>
+              <>Минуты подходят <em className="italic text-[var(--accent)]">к концу</em></>
             ) : (
-              <>У вас всё <em className="italic text-acid-300">под контролем</em></>
+              <>У вас всё <em className="italic text-[var(--accent)]">под контролем</em></>
             )}
           </h3>
           <p className="mt-2 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
@@ -122,7 +122,7 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
 
           {/* Bonus chip — видимая инфо-линия, тратится первым */}
           {bonusMinutes > 0 && (
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-acid-300/25 bg-acid-300/10 px-3 py-2">
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-[var(--accent)]/25 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] px-3 py-2">
               <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_8px_rgba(197,240,20,0.6)]" aria-hidden />
               <span className="text-[12px] text-[var(--fg)]">
                 Бонус <span className="tabular font-medium">{bonusMinutes}</span> мин
@@ -146,7 +146,7 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
 
           <Link
             to="/app/pricing"
-            className="mt-5 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] hover:text-acid-300 transition-colors group"
+            className="mt-5 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] hover:text-[var(--accent)] transition-colors group"
           >
             {low ? "Апгрейдить план" : "Посмотреть тарифы"}
             <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>

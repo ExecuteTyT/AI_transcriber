@@ -44,12 +44,12 @@ export default function Login() {
     />
     <AuthLayout
       eyebrow="С возвращением"
-      title={<>С возвращением <em className="italic text-acid-300">в Dicto</em>.</>}
+      title={<>С возвращением <em className="italic text-[var(--accent)]">в Dicto</em>.</>}
       subtitle="Введите email и пароль — мы перенесём вас в кабинет."
       footer={
         <>
           Нет аккаунта?{" "}
-          <Link to="/register" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-acid-300 transition-colors">
+          <Link to="/register" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-[var(--accent)] transition-colors">
             Создать
           </Link>
         </>

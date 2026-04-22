@@ -41,7 +41,7 @@ export default function Terms() {
         <article className="max-w-none">
           <p className="eyebrow">Публичная оферта</p>
           <h1 className="mt-3 font-display text-4xl md:text-5xl leading-[0.98] tracking-[-0.02em] text-[var(--fg)]">
-            Пользовательское <em className="italic text-acid-300">соглашение</em>
+            Пользовательское <em className="italic text-[var(--accent)]">соглашение</em>
           </h1>
           <p className="mt-4 text-[13px] text-[var(--fg-subtle)]">Редакция от 15 апреля 2026 г.</p>
 
@@ -60,7 +60,7 @@ export default function Terms() {
               транскрибации аудио- и видео-записей в текст с применением технологий
               искусственного интеллекта. Услуга оказывается на условиях, указанных в
               настоящем соглашении и на странице{" "}
-              <Link to="/pricing" className="text-acid-300 hover:text-acid-200 underline underline-offset-4 decoration-acid-300/40">
+              <Link to="/pricing" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
                 тарифов
               </Link>.
             </p>
@@ -104,7 +104,7 @@ export default function Terms() {
                 оплаты — без условий, при более длительном пользовании — только
                 пропорционально неиспользованным минутам текущего периода.
                 Обращение на{" "}
-                <a href="mailto:support@dicto.pro" className="text-acid-300 hover:text-acid-200 underline underline-offset-4 decoration-acid-300/40">
+                <a href="mailto:support@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
                   support@dicto.pro
                 </a>.
               </li>
@@ -115,7 +115,7 @@ export default function Terms() {
               <li>Контент, загружаемый Пользователем, остаётся его собственностью.</li>
               <li>
                 Оператор не использует контент для обучения моделей и не передаёт его третьим лицам, кроме указанных в{" "}
-                <Link to="/privacy" className="text-acid-300 hover:text-acid-200 underline underline-offset-4 decoration-acid-300/40">
+                <Link to="/privacy" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
                   политике конфиденциальности
                 </Link>.
               </li>
@@ -141,14 +141,14 @@ export default function Terms() {
               ИП Сабирзянов Ислам<br />
               ИНН: [указать]<br />
               Email:{" "}
-              <a href="mailto:support@dicto.pro" className="text-acid-300 hover:text-acid-200 underline underline-offset-4 decoration-acid-300/40">
+              <a href="mailto:support@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
                 support@dicto.pro
               </a>
             </p>
           </section>
 
           <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-6 font-mono text-[11px] uppercase tracking-[0.18em]">
-            <Link to="/privacy" className="text-acid-300 hover:text-acid-200 transition-colors">
+            <Link to="/privacy" className="text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
               Политика конфиденциальности →
             </Link>
             <Link to="/" className="text-[var(--fg-subtle)] hover:text-[var(--fg)] transition-colors">

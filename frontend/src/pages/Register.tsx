@@ -56,12 +56,12 @@ export default function Register() {
     />
     <AuthLayout
       eyebrow="180 минут бесплатно — без карты"
-      title={<>Создайте <em className="italic text-acid-300">аккаунт</em>.</>}
+      title={<>Создайте <em className="italic text-[var(--accent)]">аккаунт</em>.</>}
       subtitle="Транскрибация, разметка спикеров, AI-саммари и тезисы. Бесплатно."
       footer={
         <>
           Уже зарегистрированы?{" "}
-          <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-acid-300 transition-colors">
+          <Link to="/login" onClick={() => play("focus")} className="text-[var(--fg)] underline underline-offset-4 decoration-[var(--border-strong)] hover:decoration-[var(--accent)] transition-colors">
             Войти
           </Link>
         </>
@@ -138,15 +138,15 @@ export default function Register() {
               type="checkbox"
               checked={consentMain}
               onChange={(e) => setConsentMain(e.target.checked)}
-              className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--border-strong)] bg-transparent accent-acid-300"
+              className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--border-strong)] bg-transparent accent-[var(--accent)]"
             />
             <span className="text-[12px] leading-relaxed text-[var(--fg-muted)]">
               Принимаю{" "}
-              <Link to="/terms" target="_blank" className="text-[var(--fg)] underline underline-offset-2 decoration-[var(--border-strong)] hover:decoration-acid-300">
+              <Link to="/terms" target="_blank" className="text-[var(--fg)] underline underline-offset-2 decoration-[var(--border-strong)] hover:decoration-[var(--accent)]">
                 пользовательское соглашение
               </Link>{" "}
               и{" "}
-              <Link to="/privacy" target="_blank" className="text-[var(--fg)] underline underline-offset-2 decoration-[var(--border-strong)] hover:decoration-acid-300">
+              <Link to="/privacy" target="_blank" className="text-[var(--fg)] underline underline-offset-2 decoration-[var(--border-strong)] hover:decoration-[var(--accent)]">
                 политику обработки ПДн
               </Link>.
             </span>
@@ -157,7 +157,7 @@ export default function Register() {
               type="checkbox"
               checked={consentCrossBorder}
               onChange={(e) => setConsentCrossBorder(e.target.checked)}
-              className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--border-strong)] bg-transparent accent-acid-300"
+              className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--border-strong)] bg-transparent accent-[var(--accent)]"
             />
             <span className="text-[12px] leading-relaxed text-[var(--fg-muted)]">
               Согласен на трансграничную передачу обработчикам AI (Mistral, Google) для транскрибации и AI-анализа, ст. 12 152-ФЗ.

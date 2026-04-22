@@ -130,7 +130,7 @@ export default function Dashboard() {
             {today}
           </p>
           <h1 className="mt-3 font-display text-4xl md:text-5xl leading-[1.02] tracking-[-0.02em] text-[var(--fg)]">
-            {firstName ? <>Привет, <em className="italic text-acid-300">{firstName}</em></> : "Добро пожаловать"}
+            {firstName ? <>Привет, <em className="italic text-[var(--accent)]">{firstName}</em></> : "Добро пожаловать"}
           </h1>
           <p className="mt-3 text-[14px] text-[var(--fg-muted)] leading-[1.5]">
             {total > 0
@@ -179,7 +179,7 @@ export default function Dashboard() {
                 aria-label="Обновить список"
                 className={cn(
                   "flex h-7 w-7 items-center justify-center rounded-full text-[var(--fg-subtle)] transition-colors duration-fast hover:bg-[var(--bg-elevated)] hover:text-[var(--fg)]",
-                  refreshing && "pointer-events-none text-acid-300"
+                  refreshing && "pointer-events-none text-[var(--accent)]"
                 )}
               >
                 <Icon
@@ -229,7 +229,7 @@ export default function Dashboard() {
               placeholder="Найти по названию или файлу…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-11 py-3 text-[14px] text-[var(--fg)] placeholder:text-[var(--fg-subtle)] focus:outline-none focus:border-acid-300/40 transition-colors"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-11 py-3 text-[14px] text-[var(--fg)] placeholder:text-[var(--fg-subtle)] focus:outline-none focus:border-[var(--accent)]/40 transition-colors"
               aria-label="Поиск транскрипций"
             />
           </div>
@@ -286,7 +286,7 @@ export default function Dashboard() {
           <Link
             to="/profile"
             onClick={() => play("focus")}
-            className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] hover:text-acid-300 transition-colors"
+            className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] hover:text-[var(--accent)] transition-colors"
           >
             Настроить →
           </Link>

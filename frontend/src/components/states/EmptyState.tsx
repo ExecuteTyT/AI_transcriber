@@ -26,8 +26,8 @@ export function EmptyState({ icon, title, description, action, className, compac
       )}
     >
       <div className="relative">
-        <div className="mx-auto mb-6 flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl border border-acid-300/25 bg-acid-300/10">
-          <Icon icon={icon} size={compact ? 22 : 26} strokeWidth={1.75} className="text-acid-300" />
+        <div className="mx-auto mb-6 flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/25 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]">
+          <Icon icon={icon} size={compact ? 22 : 26} strokeWidth={1.75} className="text-[var(--accent)]" />
         </div>
         <h3 className="font-display text-2xl md:text-3xl leading-tight tracking-[-0.01em] text-[var(--fg)] mb-3">
           {title}

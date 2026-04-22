@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/api/transcriptions", () => ({
@@ -25,9 +26,11 @@ import Upload from "./Upload";
 
 function renderUpload() {
   return render(
-    <BrowserRouter>
-      <Upload />
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <Upload />
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
 
@@ -43,23 +46,14 @@ describe("Upload — source tabs (Free user)", () => {
     expect(screen.getByText(/Перетащите файл сюда/)).toBeInTheDocument();
   });
 
-  it("shows locked state on URL tab for Free users", async () => {
+  it("shows URL input on URL tab for Free users (no longer plan-gated)", async () => {
     renderUpload();
     fireEvent.click(screen.getByRole("button", { name: /Ссылка/ }));
-    const locked = await screen.findByText(/от тарифа Старт/);
-    expect(locked).toBeInTheDocument();
-  });
-
-  it("locked CTA links to pricing", async () => {
-    renderUpload();
-    fireEvent.click(screen.getByRole("button", { name: /Ссылка/ }));
-    const cta = await screen.findByText(/Перейти на Старт/);
-    expect(cta.closest("a")).toHaveAttribute("href", "/app/pricing");
+    expect(await screen.findByLabelText(/Ссылка на видео или аудио/)).toBeInTheDocument();
   });
 
   it("has language selector", () => {
     renderUpload();
-    // Лейбл переделан на mono uppercase «Язык» — не «Язык записи:»
-    expect(screen.getByLabelText(/Язык/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Язык транскрипции/ })).toBeInTheDocument();
   });
 });

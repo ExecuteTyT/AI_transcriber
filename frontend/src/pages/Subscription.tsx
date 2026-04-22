@@ -117,7 +117,7 @@ export default function Subscription() {
       <motion.header variants={fadeUp}>
         <p className="eyebrow mb-3">Подписка</p>
         <h1 className="font-display text-4xl md:text-5xl leading-[1.02] tracking-[-0.02em] text-[var(--fg)]">
-          Ваш <em className="italic text-acid-300">план</em>
+          Ваш <em className="italic text-[var(--accent)]">план</em>
         </h1>
         <p className="mt-3 text-[14px] text-[var(--fg-muted)] leading-[1.55]">
           Управляйте тарифом, лимитами и датой продления.
@@ -136,7 +136,7 @@ export default function Subscription() {
           className={cn(
             "relative overflow-hidden rounded-3xl p-6 md:p-8 border",
             isPopular
-              ? "bg-acid-300 text-ink-900 border-acid-300"
+              ? "bg-acid-300 text-ink-900 border-[var(--accent)]"
               : "bg-[var(--bg-elevated)] text-[var(--fg)] border-[var(--border)]"
           )}
         >
@@ -163,7 +163,7 @@ export default function Subscription() {
               <span
                 className={cn(
                   "inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em]",
-                  isPopular ? "text-ink-900/85" : "text-acid-300"
+                  isPopular ? "text-ink-900/85" : "text-[var(--accent)]"
                 )}
               >
                 <span
@@ -246,7 +246,7 @@ export default function Subscription() {
                   icon={Check}
                   size={14}
                   strokeWidth={2}
-                  className={cn("mt-0.5 flex-shrink-0", isPopular ? "text-ink-900" : "text-acid-300")}
+                  className={cn("mt-0.5 flex-shrink-0", isPopular ? "text-ink-900" : "text-[var(--accent)]")}
                 />
                 {feature}
               </li>
@@ -264,8 +264,8 @@ export default function Subscription() {
               className={cn(
                 "inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-3 text-[13px] font-semibold transition-colors duration-base",
                 isPopular
-                  ? "bg-ink-900 text-acid-300 hover:bg-ink-800"
-                  : "bg-acid-300 text-ink-900 hover:bg-acid-200"
+                  ? "bg-ink-900 text-[var(--accent)] hover:bg-ink-800"
+                  : "bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]"
               )}
             >
               {sub.plan === "free" ? "Улучшить план" : "Сменить план"} <span aria-hidden>→</span>

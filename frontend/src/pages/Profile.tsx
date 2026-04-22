@@ -191,9 +191,9 @@ export default function Profile() {
             <Link
               to="/app/pricing"
               onClick={() => play("tick")}
-              className="group flex items-center gap-3 rounded-2xl border border-acid-300/25 bg-acid-300/5 p-4 hover:bg-acid-300/10 transition-colors"
+              className="group flex items-center gap-3 rounded-2xl border border-[var(--accent)]/25 bg-[color-mix(in_srgb,var(--accent)_5%,transparent)] p-4 hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] transition-colors"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-acid-300/30 bg-acid-300/10 text-acid-300">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--accent)]/30 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)]">
                 <Icon icon={Sparkles} size={15} strokeWidth={1.75} />
               </div>
               <div className="flex-1">
@@ -203,7 +203,7 @@ export default function Profile() {
               <Icon
                 icon={ChevronRight}
                 size={16}
-                className="text-[var(--fg-subtle)] transition-transform duration-fast group-hover:translate-x-0.5 group-hover:text-acid-300"
+                className="text-[var(--fg-subtle)] transition-transform duration-fast group-hover:translate-x-0.5 group-hover:text-[var(--accent)]"
               />
             </Link>
           </div>
@@ -270,7 +270,7 @@ export default function Profile() {
             step={1}
             value={retentionDays}
             onChange={(e) => setRetentionDays(Number(e.target.value))}
-            className="w-full cursor-pointer accent-acid-300"
+            className="w-full cursor-pointer accent-[var(--accent)]"
           />
           <div className="mt-2 flex justify-between font-mono text-[10px] text-[var(--fg-subtle)] tabular">
             <span>1</span>
@@ -375,7 +375,7 @@ function Card({
   return (
     <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 md:p-7">
       <div className="mb-5 flex items-center gap-2.5">
-        <Icon icon={icon} size={14} className="text-acid-300" />
+        <Icon icon={icon} size={14} className="text-[var(--accent)]" />
         <h2 className="font-display text-xl leading-tight tracking-[-0.01em] text-[var(--fg)]">{title}</h2>
       </div>
       {children}
