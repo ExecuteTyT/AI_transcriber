@@ -48,10 +48,19 @@ export default function BottomTabBar() {
                         to={tab.to}
                         onClick={() => play("tick")}
                         aria-label={tab.label}
-                        className="group relative flex h-[60px] w-[60px] items-center justify-center rounded-full bg-acid-300 text-ink-900 ring-[5px] ring-[var(--bg)] shadow-[0_10px_28px_-6px_rgba(197,240,20,0.55)]"
+                        className="group relative flex h-[60px] w-[60px] items-center justify-center rounded-full ring-[5px] ring-[var(--bg)]"
+                        style={{
+                          background: "var(--accent)",
+                          color: "var(--accent-fg)",
+                          boxShadow:
+                            "0 10px 28px -6px color-mix(in srgb, var(--accent) 55%, transparent)",
+                        }}
                       >
                         <span
-                          className="absolute -inset-1 rounded-full bg-acid-300/35 blur-xl -z-10 opacity-80"
+                          className="absolute -inset-1 rounded-full blur-xl -z-10 opacity-80"
+                          style={{
+                            background: "color-mix(in srgb, var(--accent) 35%, transparent)",
+                          }}
                           aria-hidden
                         />
                         <Icon icon={tab.Icon} size={22} strokeWidth={2.2} />
@@ -62,19 +71,28 @@ export default function BottomTabBar() {
               }
 
               return (
-                <li key={tab.to} className="flex-1">
-                  <motion.div whileTap={{ scale: 0.95 }} transition={springTight}>
+                <li key={tab.to} className="flex flex-1">
+                  <motion.div
+                    whileTap={{ scale: 0.95 }}
+                    transition={springTight}
+                    className="w-full"
+                  >
                     <Link
                       to={tab.to}
                       onClick={() => play("focus")}
                       aria-label={tab.label}
                       aria-current={active ? "page" : undefined}
-                      className="relative flex h-14 flex-col items-center justify-center gap-0.5 touch-target"
+                      className="relative flex h-14 w-full flex-col items-center justify-center gap-0.5"
                     >
                       {active && (
                         <motion.span
                           layoutId="tab-indicator-notch"
-                          className="absolute -top-1 left-1/2 h-1 w-7 -translate-x-1/2 rounded-full bg-acid-300 shadow-[0_0_10px_rgba(197,240,20,0.7)]"
+                          className="absolute -top-1 left-1/2 h-1 w-7 -translate-x-1/2 rounded-full"
+                          style={{
+                            background: "var(--accent)",
+                            boxShadow:
+                              "0 0 10px color-mix(in srgb, var(--accent) 70%, transparent)",
+                          }}
                           transition={{ type: "spring", stiffness: 500, damping: 36 }}
                         />
                       )}
@@ -101,8 +119,12 @@ export default function BottomTabBar() {
               );
             })}
 
-            <li className="flex-1">
-              <motion.div whileTap={{ scale: 0.95 }} transition={springTight}>
+            <li className="flex flex-1">
+              <motion.div
+                whileTap={{ scale: 0.95 }}
+                transition={springTight}
+                className="w-full"
+              >
                 <button
                   type="button"
                   onClick={() => {
@@ -110,7 +132,7 @@ export default function BottomTabBar() {
                     setOverflowOpen(true);
                   }}
                   aria-label="Ещё"
-                  className="relative flex h-14 w-full flex-col items-center justify-center gap-0.5 touch-target"
+                  className="relative flex h-14 w-full flex-col items-center justify-center gap-0.5"
                 >
                   <Icon icon={MoreHorizontal} size={21} strokeWidth={1.75} className="text-[var(--fg-subtle)]" />
                   <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--fg-subtle)]">Ещё</span>
