@@ -1,0 +1,41 @@
+# Всё что не нужно docker build'у.
+# COPY . . в Dockerfile.prod тянет frontend/, и без этого списка в layer попадал
+# node_modules (~200 MB) и dist (артефакт прошлого локального vite build) —
+# раздувает build-context и layer cache в containerd.
+
+node_modules
+dist
+dist-server
+.vite
+.cache
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Git + dev logs
+.git
+.gitignore
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Tests + coverage
+coverage
+
+# Env files (.env не уходит в клиентский бандл, но подхватывается dev-server'ом)
+.env
+.env.local
+.env.*.local
+
+# Docker meta
+Dockerfile
+Dockerfile.prod
+docker-compose*.yml
+.dockerignore
+
+# Tooling
+*.md

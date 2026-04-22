@@ -1,0 +1,45 @@
+# Backend build-context: тянем только app/, requirements.txt, alembic/.
+# Всё лишнее — отсекаем, чтобы каждый пересбор не копировал venv/cache/tests.
+
+__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.pytype
+
+# Virtualenvs (локальные, разработчиков)
+.venv
+venv
+env
+
+# Tests / dev
+tests
+htmlcov
+.coverage
+coverage.xml
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Git + logs
+.git
+.gitignore
+*.log
+
+# Local data (files processed by dev)
+data
+uploads
+
+# Env
+.env
+.env.*
+
+# Docker meta
+Dockerfile
+docker-compose*.yml
+.dockerignore

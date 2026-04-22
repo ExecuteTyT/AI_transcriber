@@ -1,3 +1,12 @@
+# Общие настройки логгирования для всех сервисов.
+# Без этого json-файлы /var/lib/docker/containers/*/*-json.log растут неограниченно
+# и могут забить диск за пару недель активного прода.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
 services:
   db:
     image: pgvector/pgvector:pg16
@@ -13,6 +22,7 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    logging: *default-logging
 
   redis:
     image: redis:7-alpine
@@ -24,6 +34,7 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    logging: *default-logging
 
   api:
     build: ./backend
@@ -39,6 +50,7 @@ services:
       - uploads:/app/data/uploads
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
     restart: unless-stopped
+    logging: *default-logging
 
   celery:
     build: ./backend
@@ -54,6 +66,7 @@ services:
       - uploads:/app/data/uploads
     command: celery -A app.tasks.celery_app worker --loglevel=warning --concurrency=2
     restart: unless-stopped
+    logging: *default-logging
 
   celery-beat:
     build: ./backend
@@ -67,12 +80,14 @@ services:
         condition: service_healthy
     command: celery -A app.tasks.celery_app beat --loglevel=warning
     restart: unless-stopped
+    logging: *default-logging
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
     restart: unless-stopped
+    logging: *default-logging
 
   nginx:
     image: nginx:1.27-alpine
@@ -87,6 +102,7 @@ services:
       - api
       - frontend
     restart: unless-stopped
+    logging: *default-logging
 
   # Certbot для автообновления SSL
   certbot:
@@ -96,6 +112,7 @@ services:
       - certbot-certs:/etc/letsencrypt
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h; done'"
     restart: unless-stopped
+    logging: *default-logging
 
   # ─── Monitoring ───
   prometheus:
@@ -107,6 +124,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=30d"
     restart: unless-stopped
+    logging: *default-logging
 
   grafana:
     image: grafana/grafana:latest
@@ -125,6 +143,7 @@ services:
     depends_on:
       - prometheus
     restart: unless-stopped
+    logging: *default-logging
 
   redis-exporter:
     image: oliver006/redis_exporter:latest
@@ -133,6 +152,7 @@ services:
     depends_on:
       - redis
     restart: unless-stopped
+    logging: *default-logging
 
 volumes:
   pgdata:
