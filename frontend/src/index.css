@@ -1,6 +1,12 @@
 /* Шрифты подгружаются в index.html через <link rel="preload"> — быстрее FOUT-less.
    Ниже — fallback-fonts с size-adjust, чтобы layout не «прыгал» при свопе. */
 
+/* cache-bust marker: rebranding v2 (2026-04-22). Нужно осязаемое правило в output,
+   т.к. комментарии срезаются cssnano и хэш бандла не меняется. */
+:root {
+  --asset-version: "2026-04-22-v2";
+}
+
 @font-face {
   font-family: "Inter Fallback";
   src: local("Arial");
