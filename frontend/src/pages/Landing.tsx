@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import Seo from "@/components/Seo";
 import HeroWaveform from "@/components/HeroWaveform";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
@@ -235,14 +235,23 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen overflow-hidden bg-[var(--bg)] text-[var(--fg)]">
-      <Helmet>
-        <title>Dicto — Транскрибация аудио и видео в текст онлайн | Нейросеть</title>
-        <meta name="description" content="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. 180 бесплатных минут при регистрации, без карты. Тарифы от 500 ₽/мес." />
-        <link rel="canonical" href="https://dicto.pro/" />
-        <meta property="og:title" content="Dicto — Транскрибация аудио и видео в текст онлайн" />
-        <meta property="og:description" content="Превращайте аудио и видео в текст, саммари и ключевые тезисы с помощью ИИ. Разметка спикеров, таймкоды, экспорт. Бесплатно 15 мин/мес." />
-        <meta property="og:url" content="https://dicto.pro/" />
-      </Helmet>
+      <Seo
+        title="Dicto — Транскрибация аудио и видео в текст онлайн | Нейросеть"
+        description="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. 180 бесплатных минут при регистрации, без карты. Тарифы от 500 ₽/мес."
+        canonical="https://dicto.pro/"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Dicto",
+          url: "https://dicto.pro/",
+          inLanguage: "ru-RU",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://dicto.pro/blog?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }}
+      />
 
       {/* ─── Header (dark-first, editorial) ─── */}
       <header

@@ -7,6 +7,7 @@ import { Icon } from "@/components/Icon";
 import { useAuthStore } from "@/store/authStore";
 import { useSound } from "@/lib/sound";
 import WaveformLoader from "@/components/ui/WaveformLoader";
+import Seo from "@/components/Seo";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -47,6 +48,12 @@ export default function Register() {
   };
 
   return (
+    <>
+    <Seo
+      title="Регистрация — 180 минут бесплатно · Dicto"
+      description="Создайте аккаунт Dicto — 180 минут транскрибации бесплатно без карты. AI-саммари, разметка спикеров, экспорт."
+      canonical="https://dicto.pro/register"
+    />
     <AuthLayout
       eyebrow="180 минут бесплатно — без карты"
       title={<>Создайте <em className="italic text-acid-300">аккаунт</em>.</>}
@@ -183,5 +190,6 @@ export default function Register() {
         </div>
       </form>
     </AuthLayout>
+    </>
   );
 }

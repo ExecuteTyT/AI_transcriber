@@ -35,6 +35,7 @@ import { AudioPlayerBar } from "@/components/transcription/AudioPlayerBar";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { fadeUp, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
+import Seo from "@/components/Seo";
 
 // Editorial dark speaker palette — мягкие тона на ink, хорошо читаются.
 const SPEAKER_COLORS = [
@@ -446,6 +447,7 @@ export default function Transcription() {
 
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" className="space-y-5">
+      <Seo title={`${transcription.title || "Транскрипция"} — Dicto`} noindex />
       {audioUrl && (
         <AudioPlayerBar
           src={audioUrl}

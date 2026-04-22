@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import Seo from "@/components/Seo";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -439,14 +439,19 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-      <Helmet>
-        <title>Тарифы Dicto — транскрибация от 500 ₽/мес</title>
-        <meta
-          name="description"
-          content="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 часов), Про (820 ₽/мес, 25 часов), Бизнес (2 300 ₽, 60 часов), Премиум (4 600 ₽, 120 часов). AI-саммари, разметка спикеров, экспорт."
-        />
-        <link rel="canonical" href="https://dicto.pro/pricing" />
-      </Helmet>
+      <Seo
+        title="Тарифы Dicto — транскрибация от 500 ₽/мес"
+        description="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 часов), Про (820 ₽/мес, 25 часов), Бизнес (2 300 ₽, 60 часов), Премиум (4 600 ₽, 120 часов). AI-саммари, разметка спикеров, экспорт."
+        canonical="https://dicto.pro/pricing"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Главная", item: "https://dicto.pro/" },
+            { "@type": "ListItem", position: 2, name: "Тарифы", item: "https://dicto.pro/pricing" },
+          ],
+        }}
+      />
       <header
         className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl"
         style={{ paddingTop: "env(safe-area-inset-top)" }}

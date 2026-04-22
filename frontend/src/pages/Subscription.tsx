@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/states/ErrorState";
 import { fadeUp, staggerChildren } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { useSound } from "@/lib/sound";
+import Seo from "@/components/Seo";
 
 const PLAN_NAMES: Record<string, string> = {
   free: "Free",
@@ -112,6 +113,7 @@ export default function Subscription() {
       animate="visible"
       className="mx-auto max-w-2xl space-y-6"
     >
+      <Seo title="Подписка — Dicto" noindex />
       <motion.header variants={fadeUp}>
         <p className="eyebrow mb-3">Подписка</p>
         <h1 className="font-display text-4xl md:text-5xl leading-[1.02] tracking-[-0.02em] text-[var(--fg)]">

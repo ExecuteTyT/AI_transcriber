@@ -4,6 +4,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import WaveformLoader from "@/components/ui/WaveformLoader";
 import { useSound } from "@/lib/sound";
 import { authApi } from "@/api/auth";
+import Seo from "@/components/Seo";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -48,6 +49,8 @@ export default function ResetPassword() {
 
   if (isInvalidLink) {
     return (
+      <>
+      <Seo title="Сброс пароля — Dicto" canonical="https://dicto.pro/reset-password" noindex />
       <AuthLayout
         eyebrow="Ссылка устарела"
         title={<>Ссылка <em className="italic text-acid-300">недействительна</em>.</>}
@@ -57,11 +60,14 @@ export default function ResetPassword() {
           Запросить новую ссылку <span aria-hidden>→</span>
         </Link>
       </AuthLayout>
+      </>
     );
   }
 
   if (done) {
     return (
+      <>
+      <Seo title="Пароль обновлён — Dicto" canonical="https://dicto.pro/reset-password" noindex />
       <AuthLayout
         eyebrow="Готово"
         title={<>Пароль <em className="italic text-acid-300">обновлён</em>.</>}
@@ -71,10 +77,13 @@ export default function ResetPassword() {
           Войти <span aria-hidden>→</span>
         </Link>
       </AuthLayout>
+      </>
     );
   }
 
   return (
+    <>
+    <Seo title="Сброс пароля — Dicto" canonical="https://dicto.pro/reset-password" noindex />
     <AuthLayout
       eyebrow={`Сброс для ${email}`}
       title={<>Новый <em className="italic text-acid-300">пароль</em>.</>}
@@ -138,5 +147,6 @@ export default function ResetPassword() {
         </button>
       </form>
     </AuthLayout>
+    </>
   );
 }

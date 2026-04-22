@@ -4,6 +4,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import WaveformLoader from "@/components/ui/WaveformLoader";
 import { useSound } from "@/lib/sound";
 import { authApi } from "@/api/auth";
+import Seo from "@/components/Seo";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -30,6 +31,8 @@ export default function ForgotPassword() {
 
   if (sent) {
     return (
+      <>
+      <Seo title="Восстановление пароля — Dicto" canonical="https://dicto.pro/forgot-password" noindex />
       <AuthLayout
         eyebrow="Письмо отправлено"
         title={<>Проверьте <em className="italic text-acid-300">почту</em>.</>}
@@ -48,10 +51,13 @@ export default function ForgotPassword() {
           → Проверьте папку «Спам», если письмо не пришло за 2 минуты.
         </div>
       </AuthLayout>
+      </>
     );
   }
 
   return (
+    <>
+    <Seo title="Восстановление пароля — Dicto" canonical="https://dicto.pro/forgot-password" noindex />
     <AuthLayout
       eyebrow="Восстановление доступа"
       title={<>Забыли <em className="italic text-acid-300">пароль</em>?</>}
@@ -99,5 +105,6 @@ export default function ForgotPassword() {
         </button>
       </form>
     </AuthLayout>
+    </>
   );
 }

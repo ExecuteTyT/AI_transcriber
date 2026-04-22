@@ -1,19 +1,16 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { ChevronLeft } from "lucide-react";
 import { Icon } from "@/components/Icon";
+import Seo from "@/components/Seo";
 
 export default function Terms() {
   return (
     <div className="min-h-dvh bg-[var(--bg)] text-[var(--fg)]">
-      <Helmet>
-        <title>Пользовательское соглашение — Dicto</title>
-        <meta
-          name="description"
-          content="Публичная оферта сервиса транскрибации Dicto — условия использования, тарифы, ответственность сторон."
-        />
-        <link rel="canonical" href="https://dicto.pro/terms" />
-      </Helmet>
+      <Seo
+        title="Пользовательское соглашение — Dicto"
+        description="Публичная оферта сервиса транскрибации Dicto — условия использования, тарифы, ответственность сторон."
+        canonical="https://dicto.pro/terms"
+      />
 
       <header
         className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur-xl"

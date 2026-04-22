@@ -1,8 +1,8 @@
 import { Link, useParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { getArticleBySlug, articles } from "./articles";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
+import Seo from "@/components/Seo";
 
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
@@ -148,15 +148,54 @@ export default function BlogArticle() {
         </ol>
       </nav>
 
-      <Helmet>
-        <title>{article.metaTitle}</title>
-        <meta name="description" content={article.metaDescription} />
-        <link rel="canonical" href={`https://dicto.pro/blog/${article.slug}`} />
-        <meta property="og:title" content={article.metaTitle} />
-        <meta property="og:description" content={article.metaDescription} />
-        <meta property="og:url" content={`https://dicto.pro/blog/${article.slug}`} />
-        <meta property="og:type" content="article" />
-      </Helmet>
+      <Seo
+        title={article.metaTitle}
+        description={article.metaDescription}
+        canonical={`https://dicto.pro/blog/${article.slug}`}
+        type="article"
+        publishedTime={article.date}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            headline: article.title,
+            description: article.metaDescription,
+            datePublished: article.date,
+            dateModified: article.date,
+            inLanguage: "ru-RU",
+            url: `https://dicto.pro/blog/${article.slug}`,
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `https://dicto.pro/blog/${article.slug}`,
+            },
+            image: "https://dicto.pro/og-image.svg",
+            publisher: {
+              "@type": "Organization",
+              name: "Dicto",
+              url: "https://dicto.pro/",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://dicto.pro/favicon.svg",
+              },
+            },
+            author: { "@type": "Organization", name: "Dicto" },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Главная", item: "https://dicto.pro/" },
+              { "@type": "ListItem", position: 2, name: "Блог", item: "https://dicto.pro/blog" },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: article.title,
+                item: `https://dicto.pro/blog/${article.slug}`,
+              },
+            ],
+          },
+        ]}
+      />
 
       {/* Article */}
       <article className="max-w-3xl mx-auto px-5 md:px-8 pt-10 pb-20">

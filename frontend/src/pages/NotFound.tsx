@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Seo from "@/components/Seo";
 
 // ASCII-waveform как фирменная деталь 404 — играет на продукте про звук.
 const WAVE_FRAMES = [
@@ -10,6 +11,8 @@ const WAVE_FRAMES = [
 
 export default function NotFound() {
   return (
+    <>
+    <Seo title="Страница не найдена — 404 · Dicto" noindex />
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] flex items-center justify-center relative overflow-hidden px-6">
       <div className="relative max-w-xl w-full">
         {/* ASCII-waveform */}
@@ -44,5 +47,6 @@ export default function NotFound() {
         </p>
       </div>
     </div>
+    </>
   );
 }

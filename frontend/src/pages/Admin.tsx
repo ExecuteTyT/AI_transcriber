@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "@/api/client";
 import { useAuthStore } from "@/store/authStore";
+import Seo from "@/components/Seo";
 
 interface Stats {
   total_users: number;
@@ -135,6 +136,7 @@ export default function Admin() {
 
   return (
     <div className="animate-fade-up">
+      <Seo title="Админ-панель — Dicto" noindex />
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">

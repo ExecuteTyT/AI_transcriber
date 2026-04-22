@@ -6,6 +6,7 @@ import { Icon } from "@/components/Icon";
 import { useAuthStore } from "@/store/authStore";
 import { useSound } from "@/lib/sound";
 import WaveformLoader from "@/components/ui/WaveformLoader";
+import Seo from "@/components/Seo";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -34,6 +35,13 @@ export default function Login() {
   };
 
   return (
+    <>
+    <Seo
+      title="Вход — Dicto"
+      description="Вход в личный кабинет Dicto — транскрибация аудио и видео в текст."
+      canonical="https://dicto.pro/login"
+      noindex
+    />
     <AuthLayout
       eyebrow="С возвращением"
       title={<>С возвращением <em className="italic text-acid-300">в Dicto</em>.</>}
@@ -120,5 +128,6 @@ export default function Login() {
         </div>
       </form>
     </AuthLayout>
+    </>
   );
 }

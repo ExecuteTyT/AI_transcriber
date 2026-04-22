@@ -18,6 +18,7 @@ import { Icon } from "@/components/Icon";
 import { fadeUp, staggerChildren } from "@/lib/motion";
 import { LanguageSelect } from "@/components/ui/LanguageSelect";
 import { useSound } from "@/lib/sound";
+import Seo from "@/components/Seo";
 
 const PLAN_NAMES: Record<string, string> = {
   free: "Free",
@@ -147,6 +148,7 @@ export default function Profile() {
       animate="visible"
       className="mx-auto max-w-2xl space-y-6"
     >
+      <Seo title="Профиль — Dicto" noindex />
       {/* ── Header card ── */}
       <motion.section
         variants={fadeUp}

@@ -16,6 +16,7 @@ import { LoadingRows } from "@/components/states/LoadingState";
 import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
 import { cn } from "@/lib/cn";
+import Seo from "@/components/Seo";
 
 const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес", premium: "Премиум" };
 
@@ -122,6 +123,7 @@ export default function Dashboard() {
 
   return (
     <motion.div variants={staggerChildren(0.06)} initial="hidden" animate="visible" className="space-y-8 md:space-y-10">
+      <Seo title="Мои транскрипции — Dicto" noindex />
       <motion.header variants={fadeUp} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--fg-subtle)]">

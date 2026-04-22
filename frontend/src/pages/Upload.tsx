@@ -13,6 +13,7 @@ import { LanguageSelect } from "@/components/ui/LanguageSelect";
 import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { useSound } from "@/lib/sound";
+import Seo from "@/components/Seo";
 
 const ACCEPTED_TYPES = {
   "audio/*": [".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".webm"],
@@ -141,6 +142,7 @@ export default function Upload() {
       animate="visible"
       className="mx-auto max-w-2xl space-y-6 md:space-y-8"
     >
+      <Seo title="Новая запись — Dicto" noindex />
       <motion.header variants={fadeUp}>
         <p className="eyebrow mb-3">Новая запись</p>
         <h1 className="font-display text-4xl md:text-5xl leading-[1.02] tracking-[-0.02em] text-[var(--fg)]">

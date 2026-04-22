@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
+import Seo from "@/components/Seo";
 
 interface FAQ {
   q: string;
@@ -38,14 +38,32 @@ export default function SeoLanding({
 }: SeoLandingProps) {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-      <Helmet>
-        <title>{metaTitle || h1 + " | Dicto"}</title>
-        <meta name="description" content={metaDescription || description} />
-        {canonical && <link rel="canonical" href={canonical} />}
-        <meta property="og:title" content={metaTitle || h1} />
-        <meta property="og:description" content={metaDescription || description} />
-        {canonical && <meta property="og:url" content={canonical} />}
-      </Helmet>
+      <Seo
+        title={metaTitle || `${h1} | Dicto`}
+        description={metaDescription || description}
+        canonical={canonical}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: breadcrumb.map((b, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: b.label,
+              item: b.href.startsWith("http") ? b.href : `https://dicto.pro${b.href}`,
+            })),
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((faq) => ({
+              "@type": "Question",
+              name: faq.q,
+              acceptedAnswer: { "@type": "Answer", text: faq.a },
+            })),
+          },
+        ]}
+      />
 
       {/* ─── Header ─── */}
       <header
@@ -229,21 +247,6 @@ export default function SeoLanding({
         </div>
       </footer>
 
-      {/* FAQ Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: faqs.map((faq) => ({
-              "@type": "Question",
-              name: faq.q,
-              acceptedAnswer: { "@type": "Answer", text: faq.a },
-            })),
-          }),
-        }}
-      />
     </div>
   );
 }

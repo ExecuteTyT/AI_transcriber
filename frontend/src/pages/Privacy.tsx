@@ -1,19 +1,16 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { ChevronLeft } from "lucide-react";
 import { Icon } from "@/components/Icon";
+import Seo from "@/components/Seo";
 
 export default function Privacy() {
   return (
     <div className="min-h-dvh bg-[var(--bg)] text-[var(--fg)]">
-      <Helmet>
-        <title>Политика конфиденциальности — Dicto</title>
-        <meta
-          name="description"
-          content="Политика обработки персональных данных Dicto — соответствие 152-ФЗ, используемые сервисы, права субъекта данных."
-        />
-        <link rel="canonical" href="https://dicto.pro/privacy" />
-      </Helmet>
+      <Seo
+        title="Политика конфиденциальности — Dicto"
+        description="Политика обработки персональных данных Dicto — соответствие 152-ФЗ, используемые сервисы, права субъекта данных."
+        canonical="https://dicto.pro/privacy"
+      />
 
       <header
         className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur-xl"

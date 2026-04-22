@@ -1,17 +1,41 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { articles } from "./articles";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
+import Seo from "@/components/Seo";
 
 export default function BlogIndex() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-      <Helmet>
-        <title>Блог Dicto — статьи о транскрибации, нейросетях и продуктивности</title>
-        <meta name="description" content="Полезные статьи и гайды: как транскрибировать аудио, сравнение сервисов и нейросетей, расшифровка Zoom-совещаний, субтитры для YouTube." />
-        <link rel="canonical" href="https://dicto.pro/blog" />
-      </Helmet>
+      <Seo
+        title="Блог Dicto — статьи о транскрибации, нейросетях и продуктивности"
+        description="Полезные статьи и гайды: как транскрибировать аудио, сравнение сервисов и нейросетей, расшифровка Zoom-совещаний, субтитры для YouTube."
+        canonical="https://dicto.pro/blog"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: "Блог Dicto",
+            url: "https://dicto.pro/blog",
+            inLanguage: "ru-RU",
+            publisher: { "@type": "Organization", name: "Dicto", url: "https://dicto.pro/" },
+            blogPost: articles.map((a) => ({
+              "@type": "BlogPosting",
+              headline: a.title,
+              url: `https://dicto.pro/blog/${a.slug}`,
+              datePublished: a.date,
+            })),
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Главная", item: "https://dicto.pro/" },
+              { "@type": "ListItem", position: 2, name: "Блог", item: "https://dicto.pro/blog" },
+            ],
+          },
+        ]}
+      />
 
       {/* Header */}
       <header
