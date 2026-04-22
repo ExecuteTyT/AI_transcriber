@@ -51,7 +51,7 @@ export default function MobileTopBar() {
           </IconButton>
         ) : (
           <div className="flex items-center gap-2 px-3">
-            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_10px_rgba(197,240,20,0.6)]" aria-hidden />
+            <span className="dot-accent" aria-hidden />
             <span className="font-display text-[20px] tracking-[-0.015em] text-[var(--fg)] leading-none">
               Dicto
             </span>

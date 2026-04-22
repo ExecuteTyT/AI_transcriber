@@ -51,19 +51,22 @@
 }
 
 [data-theme="light"] {
-  --bg: #faf7f2;
-  --bg-elevated: #f3ede2;
-  --bg-muted: #e8dec9;
+  /* В light-теме инвертируем elevation-иерархию относительно dark:
+     страница — насыщенный cream, карточки — почти белые (выше значит светлее).
+     Это даёт чёткую материальную иерархию вместо «всё сливается в кремовый». */
+  --bg: #ede4cf;           /* page background — насыщенный cream */
+  --bg-elevated: #faf7f2;  /* карточки, панели — светлее страницы */
+  --bg-muted: #e0d4b7;     /* inputs, hover, tertiary — темнее страницы */
   --fg: #0b0805;
   --fg-muted: #3a342a;
   --fg-subtle: #5d5646;
-  /* Accent в светлой теме — глубокий олив, читаемый на cream
-     (acid-300 #c5f014 на cream давал контраст ~1.4 → нечитаемо). */
+  /* Accent в light — глубокий олив, читаемый на cream. Acid-300 #c5f014
+     давал контраст ~1.4 → нечитаемо; #3f5000 даёт ~9:1. */
   --accent: #3f5000;
   --accent-hover: #2d3a00;
   --accent-fg: #faf7f2;
-  --border: rgba(11, 8, 5, 0.1);
-  --border-strong: rgba(11, 8, 5, 0.22);
+  --border: rgba(11, 8, 5, 0.12);
+  --border-strong: rgba(11, 8, 5, 0.24);
   color-scheme: light;
 }
 
@@ -154,6 +157,26 @@
   /* Eyebrow (over-title ритм в editorial вёрстке) */
   .eyebrow {
     @apply font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--fg-subtle)];
+  }
+
+  /* Brand dot — маленькая точка акцентного цвета с glow.
+     Используется в лого, маркерах, рядом с бейджами. Одинаково работает
+     в обеих темах благодаря var(--accent). */
+  .dot-accent {
+    display: inline-block;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 9999px;
+    background: var(--accent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .dot-accent-lg {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--accent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent);
+    display: inline-block;
   }
 
   .btn-secondary {

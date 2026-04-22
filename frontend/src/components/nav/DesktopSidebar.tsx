@@ -53,7 +53,14 @@ export default function DesktopSidebar() {
       {/* ── Header: logo ── */}
       <div className="h-16 flex items-center gap-2 px-5 border-b border-[var(--border)]">
         <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
-          <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(197,240,20,0.55)]" aria-hidden />
+          <span
+            className="block w-1.5 h-1.5 rounded-full"
+            style={{
+              background: "var(--accent)",
+              boxShadow: "0 0 12px color-mix(in srgb, var(--accent) 55%, transparent)",
+            }}
+            aria-hidden
+          />
           Dicto
         </Link>
       </div>
@@ -83,7 +90,14 @@ export default function DesktopSidebar() {
                     aria-current={active ? "page" : undefined}
                   >
                     {active && (
-                      <span className="absolute left-0 h-5 w-[2px] bg-acid-300 shadow-[0_0_8px_rgba(197,240,20,0.65)]" aria-hidden />
+                      <span
+                        className="absolute left-0 h-5 w-[2px]"
+                        style={{
+                          background: "var(--accent)",
+                          boxShadow: "0 0 8px color-mix(in srgb, var(--accent) 65%, transparent)",
+                        }}
+                        aria-hidden
+                      />
                     )}
                     <Icon icon={item.Icon} size={17} strokeWidth={1.75} className={active ? "text-[var(--accent)]" : "text-[var(--fg-subtle)] group-hover:text-[var(--fg-muted)]"} />
                     <span className={active ? "font-medium" : ""}>{item.label}</span>
@@ -119,7 +133,7 @@ export default function DesktopSidebar() {
                     cy="28"
                     r={radius}
                     fill="none"
-                    stroke={lowUsage ? "#f87171" : "#c5f014"}
+                    stroke={lowUsage ? "#e11d48" : "var(--accent)"}
                     strokeWidth="3"
                     strokeLinecap="round"
                     strokeDasharray={circumference}
@@ -128,7 +142,7 @@ export default function DesktopSidebar() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-display text-lg leading-none text-[var(--fg)] tabular">
+                  <span className="font-sans font-semibold text-sm leading-none text-[var(--fg)] tabular">
                     {totalAvailable}
                   </span>
                 </div>

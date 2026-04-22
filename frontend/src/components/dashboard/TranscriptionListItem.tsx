@@ -51,11 +51,13 @@ function MiniWaveform({ seed = 0, active }: { seed?: number; active?: boolean })
       {bars.map((b, i) => (
         <span
           key={i}
-          className={cn(
-            "w-[2px] rounded-full transition-colors duration-slow",
-            active ? "bg-acid-300/80" : "bg-[var(--fg-subtle)]/40"
-          )}
-          style={{ height: `${b.h}%` }}
+          className="w-[2px] rounded-full transition-colors duration-slow"
+          style={{
+            height: `${b.h}%`,
+            background: active
+              ? "color-mix(in srgb, var(--accent) 80%, transparent)"
+              : "color-mix(in srgb, var(--fg-subtle) 40%, transparent)",
+          }}
         />
       ))}
     </div>

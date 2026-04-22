@@ -29,7 +29,7 @@ export default function Terms() {
             className="flex items-center gap-2 font-display text-xl tracking-[-0.015em] text-[var(--fg)] leading-none"
           >
             <span
-              className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_10px_rgba(197,240,20,0.55)]"
+              className="dot-accent"
               aria-hidden
             />
             Dicto

@@ -260,7 +260,7 @@ export default function Landing() {
       >
         <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
-            <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_12px_rgba(197,240,20,0.55)]" aria-hidden />
+            <span className="dot-accent" aria-hidden />
             Dicto
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[var(--fg-muted)]">
@@ -333,7 +333,7 @@ export default function Landing() {
         <div className="relative max-w-6xl mx-auto px-6">
           {/* Eyebrow */}
           <p className="eyebrow mb-6 animate-fade-up">
-            <span className="inline-block w-2 h-2 rounded-full bg-acid-300 align-middle mr-2 shadow-[0_0_12px_rgba(197,240,20,0.7)]" aria-hidden />
+            <span className="dot-accent-lg align-middle mr-2" aria-hidden />
             Транскрибация · AI-саммари · RAG-чат
           </p>
 
@@ -430,7 +430,7 @@ export default function Landing() {
                 {/* Visual accent on featured card */}
                 {i === 0 && (
                   <div className="mt-8 pt-6 border-t border-[var(--border)] flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
-                    <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 animate-pulse" aria-hidden />
+                    <span className="dot-accent animate-pulse" aria-hidden />
                     Voxtral V2 · Mistral AI
                   </div>
                 )}
@@ -645,7 +645,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-[var(--border)]">
             <div className="flex items-center gap-2">
-              <span className="block w-1.5 h-1.5 rounded-full bg-acid-300" aria-hidden />
+              <span className="dot-accent" aria-hidden />
               <span className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">Dicto</span>
               <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] ml-3">© 2026</span>
             </div>

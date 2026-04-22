@@ -159,7 +159,14 @@ export default function Profile() {
             <div className="flex h-full w-full items-center justify-center rounded-3xl border border-[var(--border-strong)] bg-[var(--bg)] font-display text-3xl md:text-4xl text-[var(--fg)]">
               {initial}
             </div>
-            <span className="absolute -right-1 -bottom-1 block w-3 h-3 rounded-full bg-acid-300 shadow-[0_0_10px_rgba(197,240,20,0.6)] ring-4 ring-[var(--bg-elevated)]" aria-hidden />
+            <span
+              className="absolute -right-1 -bottom-1 block w-3 h-3 rounded-full ring-4 ring-[var(--bg-elevated)]"
+              style={{
+                background: "var(--accent)",
+                boxShadow: "0 0 10px color-mix(in srgb, var(--accent) 60%, transparent)",
+              }}
+              aria-hidden
+            />
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-1">
@@ -170,7 +177,7 @@ export default function Profile() {
             </h1>
             <p className="mt-1 truncate text-[13px] text-[var(--fg-muted)]">{user.email}</p>
             <span className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-muted)]">
-              <span className="block w-1 h-1 rounded-full bg-acid-300" aria-hidden />
+              <span className="dot-accent" aria-hidden />
               План: {PLAN_NAMES[user.plan] || user.plan}
             </span>
           </div>

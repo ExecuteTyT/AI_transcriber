@@ -69,7 +69,7 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
                 cy="70"
                 r={radius}
                 fill="none"
-                stroke={low ? "#f87171" : "#c5f014"}
+                stroke={low ? "#e11d48" : "var(--accent)"}
                 strokeWidth="4"
                 strokeLinecap="round"
                 strokeDasharray={circumference}
@@ -79,7 +79,7 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-4xl leading-none tracking-tight text-[var(--fg)] tabular">
+              <span className="font-sans font-semibold text-4xl leading-none tracking-tight text-[var(--fg)] tabular">
                 {animated}
               </span>
               <span className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)]">
@@ -122,8 +122,21 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
 
           {/* Bonus chip — видимая инфо-линия, тратится первым */}
           {bonusMinutes > 0 && (
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-[var(--accent)]/25 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] px-3 py-2">
-              <span className="block w-1.5 h-1.5 rounded-full bg-acid-300 shadow-[0_0_8px_rgba(197,240,20,0.6)]" aria-hidden />
+            <div
+              className="mt-4 flex items-center gap-2 rounded-xl border px-3 py-2"
+              style={{
+                borderColor: "color-mix(in srgb, var(--accent) 28%, transparent)",
+                background: "color-mix(in srgb, var(--accent) 10%, transparent)",
+              }}
+            >
+              <span
+                className="block w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: "var(--accent)",
+                  boxShadow: "0 0 8px color-mix(in srgb, var(--accent) 55%, transparent)",
+                }}
+                aria-hidden
+              />
               <span className="text-[12px] text-[var(--fg)]">
                 Бонус <span className="tabular font-medium">{bonusMinutes}</span> мин
               </span>
@@ -161,9 +174,9 @@ function MicroStat({ label, value, unit }: { label: string; value: string; unit?
   return (
     <div className="bg-[var(--bg-elevated)] p-3">
       <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--fg-subtle)]">{label}</p>
-      <p className="mt-1 font-display text-xl leading-none text-[var(--fg)] tabular">
+      <p className="mt-1 font-sans font-semibold text-xl leading-none text-[var(--fg)] tabular">
         {value}
-        {unit && <span className="ml-1 font-mono text-[10px] text-[var(--fg-subtle)]">{unit}</span>}
+        {unit && <span className="ml-1 font-mono text-[10px] font-normal text-[var(--fg-subtle)]">{unit}</span>}
       </p>
     </div>
   );
