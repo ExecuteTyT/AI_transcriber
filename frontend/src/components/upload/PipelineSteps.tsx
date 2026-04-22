@@ -47,9 +47,9 @@ export function PipelineSteps({ stage, uploadPercent = 0, fileName }: Props) {
   const activeIdx = stageToIndex(stage);
 
   return (
-    <div className="rounded-3xl border border-gray-200/70 bg-white p-5 shadow-raised md:p-6">
+    <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-5 shadow-raised md:p-6">
       {fileName && (
-        <p className="mb-4 truncate text-center text-sm font-medium text-gray-500">{fileName}</p>
+        <p className="mb-4 truncate text-center text-sm font-medium text-[var(--fg-muted)]">{fileName}</p>
       )}
       <ol className="relative flex items-start justify-between gap-1">
         {STEPS.map((step, idx) => {
@@ -62,18 +62,18 @@ export function PipelineSteps({ stage, uploadPercent = 0, fileName }: Props) {
               {idx < STEPS.length - 1 && (
                 <div
                   aria-hidden
-                  className="absolute left-[calc(50%+26px)] right-[calc(-50%+26px)] top-5 h-0.5 overflow-hidden rounded-full bg-surface-200"
+                  className="absolute left-[calc(50%+26px)] right-[calc(-50%+26px)] top-5 h-0.5 overflow-hidden rounded-full bg-[var(--border-strong)]"
                 >
                   <motion.span
                     initial={{ width: 0 }}
                     animate={{ width: done ? "100%" : active ? "60%" : "0%" }}
                     transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-                    className={cn(
-                      "block h-full",
-                      done
-                        ? "bg-gradient-to-r from-primary-500 to-accent-500"
-                        : "bg-gradient-to-r from-primary-400/60 to-primary-400/20"
-                    )}
+                    className="block h-full"
+                    style={{
+                      background: done
+                        ? "var(--accent)"
+                        : `color-mix(in srgb, var(--accent) ${active ? 60 : 30}%, transparent)`,
+                    }}
                   />
                 </div>
               )}
@@ -85,17 +85,33 @@ export function PipelineSteps({ stage, uploadPercent = 0, fileName }: Props) {
                   opacity: done || active || next ? 1 : 0.55,
                 }}
                 transition={{ type: "spring", stiffness: 320, damping: 26 }}
-                className={cn(
-                  "relative flex h-11 w-11 items-center justify-center rounded-2xl ring-2 ring-offset-2 ring-offset-white",
-                  done
-                    ? "bg-gradient-to-br from-primary-500 to-accent-500 text-white ring-primary-200"
+                className="relative flex h-11 w-11 items-center justify-center rounded-2xl ring-2 ring-offset-2"
+                style={{
+                  background: done
+                    ? "var(--accent)"
                     : active
-                    ? "bg-white text-primary-600 ring-primary-300 shadow-glow-sm"
-                    : "bg-surface-50 text-gray-400 ring-surface-200"
-                )}
+                    ? "var(--bg-elevated)"
+                    : "var(--bg-muted)",
+                  color: done
+                    ? "var(--accent-fg)"
+                    : active
+                    ? "var(--accent)"
+                    : "var(--fg-subtle)",
+                  boxShadow: `0 0 0 2px ${
+                    done
+                      ? "color-mix(in srgb, var(--accent) 40%, transparent)"
+                      : active
+                      ? "color-mix(in srgb, var(--accent) 50%, transparent)"
+                      : "var(--border)"
+                  }, 0 0 0 4px var(--bg-elevated)`,
+                }}
               >
                 {active && (
-                  <span className="absolute inset-0 rounded-2xl bg-primary-200/40 animate-ping" aria-hidden />
+                  <span
+                    className="absolute inset-0 rounded-2xl animate-ping"
+                    style={{ background: "color-mix(in srgb, var(--accent) 35%, transparent)" }}
+                    aria-hidden
+                  />
                 )}
                 <span className="relative">
                   {done ? (
@@ -110,7 +126,7 @@ export function PipelineSteps({ stage, uploadPercent = 0, fileName }: Props) {
                 <p
                   className={cn(
                     "text-[12px] font-semibold tracking-tight md:text-sm",
-                    done || active ? "text-gray-900" : "text-gray-400"
+                    done || active ? "text-[var(--fg)]" : "text-[var(--fg-subtle)]"
                   )}
                 >
                   {step.label}
@@ -118,7 +134,7 @@ export function PipelineSteps({ stage, uploadPercent = 0, fileName }: Props) {
                 <p
                   className={cn(
                     "mt-0.5 text-[10px] font-medium md:text-xs",
-                    active ? "text-primary-600" : "text-gray-400"
+                    active ? "text-[var(--accent)]" : "text-[var(--fg-subtle)]"
                   )}
                 >
                   {active && stage === "uploading"
@@ -136,7 +152,11 @@ export function PipelineSteps({ stage, uploadPercent = 0, fileName }: Props) {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.26 }}
-          className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm font-semibold text-emerald-700"
+          className="mt-5 rounded-xl px-4 py-3 text-center text-sm font-semibold"
+          style={{
+            background: "color-mix(in srgb, var(--accent) 15%, transparent)",
+            color: "var(--accent)",
+          }}
         >
           Готово — переходим к результату…
         </motion.div>

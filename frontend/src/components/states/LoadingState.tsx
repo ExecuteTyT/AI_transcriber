@@ -12,7 +12,7 @@ export function LoadingRows({ count = 3, className }: LoadingRowsProps) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3.5"
+          className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-3.5"
           aria-hidden
         >
           <Skeleton variant="rect" className="h-11 w-11 rounded-xl" />

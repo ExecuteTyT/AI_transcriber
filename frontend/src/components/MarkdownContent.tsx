@@ -28,9 +28,9 @@ export default function MarkdownContent({ content }: { content: string }) {
         parts.push(text.slice(lastIndex, match.index));
       }
       if (match[2]) {
-        parts.push(<strong key={`b${match.index}`} className="font-semibold text-gray-900">{match[2]}</strong>);
+        parts.push(<strong key={`b${match.index}`} className="font-semibold text-[var(--fg)]">{match[2]}</strong>);
       } else if (match[3]) {
-        parts.push(<em key={`i${match.index}`} className="italic text-gray-600">{match[3]}</em>);
+        parts.push(<em key={`i${match.index}`} className="italic text-[var(--fg-muted)]">{match[3]}</em>);
       }
       lastIndex = regex.lastIndex;
     }
@@ -53,7 +53,7 @@ export default function MarkdownContent({ content }: { content: string }) {
     if (trimmed.startsWith("## ")) {
       flushList();
       elements.push(
-        <h2 key={key++} className="text-lg font-bold text-gray-900 mt-6 mb-2 first:mt-0">
+        <h2 key={key++} className="text-lg font-bold text-[var(--fg)] mt-6 mb-2 first:mt-0">
           {renderInline(trimmed.slice(3))}
         </h2>
       );
@@ -64,7 +64,7 @@ export default function MarkdownContent({ content }: { content: string }) {
     if (trimmed.startsWith("### ")) {
       flushList();
       elements.push(
-        <h3 key={key++} className="text-base font-semibold text-gray-800 mt-4 mb-1.5">
+        <h3 key={key++} className="text-base font-semibold text-[var(--fg)] mt-4 mb-1.5">
           {renderInline(trimmed.slice(4))}
         </h3>
       );
@@ -77,12 +77,19 @@ export default function MarkdownContent({ content }: { content: string }) {
       const checked = checkboxMatch[1] === "x";
       listItems.push(
         <li key={key++} className="flex items-start gap-2">
-          <span className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center text-xs ${
-            checked ? "bg-primary-500 border-primary-500 text-white" : "border-gray-300"
-          }`}>
+          <span
+            className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center text-xs ${
+              checked ? "border-transparent" : ""
+            }`}
+            style={{
+              background: checked ? "var(--accent)" : "transparent",
+              color: checked ? "var(--accent-fg)" : "inherit",
+              borderColor: checked ? "var(--accent)" : "var(--border-strong)",
+            }}
+          >
             {checked && "✓"}
           </span>
-          <span className={checked ? "line-through text-gray-400" : "text-gray-700"}>
+          <span className={checked ? "line-through text-[var(--fg-subtle)]" : "text-[var(--fg-muted)]"}>
             {renderInline(checkboxMatch[2])}
           </span>
         </li>
@@ -94,8 +101,8 @@ export default function MarkdownContent({ content }: { content: string }) {
     const listMatch = trimmed.match(/^[-•*]\s+(.*)/);
     if (listMatch) {
       listItems.push(
-        <li key={key++} className="flex items-start gap-2 text-gray-700">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0" />
+        <li key={key++} className="flex items-start gap-2 text-[var(--fg-muted)]">
+          <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "var(--accent)" }} />
           <span>{renderInline(listMatch[1])}</span>
         </li>
       );
@@ -105,7 +112,7 @@ export default function MarkdownContent({ content }: { content: string }) {
     // Paragraph
     flushList();
     elements.push(
-      <p key={key++} className="text-gray-700 leading-relaxed my-2">
+      <p key={key++} className="text-[var(--fg-muted)] leading-relaxed my-2">
         {renderInline(trimmed)}
       </p>
     );

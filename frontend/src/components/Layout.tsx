@@ -9,7 +9,7 @@ export default function Layout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div className="min-h-screen bg-[var(--bg)]">
       {/* Mobile top bar */}
       <MobileTopBar />
 
