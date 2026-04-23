@@ -168,7 +168,7 @@ export default function BlogArticle() {
               "@type": "WebPage",
               "@id": `https://dicto.pro/blog/${article.slug}`,
             },
-            image: "https://dicto.pro/og-image.svg",
+            image: "https://dicto.pro/og-image.png",
             publisher: {
               "@type": "Organization",
               name: "Dicto",

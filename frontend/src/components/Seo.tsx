@@ -1,7 +1,9 @@
 import { Helmet } from "react-helmet-async";
 
 const SITE_URL = "https://dicto.pro";
-const DEFAULT_IMAGE = `${SITE_URL}/og-image.svg`;
+// og:image всегда raster (PNG) — Telegram/FB/LinkedIn/WhatsApp/iMessage молча отбрасывают SVG.
+// Регенерируется из public/og-image.svg через `npm run build:og`.
+const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 const SITE_NAME = "Dicto";
 
 export type SeoProps = {
@@ -66,6 +68,7 @@ export default function Seo({
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:image" content={imageUrl} />
       <meta property="og:image:secure_url" content={imageUrl} />
+      <meta property="og:image:type" content="image/png" />
       <meta property="og:image:alt" content={imageAlt} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
