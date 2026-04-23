@@ -19,13 +19,22 @@ const pngPath = path.join(publicDir, "og-image.png");
 
 async function main() {
   const svg = fs.readFileSync(svgPath);
+  // palette: false — принудительно полный RGB PNG (не indexed/палитру).
+  // Palette-PNG отжимает размер в 2–3x, но некоторые OG-процессоры (особенно
+  // старые image pipelines у соцсетей) капризничают с indexed color.
+  // Стоимость +~100 KB не критична: OG-image один файл на всё приложение.
   await sharp(svg, { density: 300 })
     .resize(1200, 630, { fit: "cover" })
-    .png({ compressionLevel: 9, quality: 92 })
+    .png({ compressionLevel: 9, palette: false })
     .toFile(pngPath);
 
   const { size } = fs.statSync(pngPath);
-  console.log(`✓ ${path.relative(process.cwd(), pngPath)} (${(size / 1024).toFixed(1)} KB)`);
+  const meta = await sharp(pngPath).metadata();
+  console.log(
+    `✓ ${path.relative(process.cwd(), pngPath)} ` +
+      `(${(size / 1024).toFixed(1)} KB, ${meta.width}×${meta.height}, ` +
+      `palette=${meta.isPalette}, channels=${meta.channels})`
+  );
 }
 
 main().catch((err) => {
