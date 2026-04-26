@@ -426,15 +426,21 @@ async def get_audio_url(
     if s3_service is None:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Хранилище не настроено")
 
+    # TTL 6 часов: длинные записи (лекция, подкаст 2-3 часа) пользователь может
+    # слушать в фоне, переключаясь по сегментам. 1ч ловило 403 на seek/play
+    # после простоя. Клиент всё равно проактивно перезапрашивает URL за 50 мин
+    # до истечения, плюс при <audio> error.
+    audio_url_ttl = 6 * 3600
+
     # 1) Если это S3 — выдаём прямой presigned URL (браузер тянет напрямую с S3)
-    presigned = s3_service.get_presigned_url(transcription.file_key, expires_in=3600)
+    presigned = s3_service.get_presigned_url(transcription.file_key, expires_in=audio_url_ttl)
     if presigned:
         return {"url": presigned, "content_type": transcription.content_type or "audio/mpeg"}
 
     # 2) Локальное хранилище — выдаём signed-токен на проксирующий стрим
     from app.services.auth import create_media_token
 
-    token = create_media_token(transcription.file_key, str(user.id), expires_in=3600)
+    token = create_media_token(transcription.file_key, str(user.id), expires_in=audio_url_ttl)
     base = str(request.base_url).rstrip("/")
     return {
         "url": f"{base}/api/transcriptions/media/stream?token={token}",

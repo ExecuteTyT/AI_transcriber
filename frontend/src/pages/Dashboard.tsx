@@ -74,8 +74,18 @@ export default function Dashboard() {
       setItems((prev) => prev.filter((i) => i.id !== item.id));
       setTotal((prev) => prev - 1);
       toast.success(`«${item.title}» удалена`);
-    } catch {
-      toast.error("Не удалось удалить транскрипцию");
+    } catch (err) {
+      const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+      const detail = axiosErr.response?.data?.detail;
+      const status = axiosErr.response?.status;
+      if (status === 404) {
+        // Уже удалено в другой вкладке — синхронизируем UI без ошибки.
+        setItems((prev) => prev.filter((i) => i.id !== item.id));
+        setTotal((prev) => Math.max(0, prev - 1));
+        toast.success(`«${item.title}» удалена`);
+      } else {
+        toast.error(detail || `Не удалось удалить (код ${status ?? "сети"})`);
+      }
     } finally {
       setDeletingId(null);
     }

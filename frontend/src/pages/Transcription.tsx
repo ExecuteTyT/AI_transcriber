@@ -101,6 +101,7 @@ export default function Transcription() {
   const [exportSheetOpen, setExportSheetOpen] = useState(false);
 
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioUrlFetchedAt, setAudioUrlFetchedAt] = useState<number>(0);
   const player = useAudioPlayer(audioUrl);
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const [autoScroll] = useState(true);
@@ -196,7 +197,10 @@ export default function Transcription() {
     transcriptionApi
       .getAudioUrl(id)
       .then(({ data }) => {
-        if (!cancelled) setAudioUrl(data.url);
+        if (!cancelled) {
+          setAudioUrl(data.url);
+          setAudioUrlFetchedAt(Date.now());
+        }
       })
       .catch(() => {
         /* audio недоступен — проигрыватель не появится */
@@ -205,6 +209,50 @@ export default function Transcription() {
       cancelled = true;
     };
   }, [id, transcription?.status]);
+
+  // Presigned URL живёт ~1ч, после этого <audio> ловит 403 при load/seek.
+  // Перезапрашиваем URL когда player.error выставлен либо когда прошло
+  // больше 50 минут с момента получения (проактивный refresh перед expiry).
+  useEffect(() => {
+    if (!id || !transcription || transcription.status !== "completed") return;
+    if (!audioUrl) return;
+
+    const STALE_MS = 50 * 60 * 1000;
+    const stale = Date.now() - audioUrlFetchedAt > STALE_MS;
+    const needsRefresh = !!player.error || stale;
+    if (!needsRefresh) return;
+
+    const wasPlaying = player.isPlaying;
+    const resumeAt = player.currentTime;
+
+    let cancelled = false;
+    transcriptionApi
+      .getAudioUrl(id)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setAudioUrl(data.url);
+        setAudioUrlFetchedAt(Date.now());
+        if (player.error) {
+          toast.error("Аудио переподключено");
+        }
+        // Восстанавливаем позицию и состояние play. ждём loadedmetadata —
+        // currentTime до этого момента молча игнорируется.
+        const audio = player.audioRef.current;
+        if (!audio) return;
+        const onReady = () => {
+          audio.currentTime = resumeAt;
+          if (wasPlaying) audio.play().catch(() => {});
+          audio.removeEventListener("loadedmetadata", onReady);
+        };
+        audio.addEventListener("loadedmetadata", onReady);
+      })
+      .catch(() => {
+        if (!cancelled && player.error) toast.error("Не удалось загрузить аудио");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, transcription?.status, player.error, audioUrl, audioUrlFetchedAt]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const lastScrolledRef = useRef<number>(-1);
   useEffect(() => {
