@@ -30,6 +30,10 @@ class StorageBackend:
         """Прямая ссылка на файл для <audio src>. None если бэкенд не поддерживает."""
         return None
 
+    def object_exists(self, file_key: str) -> bool:
+        """Физическое наличие объекта в хранилище. Должно быть быстрее чем GET (HEAD/stat)."""
+        raise NotImplementedError
+
     def open_stream(self, file_key: str, start: int = 0, end: int | None = None):
         """Открыть поток байт для Range-запросов (локальный fallback)."""
         raise NotImplementedError
@@ -94,6 +98,23 @@ class S3Service(StorageBackend):
             logger.warning("Failed to generate presigned URL: %s", exc)
             return None
 
+    def object_exists(self, file_key: str) -> bool:
+        """HEAD-запрос: проверяет физическое наличие объекта в бакете.
+
+        Нужен перед выдачей presigned URL: иначе клиент получит signed URL,
+        браузер попытается загрузить, S3 ответит 404, <audio> упадёт без
+        внятной ошибки. Лучше отдать 410 Gone сразу.
+        """
+        try:
+            self.client.head_object(Bucket=self.bucket, Key=file_key)
+            return True
+        except Exception as exc:
+            # ClientError с code=404/NoSuchKey — нормальный отрицательный ответ.
+            # Любые другие ошибки (auth/network) трактуем как "не уверены" → False,
+            # пусть клиент увидит реальный 410, а не упадёт молча.
+            logger.info("head_object(%s) failed: %s", file_key, exc)
+            return False
+
 
 class LocalStorage(StorageBackend):
     """Локальное файловое хранилище (для разработки без S3)."""
@@ -132,6 +153,9 @@ class LocalStorage(StorageBackend):
         if start:
             f.seek(start)
         return f
+
+    def object_exists(self, file_key: str) -> bool:
+        return (self.base_dir / file_key).exists()
 
     def get_file_size(self, file_key: str) -> int:
         file_path = self.base_dir / file_key

@@ -426,6 +426,16 @@ async def get_audio_url(
     if s3_service is None:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Хранилище не настроено")
 
+    # HEAD-проверка: если файл реально удалён из бакета (например, retention TTL
+    # вычистил объект, но запись transcription осталась) — возвращаем 410 Gone.
+    # Иначе клиент получит signed URL → S3 ответит 404 NoSuchKey → <audio> упадёт
+    # без внятной ошибки и frontend начнёт refetch-loop.
+    if not s3_service.object_exists(transcription.file_key):
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="Аудиофайл больше недоступен (удалён по сроку хранения)",
+        )
+
     # TTL 6 часов: длинные записи (лекция, подкаст 2-3 часа) пользователь может
     # слушать в фоне, переключаясь по сегментам. 1ч ловило 403 на seek/play
     # после простоя. Клиент всё равно проактивно перезапрашивает URL за 50 мин

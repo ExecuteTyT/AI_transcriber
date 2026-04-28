@@ -102,6 +102,12 @@ export default function Transcription() {
 
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioUrlFetchedAt, setAudioUrlFetchedAt] = useState<number>(0);
+  const [audioUnavailable, setAudioUnavailable] = useState(false);
+  // Сколько раз уже пробовали восстановить URL для текущей ошибки. Сбрасывается
+  // при успешной загрузке (loadedmetadata в useAudioPlayer чистит error → этот
+  // ref сбросится). Лимит — 1, иначе отсутствующий S3-объект превращается в
+  // бесконечный refetch-loop.
+  const retryAttemptsRef = useRef(0);
   const player = useAudioPlayer(audioUrl);
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const [autoScroll] = useState(true);
@@ -210,17 +216,33 @@ export default function Transcription() {
     };
   }, [id, transcription?.status]);
 
-  // Presigned URL живёт ~1ч, после этого <audio> ловит 403 при load/seek.
-  // Перезапрашиваем URL когда player.error выставлен либо когда прошло
-  // больше 50 минут с момента получения (проактивный refresh перед expiry).
+  // Presigned URL живёт 6ч, проактивный refresh за 50 мин до истечения и при
+  // <audio> error. Жёсткий лимит 1 ретрай за сессию ошибки — иначе если файл
+  // отсутствует на S3 (404 NoSuchKey), error будет фигачиться бесконечно и
+  // мы зациклимся на refetch'ах.
   useEffect(() => {
     if (!id || !transcription || transcription.status !== "completed") return;
-    if (!audioUrl) return;
+    if (!audioUrl || audioUnavailable) return;
 
     const STALE_MS = 50 * 60 * 1000;
     const stale = Date.now() - audioUrlFetchedAt > STALE_MS;
-    const needsRefresh = !!player.error || stale;
+    const isError = !!player.error;
+    const needsRefresh = isError || stale;
     if (!needsRefresh) return;
+
+    // На ошибке пробуем ровно один раз — повторный error значит, что URL
+    // успешно перевыпустили, но файл на S3 реально мёртв. Дальше показываем UI.
+    if (isError) {
+      if (retryAttemptsRef.current >= 1) {
+        setAudioUnavailable(true);
+        toast.error("Аудиофайл недоступен");
+        return;
+      }
+      retryAttemptsRef.current += 1;
+    } else {
+      // stale-refresh не считается попыткой восстановления.
+      retryAttemptsRef.current = 0;
+    }
 
     const wasPlaying = player.isPlaying;
     const resumeAt = player.currentTime;
@@ -232,11 +254,9 @@ export default function Transcription() {
         if (cancelled) return;
         setAudioUrl(data.url);
         setAudioUrlFetchedAt(Date.now());
-        if (player.error) {
-          toast.error("Аудио переподключено");
+        if (isError) {
+          toast.message("Аудио переподключено");
         }
-        // Восстанавливаем позицию и состояние play. ждём loadedmetadata —
-        // currentTime до этого момента молча игнорируется.
         const audio = player.audioRef.current;
         if (!audio) return;
         const onReady = () => {
@@ -246,13 +266,21 @@ export default function Transcription() {
         };
         audio.addEventListener("loadedmetadata", onReady);
       })
-      .catch(() => {
-        if (!cancelled && player.error) toast.error("Не удалось загрузить аудио");
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const axiosErr = err as { response?: { status?: number } };
+        // 404/410 от бэкенда → файла нет физически, дальнейшие попытки бессмысленны
+        if (axiosErr.response?.status === 404 || axiosErr.response?.status === 410) {
+          setAudioUnavailable(true);
+          toast.error("Аудиофайл недоступен");
+        } else if (isError) {
+          toast.error("Не удалось загрузить аудио");
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [id, transcription?.status, player.error, audioUrl, audioUrlFetchedAt]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, transcription?.status, player.error, audioUrl, audioUrlFetchedAt, audioUnavailable]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const lastScrolledRef = useRef<number>(-1);
   useEffect(() => {
@@ -487,7 +515,8 @@ export default function Transcription() {
     return true;
   });
 
-  const activeSegmentIndex = audioUrl
+  const audioReady = !!audioUrl && !audioUnavailable;
+  const activeSegmentIndex = audioReady
     ? filteredSegments.findIndex(
         (seg) => player.currentTime >= seg.start && player.currentTime < seg.end
       )
@@ -496,7 +525,7 @@ export default function Transcription() {
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" className="space-y-5">
       <Seo title={`${transcription.title || "Транскрипция"} — Dicto`} noindex />
-      {audioUrl && (
+      {audioUrl && !audioUnavailable && (
         <AudioPlayerBar
           src={audioUrl}
           segments={transcription.segments}
@@ -510,6 +539,11 @@ export default function Transcription() {
           onRate={player.setRate}
           audioRef={player.audioRef}
         />
+      )}
+      {audioUnavailable && (
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-5 py-4 text-[13px] text-[var(--fg-muted)]">
+          Аудиофайл недоступен — он мог быть удалён по сроку хранения. Транскрипт и анализ остались доступны.
+        </div>
       )}
       <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
         <div className="min-w-0">
@@ -757,13 +791,13 @@ export default function Transcription() {
                     >
                       <button
                         type="button"
-                        onClick={() => audioUrl && player.seek(seg.start)}
+                        onClick={() => audioReady && player.seek(seg.start)}
                         className={cn(
                           "w-12 flex-shrink-0 pt-0.5 text-right text-[11px] font-mono tabular transition-colors duration-fast",
-                          audioUrl ? "cursor-pointer text-[var(--accent)] hover:text-[var(--accent-hover)]" : "text-[var(--fg-subtle)]"
+                          audioReady ? "cursor-pointer text-[var(--accent)] hover:text-[var(--accent-hover)]" : "text-[var(--fg-subtle)]"
                         )}
-                        aria-label={audioUrl ? `Перейти к ${formatTime(seg.start)}` : undefined}
-                        disabled={!audioUrl}
+                        aria-label={audioReady ? `Перейти к ${formatTime(seg.start)}` : undefined}
+                        disabled={!audioReady}
                       >
                         {formatTime(seg.start)}
                       </button>
