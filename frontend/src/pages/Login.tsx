@@ -27,8 +27,19 @@ export default function Login() {
       await login(email, password);
       play("confirm");
       navigate("/dashboard");
-    } catch {
-      setError("Неверный email или пароль");
+    } catch (err) {
+      const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+      const status = axiosErr.response?.status;
+      const detail = axiosErr.response?.data?.detail;
+      if (status === 429) {
+        setError("Слишком много попыток входа. Попробуйте через минуту.");
+      } else if (status === 401 || status === 422) {
+        setError("Неверный email или пароль");
+      } else if (detail) {
+        setError(detail);
+      } else {
+        setError("Не удалось войти. Проверьте подключение и попробуйте ещё раз.");
+      }
     } finally {
       setLoading(false);
     }

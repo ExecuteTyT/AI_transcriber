@@ -85,6 +85,8 @@ export default function Transcription() {
   const [analysisError, setAnalysisError] = useState<{ status: number; message: string } | null>(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<{ status: number; detail?: string } | null>(null);
+  const [pollingTimedOut, setPollingTimedOut] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
@@ -119,6 +121,9 @@ export default function Transcription() {
   useEffect(() => {
     if (!id) return;
     pollCountRef.current = 0;
+    setLoadError(null);
+    setPollingTimedOut(false);
+    let consecutivePollFailures = 0;
     const load = async () => {
       try {
         const { data } = await transcriptionApi.getById(id);
@@ -128,11 +133,15 @@ export default function Transcription() {
           pollingRef.current = setInterval(async () => {
             pollCountRef.current += 1;
             if (pollCountRef.current > MAX_POLLS) {
+              // 600 × 3s = 30 минут. Если за это время не завершилось,
+              // показываем явное сообщение вместо вечного спиннера.
               if (pollingRef.current) clearInterval(pollingRef.current);
+              setPollingTimedOut(true);
               return;
             }
             try {
               const { data: updated } = await transcriptionApi.getById(id);
+              consecutivePollFailures = 0;
               setTranscription(updated);
               if (updated.status === "completed" || updated.status === "failed") {
                 if (pollingRef.current) clearInterval(pollingRef.current);
@@ -140,12 +149,25 @@ export default function Transcription() {
                   useAuthStore.getState().loadUser();
                 }
               }
-            } catch {
-              /* polling error */
+            } catch (err) {
+              consecutivePollFailures += 1;
+              // 3 подряд неудачных опроса (≈ 9 секунд) — выдаём явный сигнал.
+              // Раньше любая 401/500 затихала, юзер видел "В очереди" вечно.
+              if (consecutivePollFailures >= 3) {
+                if (pollingRef.current) clearInterval(pollingRef.current);
+                setPollingTimedOut(true);
+                // eslint-disable-next-line no-console
+                console.error("[transcription] polling failed:", err);
+              }
             }
           }, 3000);
         }
-      } catch {
+      } catch (err) {
+        const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+        setLoadError({
+          status: axiosErr.response?.status ?? 0,
+          detail: axiosErr.response?.data?.detail,
+        });
         setLoading(false);
       }
     };
@@ -189,8 +211,18 @@ export default function Transcription() {
       .then(({ data }) => {
         setChatMessages(data.messages);
         setChatRemaining(data.remaining_questions);
+        setChatError("");
       })
-      .catch(() => {});
+      .catch((err: unknown) => {
+        const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+        const status = axiosErr.response?.status;
+        // 404 — у транскрипции просто ещё нет истории, не ошибка.
+        if (status === 404) return;
+        const detail = axiosErr.response?.data?.detail;
+        setChatError(detail || "Не удалось загрузить историю чата");
+        // eslint-disable-next-line no-console
+        console.error("[chat] history load failed:", err);
+      });
   }, [id, tab]);
 
   useEffect(() => {
@@ -208,8 +240,23 @@ export default function Transcription() {
           setAudioUrlFetchedAt(Date.now());
         }
       })
-      .catch(() => {
-        /* audio недоступен — проигрыватель не появится */
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        // 410 Gone — файл удалён по retention TTL. 404 — нет file_key.
+        // 503 — S3 временно недоступен. Любая другая — токен/доступ.
+        const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+        const status = axiosErr.response?.status;
+        if (status === 410 || status === 404) {
+          setAudioUnavailable(true);
+        } else if (status === 503) {
+          // временная — пусть refetch-effect попробует ещё раз позже
+          // eslint-disable-next-line no-console
+          console.warn("[audio] storage temporarily unavailable, will retry");
+        } else {
+          // eslint-disable-next-line no-console
+          console.error("[audio] initial URL fetch failed:", axiosErr.response?.data?.detail || err);
+          setAudioUnavailable(true);
+        }
       });
     return () => {
       cancelled = true;
@@ -261,7 +308,17 @@ export default function Transcription() {
         if (!audio) return;
         const onReady = () => {
           audio.currentTime = resumeAt;
-          if (wasPlaying) audio.play().catch(() => {});
+          if (wasPlaying) {
+            audio.play().catch((playErr) => {
+              // Если повторный URL загрузился, но play() rejects (autoplay
+              // policy / NotSupported / decode error на новом URL) — нужно
+              // дать пользователю сигнал, иначе он будет тыкать кнопку Play
+              // молча.
+              // eslint-disable-next-line no-console
+              console.error("[audio] resume after refresh failed:", playErr);
+              toast.error("Не удалось возобновить — нажмите Play");
+            });
+          }
           audio.removeEventListener("loadedmetadata", onReady);
         };
         audio.addEventListener("loadedmetadata", onReady);
@@ -281,6 +338,15 @@ export default function Transcription() {
       cancelled = true;
     };
   }, [id, transcription?.status, player.error, audioUrl, audioUrlFetchedAt, audioUnavailable]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Сброс счётчика попыток при возврате к чистому состоянию (нет error, есть
+  // URL, не в "недоступно") — означает что аудио успешно подгрузилось,
+  // следующая ошибка должна получить fresh retry budget.
+  useEffect(() => {
+    if (!player.error && audioUrl && !audioUnavailable) {
+      retryAttemptsRef.current = 0;
+    }
+  }, [player.error, audioUrl, audioUnavailable]);
 
   const lastScrolledRef = useRef<number>(-1);
   useEffect(() => {
@@ -442,7 +508,12 @@ export default function Transcription() {
   }
 
   if (!transcription) {
-    return (
+    // Различаем причины отсутствия данных. 401/403 уже отработал интерсептор
+    // (редирект в /login), здесь видим только 404 (нет такой записи или
+    // не у этого юзера) или 5xx (сервер не отдал).
+    const status = loadError?.status ?? 404;
+    const is404 = status === 404 || status === 0;
+    return is404 ? (
       <EmptyState
         icon={FileText}
         title="Транскрипция не найдена"
@@ -453,6 +524,30 @@ export default function Transcription() {
           </Link>
         }
       />
+    ) : (
+      <ErrorState
+        title="Не удалось загрузить транскрипцию"
+        description={loadError?.detail || `Код ошибки: ${status}. Попробуйте обновить страницу.`}
+      />
+    );
+  }
+
+  if (pollingTimedOut && (transcription.status === "queued" || transcription.status === "processing")) {
+    return (
+      <div className="space-y-4">
+        <ErrorState
+          title="Обработка занимает слишком долго"
+          description="Что-то пошло не так на нашей стороне. Обновите страницу или напишите в поддержку — поможем разобраться."
+        />
+        <div className="flex items-center gap-3">
+          <button onClick={() => window.location.reload()} className="btn-accent">
+            Обновить
+          </button>
+          <Link to="/dashboard" className="btn-secondary">
+            К списку
+          </Link>
+        </div>
+      </div>
     );
   }
 

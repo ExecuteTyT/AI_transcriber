@@ -2,6 +2,8 @@ import logging
 import os
 import uuid
 
+logger = logging.getLogger(__name__)
+
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -193,7 +195,6 @@ async def upload_file(
         from app.tasks.transcribe import process_transcription
         process_transcription.delay(str(transcription.id))
     except (ImportError, ConnectionError, OSError) as exc:
-        logger = logging.getLogger(__name__)
         logger.error("Celery unavailable, marking transcription %s as failed: %s", transcription.id, exc)
         transcription.status = "failed"
         transcription.error_message = "Сервис обработки временно недоступен. Попробуйте позже."
@@ -212,7 +213,14 @@ def _is_allowed_url_host(host: str) -> bool:
     Поддерживает поддомены: www.youtube.com, m.youtube.com, vkvideo.ru — и т.д.
     Сравнение идёт по суффиксу: host заканчивается на allowed или равен ему.
     """
-    host = (host or "").lower().lstrip("w.").lstrip("m.")
+    # `lstrip("w.")` снимал ЛЮБУЮ комбинацию символов {w,.} с начала, что
+    # позволяло обходить whitelist через хосты типа `wmw.evil.com` или
+    # `wwwwww.evil.com`. Используем явное removeprefix для нужных префиксов.
+    host = (host or "").lower()
+    for prefix in ("www.", "m.", "mobile."):
+        if host.startswith(prefix):
+            host = host[len(prefix):]
+            break
     for allowed in URL_INGEST_ALLOWED_HOSTS:
         if host == allowed or host.endswith("." + allowed):
             return True
@@ -391,12 +399,27 @@ async def delete_transcription(
     if transcription is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Транскрипция не найдена")
 
-    # Удаление файла из S3
+    # Удаление файла из S3. Раньше catch ловил Exception и молча проглатывал
+    # auth/throttling/network — БД-запись удалялась, S3-объект оставался орфаном.
+    # Теперь ловим только ClientError и пропускаем NoSuchKey, остальное логируем
+    # и продолжаем (бизнес-решение: лучше иметь orphan чем недоудалённую запись).
     if s3_service and transcription.file_key:
+        from botocore.exceptions import BotoCoreError, ClientError
+
         try:
             s3_service.delete_file(transcription.file_key)
-        except (OSError, Exception):
-            pass  # Файл мог быть уже удалён
+        except ClientError as exc:
+            code = exc.response.get("Error", {}).get("Code", "")
+            if code not in ("NoSuchKey", "404", "NotFound"):
+                # Реальная ошибка S3 — логируем, но БД-запись всё равно удаляем
+                # (иначе пользователь застрянет на "удалить нельзя"). Орфан S3
+                # подберёт следующий запуск cleanup_transcriptions.
+                logger.warning(
+                    "S3 delete failed for %s (code=%s) — orphan left, will be cleaned later",
+                    transcription.file_key, code,
+                )
+        except (BotoCoreError, OSError) as exc:
+            logger.warning("S3 delete failed for %s: %s", transcription.file_key, exc)
 
     await db.delete(transcription)
     await db.commit()
@@ -430,17 +453,27 @@ async def get_audio_url(
     # вычистил объект, но запись transcription осталась) — возвращаем 410 Gone.
     # Иначе клиент получит signed URL → S3 ответит 404 NoSuchKey → <audio> упадёт
     # без внятной ошибки и frontend начнёт refetch-loop.
-    if not s3_service.object_exists(transcription.file_key):
+    try:
+        exists = s3_service.object_exists(transcription.file_key)
+    except Exception:
+        # object_exists делает re-raise на auth/network ошибки. Это НЕ "файла нет",
+        # это временная проблема с S3 — даём клиенту 503, чтобы он мог повторить.
+        logger.exception("S3 HEAD failed for %s", transcription.file_key)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Хранилище временно недоступно, попробуйте через минуту",
+        )
+    if not exists:
         raise HTTPException(
             status_code=status.HTTP_410_GONE,
             detail="Аудиофайл больше недоступен (удалён по сроку хранения)",
         )
 
-    # TTL 6 часов: длинные записи (лекция, подкаст 2-3 часа) пользователь может
-    # слушать в фоне, переключаясь по сегментам. 1ч ловило 403 на seek/play
-    # после простоя. Клиент всё равно проактивно перезапрашивает URL за 50 мин
-    # до истечения, плюс при <audio> error.
-    audio_url_ttl = 6 * 3600
+    # TTL 1 час: минимизирует blast radius при утечке URL (история браузера,
+    # share-screen, реферрер). Клиент сам перезапрашивает URL проактивно за
+    # 50 мин до истечения и при <audio> error — длинные сессии (3+ ч) этим
+    # покрываются, а leaked URL живёт максимум 1ч.
+    audio_url_ttl = 3600
 
     # 1) Если это S3 — выдаём прямой presigned URL (браузер тянет напрямую с S3)
     presigned = s3_service.get_presigned_url(transcription.file_key, expires_in=audio_url_ttl)

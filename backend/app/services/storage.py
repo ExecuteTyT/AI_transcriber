@@ -88,14 +88,19 @@ class S3Service(StorageBackend):
 
     def get_presigned_url(self, file_key: str, expires_in: int = 3600) -> str | None:
         """Короткоживущая S3 presigned URL для прямого <audio src>."""
+        from botocore.exceptions import BotoCoreError, ClientError
+
         try:
             return self.client.generate_presigned_url(
                 "get_object",
                 Params={"Bucket": self.bucket, "Key": file_key},
                 ExpiresIn=expires_in,
             )
-        except Exception as exc:
-            logger.warning("Failed to generate presigned URL: %s", exc)
+        except (BotoCoreError, ClientError):
+            # Подпись на боте локальная — реально упасть может только на
+            # missing credentials или схожих конфиг-ошибках. Логируем со
+            # стектрейсом — это deploy-time проблема, не runtime.
+            logger.exception("Failed to generate presigned URL for %s", file_key)
             return None
 
     def object_exists(self, file_key: str) -> bool:
@@ -105,15 +110,25 @@ class S3Service(StorageBackend):
         браузер попытается загрузить, S3 ответит 404, <audio> упадёт без
         внятной ошибки. Лучше отдать 410 Gone сразу.
         """
+        from botocore.exceptions import BotoCoreError, ClientError
+
         try:
             self.client.head_object(Bucket=self.bucket, Key=file_key)
             return True
-        except Exception as exc:
-            # ClientError с code=404/NoSuchKey — нормальный отрицательный ответ.
-            # Любые другие ошибки (auth/network) трактуем как "не уверены" → False,
-            # пусть клиент увидит реальный 410, а не упадёт молча.
-            logger.info("head_object(%s) failed: %s", file_key, exc)
-            return False
+        except ClientError as exc:
+            code = exc.response.get("Error", {}).get("Code", "")
+            status_code = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+            # 404/NoSuchKey/NotFound — файла действительно нет, отдаём False.
+            if code in ("404", "NoSuchKey", "NotFound") or status_code == 404:
+                return False
+            # Auth (403), throttling (503), network — это НЕ "файла нет".
+            # Re-raise: пусть caller (audio-url endpoint) превратит в 503,
+            # а не в "файл удалён по сроку хранения".
+            logger.exception("head_object(%s) failed with non-404", file_key)
+            raise
+        except BotoCoreError:
+            logger.exception("head_object(%s) BotoCoreError", file_key)
+            raise
 
 
 class LocalStorage(StorageBackend):

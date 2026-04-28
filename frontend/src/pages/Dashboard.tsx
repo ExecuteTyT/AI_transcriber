@@ -371,7 +371,7 @@ function pluralizeDays(n: number): string {
   const b = a % 10;
   if (a > 10 && a < 20) return "дней";
   if (b > 1 && b < 5) return "дня";
-  if (b === 1) return "дня";
+  if (b === 1) return "день";
   return "дней";
 }
 

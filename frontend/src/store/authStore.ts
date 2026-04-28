@@ -50,10 +50,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const { data } = await authApi.getMe();
       set({ user: data, isAuthenticated: true });
-    } catch {
-      set({ user: null, isAuthenticated: false });
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
+    } catch (err) {
+      // Очищаем сессию ТОЛЬКО на явный 401/403. На сетевой сбой / 500 / таймаут
+      // токены оставляем — сервер пусть сам решит, валидны они или нет на
+      // следующем запросе. Раньше любой сбой /auth/me выбивал в /login.
+      const axiosErr = err as { response?: { status?: number } };
+      const status = axiosErr.response?.status;
+      if (status === 401 || status === 403) {
+        set({ user: null, isAuthenticated: false });
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+      }
+      // Транзиентные ошибки (offline, 5xx) — оставляем isAuthenticated как есть.
     } finally {
       set({ isLoading: false });
     }

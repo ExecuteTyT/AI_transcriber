@@ -40,8 +40,21 @@ export default function Register() {
       play("confirm");
       toast.success("🎉 Добро пожаловать! +180 минут на тест", { duration: 5000 });
       navigate("/dashboard");
-    } catch {
-      setError("Ошибка регистрации. Возможно, email уже занят.");
+    } catch (err) {
+      const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+      const status = axiosErr.response?.status;
+      const detail = axiosErr.response?.data?.detail;
+      if (status === 429) {
+        setError("Слишком много попыток. Попробуйте через минуту.");
+      } else if (status === 409) {
+        setError("Этот email уже зарегистрирован. Попробуйте войти.");
+      } else if (detail) {
+        // Бэкенд возвращает понятные сообщения для 422 (валидация пароля),
+        // 400 (некорректные данные) — показываем как есть.
+        setError(detail);
+      } else {
+        setError("Не удалось создать аккаунт. Проверьте подключение и попробуйте ещё раз.");
+      }
     } finally {
       setLoading(false);
     }

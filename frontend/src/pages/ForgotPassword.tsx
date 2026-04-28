@@ -22,8 +22,15 @@ export default function ForgotPassword() {
       await authApi.requestPasswordReset(email);
       play("confirm");
       setSent(true);
-    } catch {
-      setError("Произошла ошибка. Попробуйте позже.");
+    } catch (err) {
+      const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+      const status = axiosErr.response?.status;
+      if (status === 429) {
+        setError("Слишком много попыток. Попробуйте через минуту.");
+      } else {
+        // Не различаем 404/email-not-found, чтобы не давать enumeration оракул.
+        setError(axiosErr.response?.data?.detail || "Произошла ошибка. Попробуйте позже.");
+      }
     } finally {
       setLoading(false);
     }

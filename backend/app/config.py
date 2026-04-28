@@ -69,3 +69,13 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+# Production guard: запретить запуск с дефолтным секретом — иначе утечка конфига
+# превращается в полный takeover (можно подписать access-токен на любого user_id).
+if settings.ENVIRONMENT == "production":
+    if settings.JWT_SECRET_KEY in ("", "change-me-in-production"):
+        raise RuntimeError(
+            "JWT_SECRET_KEY must be set to a strong random value in production "
+            "(currently empty or default). Generate with `openssl rand -hex 32`."
+        )

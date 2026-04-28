@@ -298,13 +298,23 @@ export default function Pricing() {
       const result = await paymentsApi.subscribe(planId);
       window.location.href = result.confirmation_url;
     } catch (err) {
-      const axiosErr = err as { response?: { status?: number }; message?: string };
-      if (axiosErr.response?.status === 502 || axiosErr.response?.status === 503) {
+      const axiosErr = err as {
+        response?: { status?: number; data?: { detail?: string } };
+        message?: string;
+      };
+      const status = axiosErr.response?.status;
+      const detail = axiosErr.response?.data?.detail;
+      if (status === 401 || status === 403) {
+        // Сессия истекла прямо во время оформления — даём явное сообщение
+        // и сохраняем намерение, чтобы вернуть юзера обратно после re-login.
+        sessionStorage.setItem("pending_subscribe_plan", planId);
+        setError("Сессия истекла. Войдите снова — мы вернём вас сюда.");
+      } else if (status === 502 || status === 503) {
         setError("Платёжный сервис временно недоступен. Попробуйте позже.");
-      } else if (axiosErr.response?.status === 500) {
+      } else if (status === 500) {
         setError("Ошибка сервера. Попробуйте позже.");
       } else {
-        setError(axiosErr.message || "Ошибка создания платежа");
+        setError(detail || axiosErr.message || "Ошибка создания платежа");
       }
     } finally {
       setLoading(null);

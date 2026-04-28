@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import api from "@/api/client";
 import { useAuthStore } from "@/store/authStore";
 import Seo from "@/components/Seo";
@@ -74,12 +75,21 @@ export default function Admin() {
     if (tab === "transcriptions") loadTranscriptions();
   }, [tab]);
 
+  const adminError = (action: string, err: unknown) => {
+    const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+    const detail = axiosErr.response?.data?.detail;
+    const status = axiosErr.response?.status;
+    toast.error(detail || `${action}: ${status ? `код ${status}` : "сетевая ошибка"}`);
+  };
+
   const loadStats = async () => {
     setLoading(true);
     try {
       const { data } = await api.get("/admin/stats");
       setStats(data);
-    } catch { /* forbidden or error */ }
+    } catch (err) {
+      adminError("Не удалось загрузить статистику", err);
+    }
     setLoading(false);
   };
 
@@ -88,7 +98,9 @@ export default function Admin() {
       const { data } = await api.get("/admin/users", { params: { per_page: 50, search } });
       setUsers(data.items);
       setUsersTotal(data.total);
-    } catch { /* */ }
+    } catch (err) {
+      adminError("Не удалось загрузить пользователей", err);
+    }
   };
 
   const loadTranscriptions = async () => {
@@ -96,32 +108,54 @@ export default function Admin() {
       const { data } = await api.get("/admin/transcriptions", { params: { per_page: 50 } });
       setTranscriptions(data.items);
       setTransTotal(data.total);
-    } catch { /* */ }
+    } catch (err) {
+      adminError("Не удалось загрузить транскрипции", err);
+    }
   };
 
   const updateUserPlan = async (userId: string, plan: string) => {
     const limits: Record<string, number> = { free: 15, start: 300, pro: 1200 };
-    await api.patch(`/admin/users/${userId}`, { plan, minutes_limit: limits[plan] || 15 });
-    loadUsers();
+    try {
+      await api.patch(`/admin/users/${userId}`, { plan, minutes_limit: limits[plan] || 15 });
+      toast.success("План обновлён");
+      loadUsers();
+    } catch (err) {
+      adminError("Не удалось изменить план", err);
+    }
   };
 
   const toggleAdmin = async (userId: string, isAdmin: boolean) => {
-    await api.patch(`/admin/users/${userId}`, { is_admin: !isAdmin });
-    loadUsers();
+    try {
+      await api.patch(`/admin/users/${userId}`, { is_admin: !isAdmin });
+      toast.success(isAdmin ? "Админ-права сняты" : "Админ-права выданы");
+      loadUsers();
+    } catch (err) {
+      adminError("Не удалось изменить права", err);
+    }
   };
 
   const deleteUser = async (userId: string, email: string) => {
     if (!confirm(`Удалить пользователя ${email}? Все данные будут потеряны.`)) return;
-    await api.delete(`/admin/users/${userId}`);
-    loadUsers();
-    loadStats();
+    try {
+      await api.delete(`/admin/users/${userId}`);
+      toast.success(`Пользователь ${email} удалён`);
+      loadUsers();
+      loadStats();
+    } catch (err) {
+      adminError(`Не удалось удалить ${email}`, err);
+    }
   };
 
   const deleteTranscription = async (transId: string, title: string) => {
     if (!confirm(`Удалить транскрипцию "${title}"?`)) return;
-    await api.delete(`/admin/transcriptions/${transId}`);
-    loadTranscriptions();
-    loadStats();
+    try {
+      await api.delete(`/admin/transcriptions/${transId}`);
+      toast.success(`«${title}» удалена`);
+      loadTranscriptions();
+      loadStats();
+    } catch (err) {
+      adminError(`Не удалось удалить «${title}»`, err);
+    }
   };
 
   if (!user?.is_admin) {

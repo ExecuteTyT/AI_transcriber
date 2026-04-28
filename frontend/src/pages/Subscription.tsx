@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { toast } from "sonner";
 import { paymentsApi, type SubscriptionInfo } from "@/api/payments";
 import { Icon } from "@/components/Icon";
 import { ErrorState } from "@/components/states/ErrorState";
@@ -60,7 +61,16 @@ export default function Subscription() {
     paymentsApi
       .getSubscription()
       .then(setSub)
-      .catch(() => setError("Не удалось загрузить подписку"))
+      .catch((err: unknown) => {
+        const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+        const status = axiosErr.response?.status;
+        // 404 — у юзера нет подписки, это нормальный кейс (free tier).
+        if (status === 404) {
+          setSub(null);
+          return;
+        }
+        setError(axiosErr.response?.data?.detail || "Не удалось загрузить подписку");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -72,8 +82,11 @@ export default function Subscription() {
       await paymentsApi.cancel();
       const updated = await paymentsApi.getSubscription();
       setSub(updated);
-    } catch {
-      setError("Ошибка при отмене подписки");
+    } catch (err) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      const detail = axiosErr.response?.data?.detail || "Ошибка при отмене подписки";
+      setError(detail);
+      toast.error(detail);
     } finally {
       setCancelling(false);
     }
