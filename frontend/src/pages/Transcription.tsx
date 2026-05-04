@@ -278,11 +278,21 @@ export default function Transcription() {
     if (!needsRefresh) return;
 
     // На ошибке пробуем ровно один раз — повторный error значит, что URL
-    // успешно перевыпустили, но файл на S3 реально мёртв. Дальше показываем UI.
+    // успешно перевыпустили, но файл реально не играется. Дальше показываем UI.
     if (isError) {
       if (retryAttemptsRef.current >= 1) {
         setAudioUnavailable(true);
-        toast.error("Аудиофайл недоступен");
+        // MediaError.code: 1=ABORTED, 2=NETWORK, 3=DECODE, 4=SRC_NOT_SUPPORTED.
+        // SRC_NOT_SUPPORTED обычно означает что в файле нет аудио-дорожки
+        // (загружен видео-файл без звука) или браузер не знает кодек.
+        const code = player.error?.code;
+        if (code === 4 /* MEDIA_ERR_SRC_NOT_SUPPORTED */) {
+          toast.error("Файл не содержит совместимой аудиодорожки");
+        } else if (code === 3 /* MEDIA_ERR_DECODE */) {
+          toast.error("Не удалось декодировать аудио");
+        } else {
+          toast.error("Аудиофайл недоступен");
+        }
         return;
       }
       retryAttemptsRef.current += 1;
@@ -339,14 +349,12 @@ export default function Transcription() {
     };
   }, [id, transcription?.status, player.error, audioUrl, audioUrlFetchedAt, audioUnavailable]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Сброс счётчика попыток при возврате к чистому состоянию (нет error, есть
-  // URL, не в "недоступно") — означает что аудио успешно подгрузилось,
-  // следующая ошибка должна получить fresh retry budget.
-  useEffect(() => {
-    if (!player.error && audioUrl && !audioUnavailable) {
-      retryAttemptsRef.current = 0;
-    }
-  }, [player.error, audioUrl, audioUnavailable]);
+  // Намеренно НЕ сбрасываем retryAttemptsRef в отдельном эффекте на смену URL.
+  // Любой такой "reset on clear state" срабатывает в момент между setAudioUrl
+  // и следующей ошибкой (useAudioPlayer чистит error при смене src), и если
+  // новый URL тоже падает — мы получаем infinite refetch. Достаточно того,
+  // что stale-path в основном эффекте уже сбрасывает счётчик при 50-мин
+  // обновлении (это покрывает long-running сессии после восстановления).
 
   const lastScrolledRef = useRef<number>(-1);
   useEffect(() => {
