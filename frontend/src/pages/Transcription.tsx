@@ -105,6 +105,11 @@ export default function Transcription() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioUrlFetchedAt, setAudioUrlFetchedAt] = useState<number>(0);
   const [audioUnavailable, setAudioUnavailable] = useState(false);
+
+  // 152-ФЗ: ползунок срока хранения аудио на карточке транскрипции.
+  const [retentionDays, setRetentionDays] = useState<number>(7);
+  const [retentionSaving, setRetentionSaving] = useState(false);
+  const [audioDeleting, setAudioDeleting] = useState(false);
   // Сколько раз уже пробовали восстановить URL для текущей ошибки. Сбрасывается
   // при успешной загрузке (loadedmetadata в useAudioPlayer чистит error → этот
   // ref сбросится). Лимит — 1, иначе отсутствующий S3-объект превращается в
@@ -128,6 +133,9 @@ export default function Transcription() {
       try {
         const { data } = await transcriptionApi.getById(id);
         setTranscription(data);
+        if (data.audio_retention_days) {
+          setRetentionDays(data.audio_retention_days);
+        }
         setLoading(false);
         if (data.status === "queued" || data.status === "processing") {
           pollingRef.current = setInterval(async () => {
@@ -389,6 +397,47 @@ export default function Transcription() {
     return `${m}:${String(s).padStart(2, "0")}`;
   };
 
+  // 152-ФЗ: сохранение нового срока хранения аудио для этой транскрипции.
+  const handleRetentionSave = async () => {
+    if (!id) return;
+    setRetentionSaving(true);
+    try {
+      await transcriptionApi.updateRetention(id, retentionDays);
+      // Обновляем audio_delete_at локально (бэк пересчитал = now + N дней).
+      const newDeleteAt = new Date(Date.now() + retentionDays * 86400000).toISOString();
+      setTranscription((prev) =>
+        prev ? { ...prev, audio_retention_days: retentionDays, audio_delete_at: newDeleteAt } : prev,
+      );
+      toast.success(`Срок хранения: ${retentionDays} дн.`);
+    } catch (err) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      toast.error(axiosErr.response?.data?.detail || "Не удалось изменить срок");
+    } finally {
+      setRetentionSaving(false);
+    }
+  };
+
+  // 152-ФЗ: ручное удаление только аудио (текст транскрипции остаётся).
+  const handleDeleteAudio = async () => {
+    if (!id) return;
+    if (!confirm("Удалить аудиофайл? Текст транскрипции и анализ останутся доступны.")) return;
+    setAudioDeleting(true);
+    try {
+      await transcriptionApi.deleteAudio(id);
+      setAudioUnavailable(true);
+      setAudioUrl(null);
+      setTranscription((prev) =>
+        prev ? { ...prev, audio_deleted_at: new Date().toISOString() } : prev,
+      );
+      toast.success("Аудиофайл удалён");
+    } catch (err) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      toast.error(axiosErr.response?.data?.detail || "Не удалось удалить аудио");
+    } finally {
+      setAudioDeleting(false);
+    }
+  };
+
   const getSpeakerStyle = (speaker: string) => {
     const idx = Math.max(0, uniqueSpeakers.indexOf(speaker));
     return {
@@ -646,6 +695,60 @@ export default function Transcription() {
       {audioUnavailable && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-5 py-4 text-[13px] text-[var(--fg-muted)]">
           Аудиофайл недоступен — он мог быть удалён по сроку хранения. Транскрипт и анализ остались доступны.
+        </div>
+      )}
+
+      {/* 152-ФЗ: управление сроком хранения аудио на карточке. */}
+      {!audioUnavailable && transcription.audio_delete_at && !transcription.audio_deleted_at && (
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-5 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[13px] text-[var(--fg-muted)]">
+              <span aria-hidden>🗑</span> Аудиофайл будет удалён{" "}
+              <span className="text-[var(--fg)]">
+                {new Date(transcription.audio_delete_at).toLocaleDateString("ru-RU", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={handleDeleteAudio}
+              disabled={audioDeleting}
+              className="text-[12px] text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+            >
+              {audioDeleting ? "Удаление…" : "Удалить аудио сейчас"}
+            </button>
+          </div>
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)]">
+                Срок хранения
+              </span>
+              <span className="font-display text-base text-[var(--fg)] tabular">
+                {retentionDays} дн.
+              </span>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={30}
+              step={1}
+              value={retentionDays}
+              onChange={(e) => setRetentionDays(Number(e.target.value))}
+              className="w-full cursor-pointer accent-[var(--accent)]"
+              aria-label="Срок хранения аудио в днях"
+            />
+            <button
+              type="button"
+              onClick={handleRetentionSave}
+              disabled={retentionSaving || retentionDays === (transcription.audio_retention_days ?? 7)}
+              className="mt-3 inline-flex items-center justify-center rounded-full px-4 py-2 text-[12px] font-medium border border-[var(--border)] hover:bg-[var(--bg-muted)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {retentionSaving ? "Сохранение…" : "Сохранить"}
+            </button>
+          </div>
         </div>
       )}
       <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">

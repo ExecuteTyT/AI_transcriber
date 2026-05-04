@@ -5,6 +5,7 @@ from app.models.embedding import Embedding
 from app.models.subscription import Subscription
 from app.models.transcription import Transcription
 from app.models.user import User
+from app.models.user_consent import UserConsent
 
 __all__ = [
     "Base",
@@ -14,4 +15,5 @@ __all__ = [
     "AiAnalysis",
     "Embedding",
     "ChatMessage",
+    "UserConsent",
 ]

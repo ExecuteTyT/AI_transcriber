@@ -6,7 +6,12 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    consents: { consent_pd_processing: boolean; consent_cross_border: boolean; consent_marketing: boolean },
+  ) => Promise<void>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
 }
@@ -26,8 +31,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user });
   },
 
-  register: async (email, password, name) => {
-    const { data } = await authApi.register(email, password, name);
+  register: async (email, password, name, consents) => {
+    const { data } = await authApi.register(email, password, name, consents);
     localStorage.setItem("access_token", data.access_token);
     localStorage.setItem("refresh_token", data.refresh_token);
     set({ isAuthenticated: true });

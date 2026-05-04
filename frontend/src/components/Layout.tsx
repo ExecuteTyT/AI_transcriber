@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import DesktopSidebar from "@/components/nav/DesktopSidebar";
 import MobileTopBar from "@/components/nav/MobileTopBar";
 import BottomTabBar from "@/components/nav/BottomTabBar";
@@ -58,6 +58,17 @@ export default function Layout() {
             </Suspense>
           </div>
         </div>
+        {/* Минимальный футер с юридическими ссылками — обязательное требование 152-ФЗ:
+            ссылка на политику конфиденциальности должна быть доступна на всех страницах. */}
+        <footer className="mt-10 border-t border-[var(--border)] py-6 px-4 md:px-8">
+          <div className="max-w-5xl md:mx-auto flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+            <span>Dicto · © 2026</span>
+            <div className="flex flex-wrap gap-5">
+              <Link to="/privacy" className="hover:text-[var(--fg)] transition">Политика конфиденциальности</Link>
+              <Link to="/terms" className="hover:text-[var(--fg)] transition">Соглашение</Link>
+            </div>
+          </div>
+        </footer>
         <BottomBarSpacer />
       </main>
 

@@ -51,7 +51,28 @@ def _hash_token(token: str) -> str:
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 @_auth_limiter.limit("5/minute")
 async def register(request: Request, data: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    """Регистрация нового пользователя."""
+    """Регистрация нового пользователя.
+
+    152-ФЗ: согласия pd_processing и cross_border ОБЯЗАТЕЛЬНЫ. Если хотя бы
+    одно False — возвращаем 422. Все три согласия пишем в user_consents
+    с IP, User-Agent и версией политики (доказательная база при жалобах в РКН).
+    """
+    # Backward compat: если фронт прислал старое поле consent_terms,
+    # но не прислал новое consent_pd_processing — используем consent_terms.
+    consent_pd = data.consent_pd_processing or data.consent_terms
+
+    # 152-ФЗ: валидация обязательных согласий.
+    if not consent_pd:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Для регистрации необходимо согласие на обработку персональных данных",
+        )
+    if not data.consent_cross_border:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Для регистрации необходимо согласие на трансграничную передачу данных в Mistral AI (Франция)",
+        )
+
     result = await db.execute(select(User).where(User.email == data.email))
     if result.scalar_one_or_none() is not None:
         raise HTTPException(
@@ -59,16 +80,43 @@ async def register(request: Request, data: RegisterRequest, db: AsyncSession = D
             detail="Пользователь с таким email уже существует",
         )
 
-    from datetime import datetime, timezone
     now = datetime.now(timezone.utc)
     user = User(
         email=data.email,
         password_hash=hash_password(data.password),
         name=data.name,
-        consent_terms_at=now if data.consent_terms else None,
-        consent_cross_border_at=now if data.consent_cross_border else None,
+        # Старые денормализованные поля — оставлены для обратной совместимости
+        # с местами где код смотрит User.consent_*_at напрямую.
+        consent_terms_at=now,
+        consent_cross_border_at=now,
     )
     db.add(user)
+    await db.flush()  # получаем user.id для consent rows
+
+    # Журнал согласий (152-ФЗ).
+    from app.services.consents import (
+        CONSENT_TYPE_CROSS_BORDER,
+        CONSENT_TYPE_MARKETING,
+        CONSENT_TYPE_PD_PROCESSING,
+        extract_client_metadata,
+        record_consent,
+    )
+
+    ip, user_agent = extract_client_metadata(request)
+    await record_consent(
+        db, user_id=user.id, consent_type=CONSENT_TYPE_PD_PROCESSING,
+        granted=True, ip_address=ip, user_agent=user_agent,
+    )
+    await record_consent(
+        db, user_id=user.id, consent_type=CONSENT_TYPE_CROSS_BORDER,
+        granted=True, ip_address=ip, user_agent=user_agent,
+    )
+    if data.consent_marketing:
+        await record_consent(
+            db, user_id=user.id, consent_type=CONSENT_TYPE_MARKETING,
+            granted=True, ip_address=ip, user_agent=user_agent,
+        )
+
     await db.commit()
     await db.refresh(user)
 
@@ -77,13 +125,19 @@ async def register(request: Request, data: RegisterRequest, db: AsyncSession = D
     # Если SMTP упал — логируется через logger.exception в send_email.
     import asyncio as _asyncio
 
-    async def _send_welcome_background(email: str, name: str):
+    async def _send_welcome_background(email: str, name: str, marketing: bool):
         try:
-            await send_welcome_email(email, name)
-        except Exception:
-            logger.warning("Welcome email failed for %s (background)", email)
+            from app.services.email import send_consent_confirmation_email
 
-    _asyncio.create_task(_send_welcome_background(user.email, user.name))
+            # Сначала юридическое подтверждение согласий (152-ФЗ),
+            # затем маркетинговое welcome (только если согласие на marketing).
+            await send_consent_confirmation_email(email, name, consent_marketing=marketing)
+            if marketing:
+                await send_welcome_email(email, name)
+        except Exception:
+            logger.warning("Welcome/consent email failed for %s (background)", email)
+
+    _asyncio.create_task(_send_welcome_background(user.email, user.name, data.consent_marketing))
 
     return TokenResponse(
         access_token=create_access_token(str(user.id)),
@@ -183,6 +237,9 @@ async def update_profile(
 
     if data.data_retention_days is not None:
         user.data_retention_days = data.data_retention_days
+
+    if data.default_audio_retention_days is not None:
+        user.default_audio_retention_days = data.default_audio_retention_days
 
     if data.default_language is not None:
         user.default_language = data.default_language.lower().strip()

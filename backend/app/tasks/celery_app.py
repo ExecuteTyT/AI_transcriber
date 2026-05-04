@@ -28,6 +28,12 @@ celery_app.conf.update(
             "task": "app.tasks.cleanup_transcriptions.cleanup_expired",
             "schedule": crontab(hour="3", minute="0"),
         },
+        # 152-ФЗ: удаление аудио по audio_delete_at — каждые 6 часов
+        # (минимум 4 окна в сутки чтобы не задерживать удаление сильно).
+        "cleanup-expired-audio": {
+            "task": "app.tasks.cleanup_audio.cleanup_expired_audio",
+            "schedule": crontab(minute="0", hour="*/6"),
+        },
     },
 )
 
@@ -36,4 +42,6 @@ celery_app.conf.include = [
     "app.tasks.transcribe_url",
     "app.tasks.reset_limits",
     "app.tasks.cleanup_transcriptions",
+    "app.tasks.cleanup_audio",
+    "app.tasks.delete_user_data",
 ]

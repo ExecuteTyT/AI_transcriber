@@ -14,6 +14,7 @@ from app.api.chat import router as chat_router
 from app.api.payments import router as payments_router
 from app.api.admin import router as admin_router
 from app.api.transcriptions import router as transcriptions_router
+from app.api.users import router as users_router
 from app.config import settings
 
 # Structured logging
@@ -61,6 +62,7 @@ app.add_middleware(
 
 app.include_router(admin_router)
 app.include_router(auth_router)
+app.include_router(users_router)
 app.include_router(transcriptions_router)
 app.include_router(ai_analysis_router)
 app.include_router(payments_router)

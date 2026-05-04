@@ -168,10 +168,16 @@ async def upload_file(
 
     # Создание записи в БД
     # expires_at = now + user.data_retention_days (None = бессрочно).
+    # audio_delete_at = now + user.default_audio_retention_days — отдельный
+    # срок только для аудио (152-ФЗ: минимизация исходных данных).
     from datetime import datetime, timedelta, timezone
+    now = datetime.now(timezone.utc)
     expires_at = None
     if user.data_retention_days is not None and user.data_retention_days > 0:
-        expires_at = datetime.now(timezone.utc) + timedelta(days=user.data_retention_days)
+        expires_at = now + timedelta(days=user.data_retention_days)
+
+    audio_retention_days = user.default_audio_retention_days or 7
+    audio_delete_at = now + timedelta(days=audio_retention_days)
 
     # Сохраняем выбранный язык (включая "auto") — Celery task прочитает и передаст в Voxtral.
     normalized_lang = (language or "auto").lower().strip()
@@ -184,6 +190,8 @@ async def upload_file(
         content_type=file.content_type or "",
         status="queued",
         expires_at=expires_at,
+        audio_retention_days=audio_retention_days,
+        audio_delete_at=audio_delete_at,
         language=normalized_lang if normalized_lang != "auto" else None,
     )
     db.add(transcription)
@@ -424,6 +432,109 @@ async def delete_transcription(
     await db.delete(transcription)
     await db.commit()
     return MessageResponse(message="Транскрипция удалена")
+
+
+# --- 152-ФЗ: управление аудио-retention ---
+
+
+from pydantic import BaseModel, Field
+
+
+class RetentionUpdateRequest(BaseModel):
+    """Срок хранения аудио в днях (1-30)."""
+
+    retention_days: int = Field(ge=1, le=30)
+
+
+@router.put("/{transcription_id}/retention", response_model=MessageResponse)
+async def update_audio_retention(
+    transcription_id: uuid.UUID,
+    data: RetentionUpdateRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Изменить срок хранения аудиофайла (152-ФЗ ползунок в UI)."""
+    from datetime import datetime, timedelta, timezone
+
+    result = await db.execute(
+        select(Transcription).where(
+            Transcription.id == transcription_id,
+            Transcription.user_id == user.id,
+        )
+    )
+    transcription = result.scalar_one_or_none()
+    if transcription is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Транскрипция не найдена")
+
+    if transcription.audio_deleted_at is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Аудиофайл уже удалён, изменить срок невозможно",
+        )
+
+    transcription.audio_retention_days = data.retention_days
+    transcription.audio_delete_at = datetime.now(timezone.utc) + timedelta(days=data.retention_days)
+    await db.commit()
+    return MessageResponse(message=f"Срок хранения аудио: {data.retention_days} дн.")
+
+
+@router.delete("/{transcription_id}/audio", response_model=MessageResponse)
+async def delete_transcription_audio(
+    transcription_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Удалить ТОЛЬКО аудиофайл, оставив текст транскрипции (152-ФЗ).
+
+    Юзер хочет освободить S3 от исходника, но сохранить расшифровку и AI-анализ.
+    """
+    from datetime import datetime, timezone
+
+    result = await db.execute(
+        select(Transcription).where(
+            Transcription.id == transcription_id,
+            Transcription.user_id == user.id,
+        )
+    )
+    transcription = result.scalar_one_or_none()
+    if transcription is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Транскрипция не найдена")
+    if transcription.audio_deleted_at is not None:
+        return MessageResponse(message="Аудио уже удалено")
+    if not transcription.file_key:
+        # Уже без аудио — обновляем поля и считаем успехом.
+        transcription.audio_deleted_at = datetime.now(timezone.utc)
+        transcription.audio_deleted_log = "user-manual-no-key"
+        await db.commit()
+        return MessageResponse(message="Аудио уже удалено")
+
+    # Сносим S3-объект.
+    if s3_service:
+        from botocore.exceptions import BotoCoreError, ClientError
+
+        try:
+            s3_service.delete_file(transcription.file_key)
+        except ClientError as exc:
+            code = exc.response.get("Error", {}).get("Code", "")
+            if code not in ("NoSuchKey", "404", "NotFound"):
+                logger.warning("S3 delete failed for %s (code=%s)", transcription.file_key, code)
+        except (BotoCoreError, OSError) as exc:
+            logger.warning("S3 delete failed for %s: %s", transcription.file_key, exc)
+
+    transcription.audio_deleted_at = datetime.now(timezone.utc)
+    transcription.audio_deleted_log = "user-manual"
+    transcription.file_key = ""  # очищаем чтобы /audio-url отдавал 410
+    await db.commit()
+
+    from app.services.audit_log import audit
+
+    audit(
+        "audio_deleted",
+        transcription_id=str(transcription.id),
+        user_id=str(user.id),
+        reason="user-manual",
+    )
+    return MessageResponse(message="Аудиофайл удалён")
 
 
 @router.get("/{transcription_id}/audio-url")

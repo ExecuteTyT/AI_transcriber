@@ -44,7 +44,7 @@ export default function Privacy() {
             Политика обработки <em className="italic text-[var(--accent)]">персональных данных</em>
           </h1>
           <p className="mt-4 text-[13px] text-[var(--fg-subtle)]">
-            Редакция от 15 апреля 2026 г. · Применяется с даты регистрации пользователя.
+            Редакция от 1 мая 2026 г. · Применяется с даты регистрации пользователя.
           </p>
 
           <section className="mt-10 space-y-5 text-[15px] leading-[1.65] text-[var(--fg-muted)]">
@@ -87,8 +87,16 @@ export default function Privacy() {
 
             <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">5. Используемые третьи лица и трансграничная передача</h2>
             <p>
-              Для предоставления функций AI мы используем следующих обработчиков.
-              Со всеми заключены договоры обработки данных (DPA) с условием
+              Для целей транскрибации аудио и видео материалы передаются в{" "}
+              <strong className="text-[var(--fg)]">Mistral AI SAS</strong> (15 rue des Halles, 75001 Paris,
+              Франция) через API. Франция включена в перечень иностранных государств,
+              обеспечивающих адекватную защиту персональных данных
+              (Приказ РКН от 05.08.2022 № 128). Передача осуществляется на основании
+              согласия пользователя и в соответствии со{" "}
+              <strong className="text-[var(--fg)]">статьёй 12 Федерального закона № 152-ФЗ</strong>.
+            </p>
+            <p>
+              Со всеми обработчиками заключены договоры обработки данных (DPA) с условием
               «обрабатываемые данные не используются для обучения моделей»:
             </p>
             <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
@@ -137,9 +145,23 @@ export default function Privacy() {
 
             <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">6. Сроки хранения</h2>
             <ul className="list-disc pl-5 space-y-1.5 marker:text-[var(--fg-subtle)]">
-              <li>Аккаунт и транскрипции — пока пользователь не удалит.</li>
-              <li>Платёжные документы — 5 лет (требование НК РФ).</li>
-              <li>Логи безопасности — 6 месяцев.</li>
+              <li>
+                <strong className="text-[var(--fg)]">Аудио/видео файлы:</strong> по умолчанию 7 дней
+                с момента завершения транскрибации; пользователь может изменить от 1 до 30 дней
+                или удалить вручную в карточке транскрипции.
+              </li>
+              <li>
+                <strong className="text-[var(--fg)]">Текст транскрипции:</strong> до удаления
+                аккаунта или ручного удаления пользователем (срок настраивается в профиле).
+              </li>
+              <li>
+                <strong className="text-[var(--fg)]">Аккаунтные данные</strong> (email, имя): до удаления аккаунта пользователем.
+              </li>
+              <li>
+                <strong className="text-[var(--fg)]">Платёжные данные:</strong> 5 лет (требование 402-ФЗ
+                «О бухгалтерском учёте»).
+              </li>
+              <li>Логи безопасности и журнал согласий — 6 месяцев.</li>
               <li>Резервные копии — до 30 дней после основного удаления.</li>
             </ul>
 
@@ -168,21 +190,44 @@ export default function Privacy() {
               <li>Журналирование доступа к ПДн.</li>
             </ul>
 
-            <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">9. Контакты оператора</h2>
+            <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">9. Порядок удаления данных</h2>
+            <p>
+              Вы можете в любой момент удалить аккаунт и все связанные данные
+              (транскрипции, аудиофайлы, AI-анализы) в разделе{" "}
+              <Link to="/profile" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
+                «Мои данные и конфиденциальность»
+              </Link>{" "}
+              в личном кабинете. Полное удаление с серверов происходит в течение 24 часов
+              после запроса. Резервные копии стираются в течение 30 дней. По всем вопросам
+              удаления — пишите на{" "}
+              <a href="mailto:privacy@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
+                privacy@dicto.pro
+              </a>.
+            </p>
+
+            <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">10. Контакты оператора</h2>
             <p>
               ИП Сабирзянов Ислам<br />
               ИНН: [указать]<br />
-              Email:{" "}
+              ОГРНИП: [указать]<br />
+              Адрес: [указать]<br />
+              Email для запросов по ПДн:{" "}
               <a href="mailto:privacy@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
                 privacy@dicto.pro
               </a>
+              <br />
+              Срок ответа на обращения — не позднее 10 рабочих дней.
             </p>
 
-            <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">10. Изменения политики</h2>
+            <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">11. Изменения политики</h2>
             <p>
               Оператор вправе изменить настоящую политику. Актуальная редакция всегда
               доступна по адресу <code className="font-mono text-[13px] text-[var(--fg)]">dicto.pro/privacy</code>. Существенные изменения
               сопровождаются уведомлением на email пользователя за 30 дней.
+            </p>
+
+            <p className="mt-12 pt-6 border-t border-[var(--border)] text-[12px] text-[var(--fg-subtle)] font-mono uppercase tracking-[0.18em]">
+              Редакция от 01.05.2026
             </p>
           </section>
 

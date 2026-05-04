@@ -26,6 +26,10 @@ class TranscriptionResponse(BaseModel):
     error_message: str | None
     created_at: datetime
     completed_at: datetime | None
+    # 152-ФЗ: метаданные срока хранения аудиофайла.
+    audio_retention_days: int = 7
+    audio_delete_at: datetime | None = None
+    audio_deleted_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 

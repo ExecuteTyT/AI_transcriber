@@ -13,6 +13,10 @@ export interface Transcription {
   error_message: string | null;
   created_at: string;
   completed_at: string | null;
+  // 152-ФЗ: срок хранения аудиофайла.
+  audio_retention_days?: number;
+  audio_delete_at?: string | null;
+  audio_deleted_at?: string | null;
 }
 
 export interface Segment {
@@ -112,6 +116,13 @@ export const transcriptionApi = {
     }),
 
   delete: (id: string) => api.delete(`/transcriptions/${id}`),
+
+  // 152-ФЗ: ручное удаление только аудио (текст транскрипции остаётся).
+  deleteAudio: (id: string) => api.delete(`/transcriptions/${id}/audio`),
+
+  // 152-ФЗ: изменение срока хранения аудио.
+  updateRetention: (id: string, retentionDays: number) =>
+    api.put(`/transcriptions/${id}/retention`, { retention_days: retentionDays }),
 
   getSummary: (id: string) =>
     api.get<AiAnalysis>(`/transcriptions/${id}/summary`),

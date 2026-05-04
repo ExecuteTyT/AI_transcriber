@@ -37,6 +37,11 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Каждый день Celery-beat запускает cleanup: удаляет записи с истёкшим expires_at.
     data_retention_days: Mapped[int | None] = mapped_column(Integer, nullable=True, default=30)
 
+    # 152-ФЗ: дефолтный срок хранения АУДИО-файлов в днях (1-30).
+    # Применяется к новым transcription'ам — текст транскрипции остаётся
+    # дольше (см. data_retention_days), удаляется только аудио.
+    default_audio_retention_days: Mapped[int] = mapped_column(Integer, default=7)
+
     # Язык распознавания по умолчанию ("auto" = определить автоматически).
     # ISO-коды: ru, en, de, fr, es, it, pt, nl, pl, uk, zh, ja, ko, tr, ar.
     default_language: Mapped[str] = mapped_column(String(10), default="auto")

@@ -65,6 +65,16 @@ class Settings(BaseSettings):
     CORS_EXTRA_ORIGINS: str = ""  # Доп. CORS origins через запятую (напр. https://app.vercel.app)
     ENVIRONMENT: str = "development"
 
+    # 152-ФЗ: версия текста политики конфиденциальности.
+    # Меняется когда мы существенно правим политику и должны заново собрать
+    # согласия (или хотя бы зафиксировать что юзер видел новую версию).
+    # При изменении — записывается в user_consents.policy_version.
+    POLICY_VERSION: str = "2026-05-01"
+
+    # Срок хранения аудиофайлов по умолчанию (дни). Применяется к новым
+    # транскрипциям, если у пользователя не задан default_audio_retention_days.
+    AUDIO_RETENTION_DEFAULT_DAYS: int = 7
+
     model_config = {"env_file": (".env", "../.env"), "env_file_encoding": "utf-8"}
 
 

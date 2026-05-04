@@ -13,8 +13,11 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [consentMain, setConsentMain] = useState(false);
+  // 152-ФЗ: три раздельных согласия. Первые два — обязательные, третье — опционально.
+  // По умолчанию все unchecked — никаких предзаполненных галочек (требование закона).
+  const [consentPdProcessing, setConsentPdProcessing] = useState(false);
   const [consentCrossBorder, setConsentCrossBorder] = useState(false);
+  const [consentMarketing, setConsentMarketing] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -22,21 +25,28 @@ export default function Register() {
   const navigate = useNavigate();
   const { play } = useSound();
 
+  // Кнопка регистрации активна только когда оба обязательных чекбокса отмечены.
+  const canSubmit = consentPdProcessing && consentCrossBorder && !loading;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!consentMain) {
-      setError("Необходимо принять политику конфиденциальности и пользовательское соглашение.");
+    if (!consentPdProcessing) {
+      setError("Необходимо согласие на обработку персональных данных.");
       return;
     }
     if (!consentCrossBorder) {
-      setError("Без согласия на трансграничную передачу мы не сможем запустить AI-обработку.");
+      setError("Необходимо согласие на трансграничную передачу данных в Mistral AI (Франция).");
       return;
     }
     setError("");
     setLoading(true);
     play("tick");
     try {
-      await register(email, password, name);
+      await register(email, password, name, {
+        consent_pd_processing: consentPdProcessing,
+        consent_cross_border: consentCrossBorder,
+        consent_marketing: consentMarketing,
+      });
       play("confirm");
       toast.success("🎉 Добро пожаловать! +180 минут на тест", { duration: 5000 });
       navigate("/dashboard");
@@ -146,25 +156,24 @@ export default function Register() {
         </div>
 
         <div className="pt-2 space-y-3">
+          {/* 1. Обязательное — обработка ПД (152-ФЗ ст. 6) */}
           <label className="flex items-start gap-3 cursor-pointer group">
             <input
               type="checkbox"
-              checked={consentMain}
-              onChange={(e) => setConsentMain(e.target.checked)}
+              checked={consentPdProcessing}
+              onChange={(e) => setConsentPdProcessing(e.target.checked)}
               className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--border-strong)] bg-transparent accent-[var(--accent)]"
             />
             <span className="text-[12px] leading-relaxed text-[var(--fg-muted)]">
-              Принимаю{" "}
-              <Link to="/terms" target="_blank" className="text-[var(--fg)] underline underline-offset-2 decoration-[var(--border-strong)] hover:decoration-[var(--accent)]">
-                пользовательское соглашение
-              </Link>{" "}
-              и{" "}
+              Я ознакомился(-ась) с{" "}
               <Link to="/privacy" target="_blank" className="text-[var(--fg)] underline underline-offset-2 decoration-[var(--border-strong)] hover:decoration-[var(--accent)]">
-                политику обработки ПДн
-              </Link>.
+                Политикой конфиденциальности
+              </Link>{" "}
+              и даю согласие на обработку моих персональных данных (email, имя) для целей использования сервиса Dicto.
             </span>
           </label>
 
+          {/* 2. Обязательное — трансграничная передача (152-ФЗ ст. 12) */}
           <label className="flex items-start gap-3 cursor-pointer group">
             <input
               type="checkbox"
@@ -173,7 +182,20 @@ export default function Register() {
               className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--border-strong)] bg-transparent accent-[var(--accent)]"
             />
             <span className="text-[12px] leading-relaxed text-[var(--fg-muted)]">
-              Согласен на трансграничную передачу обработчикам AI (Mistral, Google) для транскрибации и AI-анализа, ст. 12 152-ФЗ.
+              Я даю согласие на передачу моих данных (включая загружаемые аудио и видеоматериалы) в Mistral AI SAS (Франция) для целей транскрибации в соответствии со ст. 12 Федерального закона № 152-ФЗ.
+            </span>
+          </label>
+
+          {/* 3. Опциональное — маркетинговая рассылка */}
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={consentMarketing}
+              onChange={(e) => setConsentMarketing(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--border-strong)] bg-transparent accent-[var(--accent)]"
+            />
+            <span className="text-[12px] leading-relaxed text-[var(--fg-muted)]">
+              Я согласен(-на) получать информационные письма о новых возможностях Dicto. Вы можете отписаться в любой момент.
             </span>
           </label>
         </div>
@@ -181,7 +203,7 @@ export default function Register() {
         <div className="pt-2">
           <button
             type="submit"
-            disabled={loading}
+            disabled={!canSubmit}
             className="btn-accent w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (

@@ -243,6 +243,7 @@ export default function SeoLanding({
             <Link to="/video-v-tekst" className="hover:text-[var(--fg)] transition">Видео в текст</Link>
             <Link to="/rasshifrovka-golosovyh" className="hover:text-[var(--fg)] transition">Голосовые</Link>
             <Link to="/pricing" className="hover:text-[var(--fg)] transition">Тарифы</Link>
+            <Link to="/privacy" className="hover:text-[var(--fg)] transition">Конфиденциальность</Link>
           </div>
         </div>
       </footer>

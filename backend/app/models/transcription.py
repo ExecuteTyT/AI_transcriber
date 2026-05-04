@@ -30,11 +30,26 @@ class Transcription(Base, UUIDMixin, TimestampMixin):
     completed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    # Срок авто-удаления. Вычисляется при создании = created_at + user.data_retention_days.
-    # None = бессрочно (Pro/Бизнес опция).
+    # Срок авто-удаления ВСЕЙ записи (текст+аудио). Вычисляется при создании
+    # = created_at + user.data_retention_days. None = бессрочно (Pro/Бизнес).
     expires_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True, index=True
     )
+
+    # 152-ФЗ: отдельный срок хранения только АУДИО-файла. После audio_delete_at
+    # cron удалит S3-объект и обнулит file_key, но текст транскрипции и анализ
+    # останутся доступны пользователю (минимизация хранения исходных данных).
+    audio_retention_days: Mapped[int] = mapped_column(Integer, default=7)
+    audio_delete_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    # Заполняется при фактическом удалении аудио — для акта уничтожения.
+    audio_deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    audio_deleted_log: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )  # "auto-cron" | "user-manual" | "user-account-deleted"
 
     user = relationship("User", back_populates="transcriptions")
     ai_analyses = relationship("AiAnalysis", back_populates="transcription", lazy="selectin")

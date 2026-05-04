@@ -271,6 +271,7 @@ export default function BlogArticle() {
             <Link to="/blog" className="hover:text-[var(--fg)] transition">Все статьи</Link>
             <Link to="/pricing" className="hover:text-[var(--fg)] transition">Тарифы</Link>
             <Link to="/register" className="hover:text-[var(--fg)] transition">Регистрация</Link>
+            <Link to="/privacy" className="hover:text-[var(--fg)] transition">Конфиденциальность</Link>
           </div>
         </div>
       </footer>

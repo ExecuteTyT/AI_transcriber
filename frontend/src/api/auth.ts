@@ -16,9 +16,18 @@ export interface User {
   is_email_verified: boolean;
   is_admin: boolean;
   data_retention_days: number | null;
+  default_audio_retention_days: number;
   default_language: string;
   bonus_minutes: number;
   created_at: string | null;
+}
+
+export interface Consent {
+  consent_type: string;
+  granted: boolean;
+  granted_at: string;
+  revoked_at: string | null;
+  policy_version: string;
 }
 
 export interface MessageResponse {
@@ -30,9 +39,10 @@ export const authApi = {
     email: string,
     password: string,
     name: string,
-    consents: { consent_terms: boolean; consent_cross_border: boolean } = {
-      consent_terms: true,
-      consent_cross_border: true,
+    consents: {
+      consent_pd_processing: boolean;
+      consent_cross_border: boolean;
+      consent_marketing: boolean;
     }
   ) =>
     api.post<TokenResponse>("/auth/register", {
@@ -53,8 +63,17 @@ export const authApi = {
     name?: string;
     email?: string;
     data_retention_days?: number | null;
+    default_audio_retention_days?: number | null;
     default_language?: string;
   }) => api.patch<User>("/auth/profile", data),
+
+  // 152-ФЗ: согласия пользователя.
+  getConsents: () => api.get<Consent[]>("/users/me/consents"),
+
+  revokeConsent: (consentType: "marketing") =>
+    api.post<MessageResponse>("/users/me/consents/revoke", { consent_type: consentType }),
+
+  deleteAccount: () => api.delete<MessageResponse>("/users/me"),
 
   changePassword: (currentPassword: string, newPassword: string) =>
     api.post<MessageResponse>("/auth/change-password", {

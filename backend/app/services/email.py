@@ -233,6 +233,66 @@ async def send_welcome_email(to_email: str, name: str) -> bool:
     return await send_email(to_email, subject, _wrap_html(content, "180 бонусных минут на счёте"), text)
 
 
+async def send_consent_confirmation_email(
+    to_email: str, name: str, *, consent_marketing: bool = False
+) -> bool:
+    """152-ФЗ: подтверждение факта согласий после регистрации.
+
+    Не обязательное по закону письмо, но юридически сильно снижает риски при
+    жалобах в РКН (доказательство что юзер был уведомлён о факте передачи).
+    """
+    greeting = f"Здравствуйте, {name}" if name else "Здравствуйте"
+    subject = "Вы зарегистрировались на Dicto — ваши данные"
+    today = datetime.now(timezone.utc).strftime("%d.%m.%Y")
+    marketing_line = (
+        f'<li>Получение информационных писем о новых возможностях Dicto — {today}</li>'
+        if consent_marketing
+        else ""
+    )
+    content = (
+        _mono("152-ФЗ · подтверждение согласий")
+        + _h(f"{greeting}.")
+        + _p(
+            "Вы зарегистрировались на Dicto (<strong>dicto.pro</strong>). Подтверждаем факт получения "
+            "от вас следующих согласий на обработку персональных данных:"
+        )
+        + (
+            f'<ul style="margin:0 0 24px;padding:0 0 0 18px;color:{_FG_MUTED};font-size:14px;line-height:1.7;">'
+            f'<li>Обработка персональных данных (email, имя) — {today}</li>'
+            f'<li>Передача данных в Mistral AI SAS (Франция) для целей транскрибации '
+            f'в соответствии со ст. 12 Федерального закона № 152-ФЗ — {today}</li>'
+            f'{marketing_line}'
+            '</ul>'
+        )
+        + _p(
+            f'Политика конфиденциальности: '
+            f'<a href="{settings.APP_URL}/privacy" style="color:{_FG};text-decoration:underline;text-decoration-color:{_BORDER};">{settings.APP_URL}/privacy</a>'
+        )
+        + _p(
+            f'Управление согласиями и удаление аккаунта: '
+            f'<a href="{settings.APP_URL}/profile" style="color:{_FG};text-decoration:underline;text-decoration-color:{_BORDER};">{settings.APP_URL}/profile</a>'
+        )
+        + _p(
+            f'<span style="color:{_FG_SUBTLE};">По вопросам защиты данных пишите на '
+            f'<a href="mailto:privacy@dicto.pro" style="color:{_FG};text-decoration:underline;text-decoration-color:{_BORDER};">privacy@dicto.pro</a> '
+            "— ответим в течение 10 рабочих дней.</span>"
+        )
+    )
+    text = (
+        f"{greeting}.\n\n"
+        f"Вы зарегистрировались на Dicto (dicto.pro).\n\n"
+        f"Вы дали согласие на:\n"
+        f"• Обработку персональных данных (email, имя) — {today}\n"
+        f"• Передачу данных в Mistral AI SAS (Франция) для целей транскрибации "
+        f"(ст. 12 152-ФЗ) — {today}\n"
+        + (f"• Получение рассылки — {today}\n" if consent_marketing else "")
+        + f"\nПолитика конфиденциальности: {settings.APP_URL}/privacy\n"
+        f"Управление согласиями: {settings.APP_URL}/profile\n"
+        f"Защита данных: privacy@dicto.pro"
+    )
+    return await send_email(to_email, subject, _wrap_html(content, "Подтверждение согласий"), text)
+
+
 async def send_subscription_email(to_email: str, plan: str) -> bool:
     """Уведомление об активации подписки."""
     plan_names = {
