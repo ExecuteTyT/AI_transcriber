@@ -29,7 +29,7 @@ type FeatureGroup = {
 };
 
 type Plan = {
-  id: "free" | "start" | "pro" | "business" | "premium";
+  id: "free" | "start" | "meet_solo" | "pro" | "expert" | "business" | "premium";
   name: string;
   tagline: string;
   price: number;
@@ -112,6 +112,41 @@ const PLANS: Plan[] = [
     ctaLabel: "Оформить Старт",
   },
   {
+    id: "meet_solo",
+    name: "Митинги",
+    tagline: "Для совещаний и расширения",
+    price: 990,
+    period: "/мес",
+    groups: [
+      {
+        icon: Clock,
+        title: "Минуты",
+        items: [
+          { label: "2 400 минут (40 часов)", included: true },
+          { label: "Файлы до 2 часов", included: true },
+        ],
+      },
+      {
+        icon: Sparkles,
+        title: "AI-анализ",
+        items: [
+          { label: "Саммари без лимита", included: true },
+          { label: "Спикеры без ограничений", included: true },
+          { label: "RAG-чат безлимит", included: true },
+          { label: "Задачи (action items)", included: true },
+        ],
+      },
+      {
+        icon: RefreshCw,
+        title: "Экспорт",
+        items: [
+          { label: "TXT / SRT / DOCX", included: true },
+        ],
+      },
+    ],
+    ctaLabel: "Оформить Митинги",
+  },
+  {
     id: "pro",
     name: "Про",
     tagline: "Для бизнеса и продакшена",
@@ -149,17 +184,53 @@ const PLANS: Plan[] = [
     ctaLabel: "Оформить Про",
   },
   {
-    id: "business",
-    name: "Бизнес",
-    tagline: "Для команд до 5 человек",
-    price: 2300,
+    id: "expert",
+    name: "Эксперт",
+    tagline: "Для тех, кто работает с речью каждый день",
+    price: 1990,
     period: "/мес",
     groups: [
       {
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "3 600 минут (60 часов)", included: true },
+          { label: "4 800 минут (80 часов)", included: true },
+          { label: "Файлы до 4 часов", included: true },
+          { label: "Приоритетная обработка", included: true },
+        ],
+      },
+      {
+        icon: Sparkles,
+        title: "AI-анализ",
+        items: [
+          { label: "Всё без лимита", included: true },
+          { label: "Спикеры без ограничений", included: true },
+          { label: "RAG-чат безлимит", included: true },
+          { label: "Задачи (action items)", included: true },
+        ],
+      },
+      {
+        icon: RefreshCw,
+        title: "Экспорт",
+        items: [
+          { label: "TXT / SRT / DOCX", included: true },
+        ],
+      },
+    ],
+    ctaLabel: "Оформить Эксперт",
+  },
+  {
+    id: "business",
+    name: "Бизнес",
+    tagline: "Для команд до 5 человек",
+    price: 2490,
+    period: "/мес",
+    groups: [
+      {
+        icon: Clock,
+        title: "Минуты",
+        items: [
+          { label: "4 800 минут (80 часов)", included: true },
           { label: "Файлы до 4 часов", included: true },
           { label: "Приоритетная обработка", included: true },
         ],
@@ -277,7 +348,15 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
   },
 ];
 
-const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес", premium: "Премиум" };
+const PLAN_NAMES: Record<string, string> = {
+  free: "Free",
+  start: "Старт",
+  meet_solo: "Митинги",
+  pro: "Про",
+  expert: "Эксперт",
+  business: "Бизнес",
+  premium: "Премиум",
+};
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -361,7 +440,7 @@ export default function Pricing() {
 
       <motion.div
         variants={fadeUp}
-        className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:items-stretch md:gap-4"
+        className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:items-stretch md:gap-4"
       >
         {PLANS.map((plan) => (
           <PlanCard
@@ -453,7 +532,7 @@ export default function Pricing() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <Seo
         title="Тарифы Dicto — транскрибация от 500 ₽/мес"
-        description="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 часов), Про (820 ₽/мес, 25 часов), Бизнес (2 300 ₽, 60 часов), Премиум (4 600 ₽, 120 часов). AI-саммари, разметка спикеров, экспорт."
+        description="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 ч), Митинги (990 ₽, 40 ч), Про (820 ₽, 25 ч), Эксперт (1 990 ₽, 80 ч), Бизнес (2 490 ₽, 80 ч, 5 чел.), Премиум (4 600 ₽, 120 ч). AI-саммари, разметка спикеров, экспорт."
         canonical="https://dicto.pro/pricing"
         jsonLd={{
           "@context": "https://schema.org",

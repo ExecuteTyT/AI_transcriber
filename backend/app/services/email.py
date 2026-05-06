@@ -297,8 +297,10 @@ async def send_subscription_email(to_email: str, plan: str) -> bool:
     """Уведомление об активации подписки."""
     plan_names = {
         "start": "Старт — 500 ₽/мес · 10 часов",
+        "meet_solo": "Митинги — 990 ₽/мес · 40 часов",
         "pro": "Про — 820 ₽/мес · 25 часов",
-        "business": "Бизнес — 2 300 ₽/мес · 60 часов",
+        "expert": "Эксперт — 1 990 ₽/мес · 80 часов",
+        "business": "Бизнес — 2 490 ₽/мес · 80 часов",
         "premium": "Премиум — 4 600 ₽/мес · 120 часов",
     }
     plan_display = plan_names.get(plan, plan)

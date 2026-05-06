@@ -18,7 +18,15 @@ import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
 import { cn } from "@/lib/cn";
 import Seo from "@/components/Seo";
 
-const PLAN_NAMES: Record<string, string> = { free: "Free", start: "Старт", pro: "Про", business: "Бизнес", premium: "Премиум" };
+const PLAN_NAMES: Record<string, string> = {
+  free: "Free",
+  start: "Старт",
+  meet_solo: "Митинги",
+  pro: "Про",
+  expert: "Эксперт",
+  business: "Бизнес",
+  premium: "Премиум",
+};
 
 type FilterKey = "all" | "active" | "completed";
 

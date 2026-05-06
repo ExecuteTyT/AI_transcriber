@@ -26,7 +26,9 @@ import Seo from "@/components/Seo";
 const PLAN_NAMES: Record<string, string> = {
   free: "Free",
   start: "Старт",
+  meet_solo: "Митинги",
   pro: "Про",
+  expert: "Эксперт",
   business: "Бизнес",
   premium: "Премиум",
 };

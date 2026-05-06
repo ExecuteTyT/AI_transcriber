@@ -1,7 +1,14 @@
 // Единственный источник правды для тарифов на фронте.
 // Зеркало backend/app/services/plans.py — при изменении бэка обновить здесь.
 
-export type PlanId = "free" | "start" | "pro" | "business" | "premium";
+export type PlanId =
+  | "free"
+  | "start"
+  | "meet_solo"
+  | "pro"
+  | "expert"
+  | "business"
+  | "premium";
 
 export interface Plan {
   id: PlanId;
@@ -53,6 +60,21 @@ export const PLANS: readonly Plan[] = [
     overageRubPerMin: 2.0,
   },
   {
+    id: "meet_solo",
+    name: "Митинги",
+    tagline: "Для совещаний и расширения",
+    priceRub: 990,
+    minutesLimit: 2400,
+    maxFileDurationMin: 120,
+    aiSummaries: -1,
+    maxSpeakers: -1,
+    ragChatLimit: -1,
+    actionItems: true,
+    exportFormats: ["txt", "srt", "docx"],
+    maxUsers: 1,
+    overageRubPerMin: 1.5,
+  },
+  {
     id: "pro",
     name: "Про",
     tagline: "Для бизнеса и продакшена",
@@ -69,11 +91,26 @@ export const PLANS: readonly Plan[] = [
     highlight: "popular",
   },
   {
+    id: "expert",
+    name: "Эксперт",
+    tagline: "Для тех, кто работает с речью каждый день",
+    priceRub: 1990,
+    minutesLimit: 4800,
+    maxFileDurationMin: 240,
+    aiSummaries: -1,
+    maxSpeakers: -1,
+    ragChatLimit: -1,
+    actionItems: true,
+    exportFormats: ["txt", "srt", "docx"],
+    maxUsers: 1,
+    overageRubPerMin: 0.9,
+  },
+  {
     id: "business",
     name: "Бизнес",
     tagline: "Для команд до 5 человек",
-    priceRub: 2300,
-    minutesLimit: 3600,
+    priceRub: 2490,
+    minutesLimit: 4800,
     maxFileDurationMin: 240,
     aiSummaries: -1,
     maxSpeakers: -1,
@@ -81,7 +118,7 @@ export const PLANS: readonly Plan[] = [
     actionItems: true,
     exportFormats: ["txt", "srt", "docx"],
     maxUsers: 5,
-    overageRubPerMin: 1.0,
+    overageRubPerMin: 0.9,
   },
   {
     id: "premium",

@@ -27,6 +27,17 @@ def test_start_plan_limits():
     assert plan.overage_rub_per_min == 2.0
 
 
+def test_meet_solo_plan_limits():
+    """Meet Solo план: 2400 мин (40 ч), для расширения / совещаний."""
+    plan = get_plan("meet_solo")
+    assert plan.minutes_limit == 2400
+    assert plan.action_items is True
+    assert plan.ai_summaries == -1
+    assert plan.price_rub == 990
+    assert plan.max_users == 1
+    assert plan.overage_rub_per_min == 1.5
+
+
 def test_pro_plan_limits():
     """Pro план: 1500 мин (25 ч), action items."""
     plan = get_plan("pro")
@@ -36,12 +47,24 @@ def test_pro_plan_limits():
     assert plan.price_rub == 820
 
 
+def test_expert_plan_limits():
+    """Expert план: 4800 мин (80 ч), solo power-user (адвокаты, секретари)."""
+    plan = get_plan("expert")
+    assert plan.minutes_limit == 4800
+    assert plan.action_items is True
+    assert plan.rag_chat_limit == -1
+    assert plan.price_rub == 1990
+    assert plan.max_users == 1
+    assert plan.overage_rub_per_min == 0.9
+
+
 def test_business_plan_limits():
-    """Business план: 3600 мин (60 ч), 5 пользователей."""
+    """Business план: 4800 мин (80 ч), 5 пользователей."""
     plan = get_plan("business")
-    assert plan.minutes_limit == 3600
+    assert plan.minutes_limit == 4800
     assert plan.max_users == 5
-    assert plan.price_rub == 2300
+    assert plan.price_rub == 2490
+    assert plan.overage_rub_per_min == 0.9
 
 
 def test_premium_plan_limits():
