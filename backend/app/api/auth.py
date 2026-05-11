@@ -22,6 +22,7 @@ _auth_limiter = Limiter(key_func=get_remote_address, enabled=settings.ENVIRONMEN
 from app.schemas.auth import (
     ChangePasswordRequest,
     LoginRequest,
+    LogoutRequest,
     MessageResponse,
     RefreshRequest,
     RegisterRequest,
@@ -33,12 +34,20 @@ from app.schemas.auth import (
 )
 from app.services.auth import (
     create_access_token,
-    create_refresh_token,
     decode_token,
     hash_password,
     verify_password,
 )
 from app.services.email import send_password_reset_email, send_welcome_email
+from app.services.refresh_tokens import (
+    InvalidToken,
+    TokenRevoked,
+    TokenReused,
+    consume_and_rotate,
+    issue_refresh_token,
+    revoke_all_user,
+    revoke_one_by_token,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -117,6 +126,13 @@ async def register(request: Request, data: RegisterRequest, db: AsyncSession = D
             granted=True, ip_address=ip, user_agent=user_agent,
         )
 
+    # Выпуск refresh-токена с jti до commit'а (одна транзакция: user +
+    # consents + refresh_tokens). issue_refresh_token делает db.flush(),
+    # чтобы получить FK для replaced_by_id в будущих ротациях.
+    refresh_token, _ = await issue_refresh_token(
+        db, user_id=user.id, ip=ip, user_agent=user_agent,
+    )
+
     await db.commit()
     await db.refresh(user)
 
@@ -141,7 +157,7 @@ async def register(request: Request, data: RegisterRequest, db: AsyncSession = D
 
     return TokenResponse(
         access_token=create_access_token(str(user.id)),
-        refresh_token=create_refresh_token(str(user.id)),
+        refresh_token=refresh_token,
     )
 
 
@@ -158,24 +174,49 @@ async def login(request: Request, data: LoginRequest, db: AsyncSession = Depends
             detail="Неверный email или пароль",
         )
 
+    # Refresh-токен с jti — для single-use rotation (RFC 6819 §5.2.2.3).
+    from app.services.consents import extract_client_metadata
+
+    ip, user_agent = extract_client_metadata(request)
+    refresh_token, _ = await issue_refresh_token(
+        db, user_id=user.id, ip=ip, user_agent=user_agent,
+    )
+    await db.commit()
+
     return TokenResponse(
         access_token=create_access_token(str(user.id)),
-        refresh_token=create_refresh_token(str(user.id)),
+        refresh_token=refresh_token,
     )
 
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db)):
-    """Обновление токенов по refresh-токену."""
-    payload = decode_token(data.refresh_token)
-    if payload is None or payload.get("type") != "refresh":
+async def refresh(request: Request, data: RefreshRequest, db: AsyncSession = Depends(get_db)):
+    """Обновление токенов с rotation: старый помечается consumed, выпускается новый.
+
+    RFC 6819 §5.2.2.3 reuse detection: попытка использовать уже-consumed
+    токен трактуется как кража — revoke ВСЕ refresh-токены этого юзера.
+    """
+    from app.services.consents import extract_client_metadata
+
+    ip, user_agent = extract_client_metadata(request)
+    try:
+        new_refresh, _expires, user_uuid = await consume_and_rotate(
+            db, token=data.refresh_token, ip=ip, user_agent=user_agent,
+        )
+    except TokenReused:
+        # revoke_family + audit уже сделаны внутри. На клиенте — re-login.
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Сессия скомпрометирована — войдите заново",
+        )
+    except (InvalidToken, TokenRevoked):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Недействительный refresh-токен",
         )
 
-    user_id = payload.get("sub")
-    result = await db.execute(select(User).where(User.id == uuid.UUID(user_id)))
+    # Проверяем что юзер вообще существует (мог быть удалён между issue и refresh).
+    result = await db.execute(select(User).where(User.id == user_uuid))
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(
@@ -183,15 +224,35 @@ async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db)):
             detail="Пользователь не найден",
         )
 
+    await db.commit()
     return TokenResponse(
         access_token=create_access_token(str(user.id)),
-        refresh_token=create_refresh_token(str(user.id)),
+        refresh_token=new_refresh,
     )
 
 
 @router.post("/logout", response_model=MessageResponse)
-async def logout(user: User = Depends(get_current_user)):
-    """Выход из системы."""
+async def logout(
+    data: LogoutRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Выход из системы — отзыв refresh-токена в БД (RFC 6819).
+
+    Если `all_devices=True` — отзываем все активные refresh-токены юзера.
+    Иначе отзываем только переданный refresh_token (если есть и валиден).
+    Logout идемпотентен: даже если токен уже отозван — возвращаем 200.
+    """
+    from app.models.refresh_token import REVOKE_LOGOUT
+
+    if data.all_devices:
+        count = await revoke_all_user(db, user_id=user.id, reason=REVOKE_LOGOUT)
+        await db.commit()
+        return MessageResponse(message=f"Выход выполнен ({count} сессий)")
+
+    if data.refresh_token:
+        await revoke_one_by_token(db, token=data.refresh_token, reason=REVOKE_LOGOUT)
+        await db.commit()
     return MessageResponse(message="Выход выполнен")
 
 
@@ -262,7 +323,12 @@ async def change_password(
             detail="Неверный текущий пароль",
         )
 
+    from app.models.refresh_token import REVOKE_PASSWORD_CHANGE
+
     user.password_hash = hash_password(data.new_password)
+    # Защита: смена пароля выкидывает все активные сессии. Иначе укравший
+    # refresh-токен продолжает minted'ить access-токены даже после смены.
+    await revoke_all_user(db, user_id=user.id, reason=REVOKE_PASSWORD_CHANGE)
     await db.commit()
     return MessageResponse(message="Пароль успешно изменён")
 
@@ -336,9 +402,15 @@ async def reset_password(
             detail="Срок действия ссылки истёк",
         )
 
+    from app.models.refresh_token import REVOKE_PASSWORD_RESET
+
     user.password_hash = hash_password(data.new_password)
     user.password_reset_token_hash = None
     user.password_reset_expires_at = None
+    # Сброс пароля = смена компрометирующих учётных данных. Все refresh-
+    # токены пользователя отзываем, чтобы атакующий с украденным токеном
+    # не сохранил доступ после успешного reset'а владельцем аккаунта.
+    await revoke_all_user(db, user_id=user.id, reason=REVOKE_PASSWORD_RESET)
     await db.commit()
 
     return MessageResponse(message="Пароль успешно изменён")

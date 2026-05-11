@@ -2,6 +2,7 @@ from app.models.ai_analysis import AiAnalysis
 from app.models.base import Base
 from app.models.chat_message import ChatMessage
 from app.models.embedding import Embedding
+from app.models.refresh_token import RefreshToken
 from app.models.subscription import Subscription
 from app.models.transcription import Transcription
 from app.models.user import User
@@ -16,4 +17,5 @@ __all__ = [
     "Embedding",
     "ChatMessage",
     "UserConsent",
+    "RefreshToken",
 ]

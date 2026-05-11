@@ -57,7 +57,15 @@ export const authApi = {
 
   getMe: () => api.get<User>("/auth/me"),
 
-  logout: () => api.post<MessageResponse>("/auth/logout"),
+  // refresh_token передаётся в body чтобы бэк мог отозвать конкретную сессию
+  // (RFC 6819 server-side revocation). all_devices=true отзывает все.
+  logout: (allDevices = false) => {
+    const refresh = localStorage.getItem("refresh_token");
+    return api.post<MessageResponse>("/auth/logout", {
+      refresh_token: refresh,
+      all_devices: allDevices,
+    });
+  },
 
   updateProfile: (data: {
     name?: string;

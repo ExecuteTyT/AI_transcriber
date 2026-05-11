@@ -39,6 +39,15 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class LogoutRequest(BaseModel):
+    """Запрос на выход. refresh_token опционален — если не передан, отозвать
+    нечего (просто возвращаем 200 для идемпотентности). all_devices=True
+    отзывает все активные сессии пользователя."""
+
+    refresh_token: str | None = None
+    all_devices: bool = False
+
+
 class TokenResponse(BaseModel):
     """Ответ с JWT-токенами."""
 

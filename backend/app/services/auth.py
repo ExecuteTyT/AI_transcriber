@@ -1,9 +1,16 @@
+import hashlib
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt
 
 from app.config import settings
+
+
+def hash_jti(jti: str) -> str:
+    """sha256(jti) для хранения в БД (refresh_tokens.jti_hash)."""
+    return hashlib.sha256(jti.encode()).hexdigest()
 
 
 def hash_password(password: str) -> str:
@@ -25,13 +32,23 @@ def create_access_token(subject: str) -> str:
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
-def create_refresh_token(subject: str) -> str:
-    """Создание refresh JWT-токена."""
-    expire = datetime.now(timezone.utc) + timedelta(
+def create_refresh_token(subject: str) -> tuple[str, str, datetime]:
+    """Создание refresh JWT-токена с уникальным jti для rotation/revoke.
+
+    Возвращает `(token, jti, expires_at)`. Caller (services.refresh_tokens.
+    issue_refresh_token) сохраняет в БД `sha256(jti)` + expires_at — это даёт
+    нам стейтфул-журнал для single-use rotation и breach detection.
+
+    Сам jti в БД не хранится — только хеш. Атакующий с read-доступом к БД не
+    сможет identify конкретный токен или minted'ить новый (нужен JWT_SECRET).
+    """
+    jti = uuid.uuid4().hex
+    expires_at = datetime.now(timezone.utc) + timedelta(
         days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS
     )
-    payload = {"sub": subject, "exp": expire, "type": "refresh"}
-    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    payload = {"sub": subject, "exp": expires_at, "type": "refresh", "jti": jti}
+    token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    return token, jti, expires_at
 
 
 def decode_token(token: str) -> dict | None:

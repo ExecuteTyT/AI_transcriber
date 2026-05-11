@@ -5,10 +5,11 @@
 import logging
 from datetime import datetime, timezone
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, delete, select
 from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
+from app.models.refresh_token import RefreshToken
 from app.models.transcription import Transcription
 from app.services.storage import s3_service
 from app.tasks.celery_app import celery_app
@@ -57,10 +58,23 @@ def cleanup_expired():
             db.delete(trans)
             deleted += 1
 
+        # Refresh-tokens cleanup: удаляем истёкшие записи (вне зависимости
+        # от того, revoked они или нет — exp прошёл, JWT всё равно невалиден).
+        # Active revoked-записи держим в БД до естественного expiry — это нужно
+        # для post-mortem анализа после breach detection.
+        rt_result = db.execute(
+            delete(RefreshToken).where(RefreshToken.expires_at < now)
+        )
+        refresh_tokens_deleted = rt_result.rowcount or 0
+
         db.commit()
 
     logger.info(
-        "cleanup_expired: удалено %d транскрипций (S3-ошибок: %d)",
-        deleted, s3_errors,
+        "cleanup_expired: удалено %d транскрипций (S3-ошибок: %d), %d refresh-токенов",
+        deleted, s3_errors, refresh_tokens_deleted,
     )
-    return {"deleted": deleted, "s3_errors": s3_errors}
+    return {
+        "deleted": deleted,
+        "s3_errors": s3_errors,
+        "refresh_tokens_deleted": refresh_tokens_deleted,
+    }
