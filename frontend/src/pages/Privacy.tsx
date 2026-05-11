@@ -51,7 +51,7 @@ export default function Privacy() {
             <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">1. Общие положения</h2>
             <p>
               Настоящая политика регулирует обработку персональных данных оператором{" "}
-              <strong className="text-[var(--fg)]">ИП Сабирзянов Ислам</strong> (далее — «Оператор», «Dicto»,
+              <strong className="text-[var(--fg)]">ИП Гараева Гюзель Хамитовна</strong> (далее — «Оператор», «Dicto»,
               «мы») пользователей сервиса транскрибации аудио и видео, размещённого по
               адресу <code className="font-mono text-[13px] text-[var(--fg)]">dicto.pro</code> (далее — «Сервис»).
             </p>
@@ -207,10 +207,9 @@ export default function Privacy() {
 
             <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">10. Контакты оператора</h2>
             <p>
-              ИП Сабирзянов Ислам<br />
-              ИНН: [указать]<br />
-              ОГРНИП: [указать]<br />
-              Адрес: [указать]<br />
+              Индивидуальный предприниматель <strong className="text-[var(--fg)]">Гараева Гюзель Хамитовна</strong><br />
+              ИНН: <span className="font-mono text-[13px] text-[var(--fg)]">165110340786</span><br />
+              ОГРНИП: <span className="font-mono text-[13px] text-[var(--fg)]">326169000103722</span> (присвоен 27.04.2026)<br />
               Email для запросов по ПДн:{" "}
               <a href="mailto:privacy@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
                 privacy@dicto.pro

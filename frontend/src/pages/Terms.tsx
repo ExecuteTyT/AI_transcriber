@@ -138,8 +138,9 @@ export default function Terms() {
 
             <h2 className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] mt-8">10. Реквизиты Оператора</h2>
             <p>
-              ИП Сабирзянов Ислам<br />
-              ИНН: [указать]<br />
+              Индивидуальный предприниматель <strong className="text-[var(--fg)]">Гараева Гюзель Хамитовна</strong><br />
+              ИНН: <span className="font-mono text-[13px] text-[var(--fg)]">165110340786</span><br />
+              ОГРНИП: <span className="font-mono text-[13px] text-[var(--fg)]">326169000103722</span> (присвоен 27.04.2026)<br />
               Email:{" "}
               <a href="mailto:support@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
                 support@dicto.pro
