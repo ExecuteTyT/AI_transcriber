@@ -66,10 +66,35 @@ def process_url_transcription(self, transcription_id: str, url: str):
                 "noplaylist": True,
                 "nocheckcertificate": False,
                 "socket_timeout": 60,
+                # SSRF-защита: whitelist конкретных extractor'ов. БЕЗ этого
+                # yt-dlp использует generic-extractor, который следует редиректам
+                # и парсит HTML на <video>/<source> — что превращает open-
+                # redirector на youtube.com/redir в путь к http://169.254.169.254
+                # (cloud metadata IP) или http://127.0.0.1:8000/api/admin.
+                # Имена extractor'ов смотри в `yt-dlp --list-extractors`.
+                "allowed_extractors": [
+                    "youtube",
+                    "youtube:tab",
+                    "VKVideo",
+                    "vk",
+                    "Rutube",
+                    "Odnoklassniki",
+                    "OdnoklassnikiLive",
+                    "Dzen",
+                ],
             }
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=True)
+                # Дополнительная защита: проверяем что использованный extractor
+                # из whitelist. yt-dlp обычно сам падает с UnsupportedError если
+                # extractor не разрешён, но проверяем явно — на случай если
+                # extractor вернул что-то generic-like (info["extractor"]).
+                extractor_key = (info.get("extractor") or "").lower()
+                if extractor_key in ("generic", "html5"):
+                    raise ValueError(
+                        f"Источник не поддерживается (extractor={extractor_key})"
+                    )
                 downloaded = ydl.prepare_filename(info)
 
             if not os.path.exists(downloaded):

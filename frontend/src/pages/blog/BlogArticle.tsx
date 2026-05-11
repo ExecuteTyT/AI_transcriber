@@ -26,6 +26,41 @@ export default function BlogArticle() {
     .map((s) => articles.find((a) => a.slug === s))
     .filter(Boolean);
 
+  // Безопасный inline-рендер для **bold** и `code`. Раньше использовалось
+  // dangerouslySetInnerHTML с regex-replace — это превращается в stored XSS
+  // моментально, как только контент статей переедет из static (articles.ts) в
+  // БД/CMS. Делаем токенизацию вручную, ничего не интерпретируем как HTML.
+  const renderInline = (text: string): React.ReactNode[] => {
+    const parts: React.ReactNode[] = [];
+    // Жадно ищем **bold** и `code`. Перекрытий не бывает: внутри bold не
+    // допускается code и наоборот (markdown-light по спеке статей).
+    const re = /\*\*(.+?)\*\*|`(.+?)`/g;
+    let lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > lastIndex) parts.push(text.slice(lastIndex, m.index));
+      if (m[1] !== undefined) {
+        parts.push(
+          <strong key={parts.length} className="font-semibold text-[var(--fg)]">
+            {m[1]}
+          </strong>,
+        );
+      } else if (m[2] !== undefined) {
+        parts.push(
+          <code
+            key={parts.length}
+            className="font-mono text-[13px] text-[var(--accent)] bg-[var(--bg-elevated)] px-1.5 py-0.5 rounded"
+          >
+            {m[2]}
+          </code>,
+        );
+      }
+      lastIndex = re.lastIndex;
+    }
+    if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+    return parts;
+  };
+
   // Markdown-light renderer with editorial typographic rhythm.
   const renderContent = (content: string) => {
     return content.split("\n").map((line, i) => {
@@ -67,7 +102,7 @@ export default function BlogArticle() {
             <div key={i} className="flex items-start gap-2.5 mb-2.5">
               <span className="text-[var(--accent)] mt-1.5 flex-shrink-0 text-[10px]">●</span>
               <span className="text-[15px] leading-[1.55] text-[var(--fg-muted)]">
-                <strong className="font-semibold text-[var(--fg)]">{match[1]}</strong> — {match[2]}
+                <strong className="font-semibold text-[var(--fg)]">{match[1]}</strong> — {renderInline(match[2])}
               </span>
             </div>
           );
@@ -77,10 +112,9 @@ export default function BlogArticle() {
         return (
           <div key={i} className="flex items-start gap-2.5 mb-2">
             <span className="text-[var(--accent)] mt-1.5 flex-shrink-0 text-[10px]">●</span>
-            <span
-              className="text-[15px] leading-[1.55] text-[var(--fg-muted)]"
-              dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.+?)\*\*/g, "<strong class='font-semibold text-[var(--fg)]'>$1</strong>") }}
-            />
+            <span className="text-[15px] leading-[1.55] text-[var(--fg-muted)]">
+              {renderInline(line.slice(2))}
+            </span>
           </div>
         );
       }
@@ -88,24 +122,17 @@ export default function BlogArticle() {
         return (
           <div key={i} className="flex items-start gap-3 mb-2">
             <span className="font-mono text-[12px] text-[var(--fg-subtle)] flex-shrink-0 mt-1">{line.match(/^\d+/)![0]}.</span>
-            <span
-              className="text-[15px] leading-[1.55] text-[var(--fg-muted)]"
-              dangerouslySetInnerHTML={{ __html: line.replace(/^\d+\.\s*/, "").replace(/\*\*(.+?)\*\*/g, "<strong class='font-semibold text-[var(--fg)]'>$1</strong>") }}
-            />
+            <span className="text-[15px] leading-[1.55] text-[var(--fg-muted)]">
+              {renderInline(line.replace(/^\d+\.\s*/, ""))}
+            </span>
           </div>
         );
       }
       if (line.trim() === "") return <div key={i} className="h-4" />;
       return (
-        <p
-          key={i}
-          className="text-[15px] leading-[1.65] text-[var(--fg-muted)] mb-2"
-          dangerouslySetInnerHTML={{
-            __html: line
-              .replace(/\*\*(.+?)\*\*/g, "<strong class='font-semibold text-[var(--fg)]'>$1</strong>")
-              .replace(/`(.+?)`/g, '<code class="font-mono text-[13px] text-[var(--accent)] bg-[var(--bg-elevated)] px-1.5 py-0.5 rounded">$1</code>'),
-          }}
-        />
+        <p key={i} className="text-[15px] leading-[1.65] text-[var(--fg-muted)] mb-2">
+          {renderInline(line)}
+        </p>
       );
     });
   };

@@ -45,8 +45,21 @@ def decode_token(token: str) -> dict | None:
         return None
 
 
-def create_media_token(file_key: str, user_id: str, expires_in: int = 3600) -> str:
-    """Подписанный токен для публичного стрима аудио (<audio src>)."""
+def create_media_token(
+    file_key: str,
+    user_id: str,
+    *,
+    transcription_id: str | None = None,
+    expires_in: int = 3600,
+) -> str:
+    """Подписанный токен для публичного стрима аудио (<audio src>).
+
+    Дополнительно к user_id (sub) и file_key (fk) embed'им transcription_id (tid) —
+    чтобы при валидации можно было проверить что file_key реально принадлежит
+    запрошенной транскрипции пользователя. Без этого атакующий с одним валидным
+    media token'ом мог бы стримить любой file_key (если бы знал — UUIDv4 спасает,
+    но это footgun на будущее когда логика поменяется).
+    """
     expire = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
     payload = {
         "sub": user_id,
@@ -54,6 +67,8 @@ def create_media_token(file_key: str, user_id: str, expires_in: int = 3600) -> s
         "exp": expire,
         "type": "media",
     }
+    if transcription_id is not None:
+        payload["tid"] = transcription_id
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 

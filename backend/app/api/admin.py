@@ -11,8 +11,17 @@ from app.models.ai_analysis import AiAnalysis
 from app.models.subscription import Subscription
 from app.models.transcription import Transcription
 from app.models.user import User
+from app.services.audit_log import audit
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
+
+
+async def _count_admins(db: AsyncSession) -> int:
+    """Сколько сейчас активных админов. Используется для last-admin guard."""
+    result = await db.execute(
+        select(func.count()).select_from(User).where(User.is_admin == True)  # noqa: E712
+    )
+    return result.scalar_one()
 
 
 # ─── Schemas ───
@@ -202,18 +211,51 @@ async def update_user(
     admin: User = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Обновить пользователя (план, лимиты, админ-права)."""
+    """Обновить пользователя (план, лимиты, админ-права).
+
+    Last-admin guard: запрещаем демоутить последнего админа — иначе система
+    остаётся без управления. Все изменения логируются в audit (actor, target,
+    field, old, new) — компрометированный админ-аккаунт не сможет тихо
+    повысить attacker'а до is_admin.
+    """
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(404, "Пользователь не найден")
 
     update_data = data.model_dump(exclude_unset=True)
-    if update_data:
-        for key, value in update_data.items():
-            setattr(user, key, value)
-        await db.commit()
-        await db.refresh(user)
+    if not update_data:
+        return await get_user(user_id, admin, db)
+
+    # Last-admin guard: если демоутим админа — проверяем что он не последний.
+    if "is_admin" in update_data and user.is_admin and not update_data["is_admin"]:
+        active_admins = await _count_admins(db)
+        if active_admins <= 1:
+            raise HTTPException(
+                400,
+                "Нельзя снять админ-права с последнего администратора — "
+                "сначала назначьте другого админа",
+            )
+
+    # Снапшот старых значений ДО изменений — нужен для audit log.
+    old_snapshot = {key: getattr(user, key, None) for key in update_data.keys()}
+
+    for key, value in update_data.items():
+        setattr(user, key, value)
+    await db.commit()
+    await db.refresh(user)
+
+    # Audit: одна запись на изменение, диффом по каждому полю.
+    for key, new_value in update_data.items():
+        if old_snapshot.get(key) != new_value:
+            audit(
+                "admin_user_updated",
+                actor_id=str(admin.id),
+                target_user_id=str(user.id),
+                field=key,
+                old=str(old_snapshot.get(key)) if old_snapshot.get(key) is not None else None,
+                new=str(new_value) if new_value is not None else None,
+            )
 
     return await get_user(user_id, admin, db)
 
@@ -231,9 +273,27 @@ async def delete_user(
         raise HTTPException(404, "Пользователь не найден")
     if user.id == admin.id:
         raise HTTPException(400, "Нельзя удалить самого себя")
+    # Last-admin guard: удаление другого админа допустимо, только если ты не
+    # делаешь систему «без админов» (но self-delete уже выше запрещено).
+    if user.is_admin:
+        active_admins = await _count_admins(db)
+        if active_admins <= 1:
+            raise HTTPException(400, "Нельзя удалить последнего администратора")
+
+    # Сохраняем для audit ДО удаления (после CASCADE user.email недоступен).
+    target_email = user.email
+    target_was_admin = user.is_admin
 
     await db.delete(user)
     await db.commit()
+
+    audit(
+        "admin_user_deleted",
+        actor_id=str(admin.id),
+        target_user_id=str(user_id),
+        target_email=target_email,
+        target_was_admin=target_was_admin,
+    )
     return {"message": "Пользователь удалён"}
 
 
@@ -296,6 +356,13 @@ async def delete_transcription(
     t = result.scalar_one_or_none()
     if not t:
         raise HTTPException(404, "Транскрипция не найдена")
+    owner_user_id = t.user_id
     await db.delete(t)
     await db.commit()
+    audit(
+        "admin_transcription_deleted",
+        actor_id=str(admin.id),
+        transcription_id=str(transcription_id),
+        target_user_id=str(owner_user_id),
+    )
     return {"message": "Транскрипция удалена"}

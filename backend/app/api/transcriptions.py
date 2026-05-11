@@ -28,10 +28,19 @@ router = APIRouter(prefix="/api/transcriptions", tags=["transcriptions"])
 
 
 @router.get("/media/stream")
-async def stream_media(request: Request, token: str):
+async def stream_media(
+    request: Request,
+    token: str,
+    db: AsyncSession = Depends(get_db),
+):
     """Стриминг локально хранящегося файла по signed-токену с поддержкой Range.
 
     Объявлен первым, чтобы путь `/media/stream` не конфликтовал с `/{transcription_id}/...`.
+
+    Авторизация: media-токен подписывает {sub: user_id, fk: file_key, tid: transcription_id}.
+    Здесь проверяем что transcription с tid реально принадлежит user_id из токена И
+    что у этой транскрипции тот же file_key — иначе атакующий с любым своим валидным
+    media-token'ом мог бы запросить чужой file_key.
     """
     from fastapi.responses import StreamingResponse
 
@@ -42,8 +51,32 @@ async def stream_media(request: Request, token: str):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Недействительный токен")
 
     file_key = payload.get("fk")
-    if not file_key:
+    sub = payload.get("sub")
+    tid = payload.get("tid")
+    if not file_key or not sub:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверный токен")
+
+    # Object-level authz: подтверждаем что fk принадлежит транскрипции sub.
+    # Старые токены без tid (выпущенные до этого фикса) — продолжают работать
+    # ровно до своего expiry (1 час), потом frontend перевыпустит уже с tid.
+    if tid is not None:
+        try:
+            tid_uuid = uuid.UUID(tid)
+            sub_uuid = uuid.UUID(sub)
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверный токен")
+        result = await db.execute(
+            select(Transcription).where(
+                Transcription.id == tid_uuid,
+                Transcription.user_id == sub_uuid,
+                Transcription.file_key == file_key,
+            )
+        )
+        if result.scalar_one_or_none() is None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Токен не соответствует транскрипции",
+            )
 
     if s3_service is None:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Хранилище не настроено")
@@ -594,7 +627,12 @@ async def get_audio_url(
     # 2) Локальное хранилище — выдаём signed-токен на проксирующий стрим
     from app.services.auth import create_media_token
 
-    token = create_media_token(transcription.file_key, str(user.id), expires_in=audio_url_ttl)
+    token = create_media_token(
+        transcription.file_key,
+        str(user.id),
+        transcription_id=str(transcription.id),
+        expires_in=audio_url_ttl,
+    )
     base = str(request.base_url).rstrip("/")
     return {
         "url": f"{base}/api/transcriptions/media/stream?token={token}",
