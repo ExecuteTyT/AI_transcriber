@@ -1,15 +1,26 @@
 import uuid
 
-from sqlalchemy import ForeignKey, Integer, String, Text, Uuid
+from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
 
 
 class AiAnalysis(Base, UUIDMixin, TimestampMixin):
-    """Результат AI-анализа транскрипции (саммари, тезисы, action items)."""
+    """Результат AI-анализа транскрипции (саммари, тезисы, action items).
+
+    UNIQUE (transcription_id, type) — защита от race condition при параллельном
+    запросе одного и того же типа анализа из двух вкладок. Без этого создавались
+    дубликаты, юзер видел разный текст саммари в зависимости от того, какую
+    строку отдал first-row scalar_one_or_none.
+    """
 
     __tablename__ = "ai_analyses"
+    __table_args__ = (
+        UniqueConstraint(
+            "transcription_id", "type", name="ux_ai_analyses_transcription_type"
+        ),
+    )
 
     transcription_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("transcriptions.id", ondelete="CASCADE")

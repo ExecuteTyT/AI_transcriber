@@ -48,16 +48,41 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-_cors_origins = [settings.APP_URL]
-if settings.CORS_EXTRA_ORIGINS:
-    _cors_origins.extend(settings.CORS_EXTRA_ORIGINS.split(","))
+# CORS: строгий allowlist + санитизация — каждый origin валидируется как
+# https://host[:port] (без trailing slash, без path, без wildcard). Это
+# защищает от случайных пробелов в env-var и от accidental wildcard origin.
+def _validate_origin(raw: str) -> str | None:
+    raw = raw.strip().rstrip("/")
+    if not raw:
+        return None
+    if raw == "*" or "*" in raw:
+        # Никаких wildcard'ов — с allow_credentials=True wildcard это CSRF-риск
+        # (некоторые браузеры всё равно пропускают, разный CORS-vendor behavior).
+        return None
+    if not (raw.startswith("https://") or raw.startswith("http://localhost") or raw.startswith("http://127.0.0.1")):
+        # Прод-origin должен быть HTTPS. http://localhost разрешён для dev.
+        return None
+    return raw
 
+
+_cors_origins_raw = [settings.APP_URL]
+if settings.CORS_EXTRA_ORIGINS:
+    _cors_origins_raw.extend(settings.CORS_EXTRA_ORIGINS.split(","))
+
+_cors_origins = [o for o in (_validate_origin(x) for x in _cors_origins_raw) if o]
+if not _cors_origins:
+    raise RuntimeError("CORS: no valid origins configured (APP_URL/CORS_EXTRA_ORIGINS)")
+
+# Явный allow-list заголовков и методов вместо "*" — лучше получить 4xx CORS
+# на новый header чем тихо пропустить что-то странное.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Accept-Language"],
+    expose_headers=["Content-Disposition", "Content-Length", "Content-Range", "Accept-Ranges"],
+    max_age=600,
 )
 
 app.include_router(admin_router)

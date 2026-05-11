@@ -34,6 +34,12 @@ celery_app.conf.update(
             "task": "app.tasks.cleanup_audio.cleanup_expired_audio",
             "schedule": crontab(minute="0", hour="*/6"),
         },
+        # Stuck-in-processing janitor: каждые 5 мин. Записи в status=processing
+        # дольше 30 мин трактуются как ушедший в небытие воркер → failed.
+        "cleanup-stuck-processing": {
+            "task": "app.tasks.stuck_processing_janitor.cleanup_stuck",
+            "schedule": crontab(minute="*/5"),
+        },
     },
 )
 
@@ -44,4 +50,5 @@ celery_app.conf.include = [
     "app.tasks.cleanup_transcriptions",
     "app.tasks.cleanup_audio",
     "app.tasks.delete_user_data",
+    "app.tasks.stuck_processing_janitor",
 ]

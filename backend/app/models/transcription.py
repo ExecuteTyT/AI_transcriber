@@ -30,6 +30,11 @@ class Transcription(Base, UUIDMixin, TimestampMixin):
     completed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # Когда воркер начал обработку. Если запись остаётся в processing
+    # дольше STUCK_PROCESSING_TIMEOUT — janitor помечает failed.
+    processing_started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
     # Срок авто-удаления ВСЕЙ записи (текст+аудио). Вычисляется при создании
     # = created_at + user.data_retention_days. None = бессрочно (Pro/Бизнес).
     expires_at: Mapped[datetime | None] = mapped_column(

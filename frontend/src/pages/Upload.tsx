@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,6 +38,9 @@ export default function Upload() {
   const [tab, setTab] = useState<SourceTab>("file");
   const [url, setUrl] = useState("");
   const [urlLoading, setUrlLoading] = useState(false);
+  // AbortController для cancel-кнопки во время upload. Один на сессию upload'а,
+  // обнуляется когда upload завершается (success/error/cancel).
+  const abortRef = useRef<AbortController | null>(null);
   const navigate = useNavigate();
 
   const bonusMinutes = user?.bonus_minutes ?? 0;
@@ -68,8 +71,16 @@ export default function Upload() {
       setFileName(file.name);
       play("tick");
 
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       try {
-        const { data } = await transcriptionApi.upload(file, (percent) => setProgress(percent), language);
+        const { data } = await transcriptionApi.upload(
+          file,
+          (percent) => setProgress(percent),
+          language,
+          controller.signal,
+        );
         setStage("processing");
         setTimeout(() => {
           play("confirm");
@@ -77,15 +88,41 @@ export default function Upload() {
           navigate(`/transcription/${data.id}`);
         }, 600);
       } catch (err) {
-        const axiosErr = err as { response?: { data?: { detail?: string } } };
+        // axios canceled / fetch aborted — отдельный кейс, не показываем как ошибку.
+        const axiosErr = err as {
+          code?: string;
+          name?: string;
+          message?: string;
+          response?: { data?: { detail?: string } };
+        };
+        if (axiosErr.code === "ERR_CANCELED" || axiosErr.name === "CanceledError") {
+          setStage("idle");
+          setProgress(0);
+          setFileName("");
+          return;
+        }
+        if (axiosErr.code === "ECONNABORTED") {
+          // Timeout 10 мин — большой файл на плохой сети.
+          const msg = "Загрузка занимает слишком долго. Попробуйте при стабильном соединении.";
+          setError(msg);
+          setStage("failed");
+          toast.error(msg);
+          return;
+        }
         const message = axiosErr.response?.data?.detail || "Ошибка загрузки файла";
         setError(message);
         setStage("failed");
         toast.error(message);
+      } finally {
+        abortRef.current = null;
       }
     },
     [navigate, language, play]
   );
+
+  const handleCancelUpload = () => {
+    abortRef.current?.abort();
+  };
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
@@ -152,8 +189,21 @@ export default function Upload() {
       </motion.header>
 
       {busy ? (
-        <motion.div variants={fadeUp}>
+        <motion.div variants={fadeUp} className="space-y-4">
           <PipelineSteps stage={stage} uploadPercent={progress} fileName={fileName} />
+          {/* Кнопка отмены доступна только во время upload — после того как файл
+              ушёл на сервер, отменять нечего: запись transcription уже создана. */}
+          {stage === "uploading" && abortRef.current && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={handleCancelUpload}
+                className="text-[12px] text-[var(--fg-muted)] hover:text-red-400 transition-colors px-4 py-2 rounded-full border border-[var(--border)] hover:border-red-500/40"
+              >
+                Отменить загрузку
+              </button>
+            </div>
+          )}
         </motion.div>
       ) : (
         <>

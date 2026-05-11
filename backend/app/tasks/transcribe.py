@@ -55,8 +55,11 @@ def process_transcription(self, transcription_id: str):
             logger.error("Transcription %s not found", transcription_id)
             return
 
-        # Обновляем статус
+        # Обновляем статус + засекаем время начала обработки для stuck-janitor.
+        from datetime import datetime, timezone
+
         transcription.status = "processing"
+        transcription.processing_started_at = datetime.now(timezone.utc)
         db.commit()
 
         tmp_path = None

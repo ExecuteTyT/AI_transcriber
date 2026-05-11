@@ -83,7 +83,8 @@ export const transcriptionApi = {
   upload: (
     file: File,
     onProgress?: (percent: number) => void,
-    language: string = "auto"
+    language: string = "auto",
+    signal?: AbortSignal,
   ) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -93,6 +94,11 @@ export const transcriptionApi = {
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
+        // 10 минут на upload — для 500MB файла на плохой сети вполне реально.
+        // Без timeout axios держит соединение бесконечно, юзер не понимает что
+        // оно зависло. С abort signal — клик «Отмена» прерывает запрос.
+        timeout: 10 * 60 * 1000,
+        signal,
         onUploadProgress: onProgress
           ? (e) => {
               const percent = e.total ? Math.round((e.loaded / e.total) * 100) : 0;

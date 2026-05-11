@@ -29,6 +29,12 @@ class User(Base, UUIDMixin, TimestampMixin):
     password_reset_token_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_reset_expires_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Account lockout: счётчик неудачных попыток + время разлокировки.
+    # При 10 подряд неудачах ставим locked_until=now+15min — следующие попытки
+    # возвращают 423 Locked до истечения. Успешный логин сбрасывает счётчик.
+    failed_login_count: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     # 152-ФЗ: фиксация согласий пользователя (дата даёт доказательство)
     consent_terms_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
     consent_cross_border_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)

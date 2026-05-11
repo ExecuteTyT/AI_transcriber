@@ -164,15 +164,67 @@ async def register(request: Request, data: RegisterRequest, db: AsyncSession = D
 @router.post("/login", response_model=TokenResponse)
 @_auth_limiter.limit("10/minute")
 async def login(request: Request, data: LoginRequest, db: AsyncSession = Depends(get_db)):
-    """Вход в систему."""
+    """Вход в систему.
+
+    Account lockout: 10 неудачных попыток подряд блокируют аккаунт на 15 минут.
+    Защита от credential stuffing — даже с rate-limit по IP (slowapi), атакующий
+    с ботнетом может пробовать 10000 паролей. Лимит per-user добавляет блок.
+    """
+    LOCKOUT_THRESHOLD = 10
+    LOCKOUT_MINUTES = 15
+
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()
 
-    if user is None or not verify_password(data.password, user.password_hash):
+    # 1. Невалидный пользователь — generic 401 (anti-enumeration).
+    #    Не инкрементим счётчик: его некуда писать, и это даёт attacker'у
+    #    сигнал «email существует если ответ медленнее».
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Неверный email или пароль",
         )
+
+    # 2. Проверка lockout ДО проверки пароля — иначе валидный пароль откроет
+    #    заблокированный аккаунт.
+    now = datetime.now(timezone.utc)
+    if user.locked_until is not None and user.locked_until > now:
+        seconds_left = int((user.locked_until - now).total_seconds())
+        minutes_left = max(1, (seconds_left + 59) // 60)
+        # 423 Locked — semantic correct, ловится фронтом отдельно.
+        raise HTTPException(
+            status_code=status.HTTP_423_LOCKED,
+            detail=f"Аккаунт временно заблокирован, попробуйте через {minutes_left} мин",
+        )
+
+    # 3. Проверка пароля.
+    if not verify_password(data.password, user.password_hash):
+        user.failed_login_count = (user.failed_login_count or 0) + 1
+        if user.failed_login_count >= LOCKOUT_THRESHOLD:
+            from datetime import timedelta as _td
+            user.locked_until = now + _td(minutes=LOCKOUT_MINUTES)
+            await db.commit()
+            from app.services.audit_log import audit
+            audit(
+                "account_locked",
+                user_id=str(user.id),
+                failed_count=user.failed_login_count,
+                lockout_minutes=LOCKOUT_MINUTES,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_423_LOCKED,
+                detail=f"Слишком много попыток. Аккаунт заблокирован на {LOCKOUT_MINUTES} мин",
+            )
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверный email или пароль",
+        )
+
+    # 4. Успех — сбрасываем счётчик и locked_until.
+    if user.failed_login_count or user.locked_until:
+        user.failed_login_count = 0
+        user.locked_until = None
 
     # Refresh-токен с jti — для single-use rotation (RFC 6819 §5.2.2.3).
     from app.services.consents import extract_client_metadata

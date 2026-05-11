@@ -33,6 +33,9 @@ export default function Login() {
       const detail = axiosErr.response?.data?.detail;
       if (status === 429) {
         setError("Слишком много попыток входа. Попробуйте через минуту.");
+      } else if (status === 423) {
+        // Account locked — показываем точное сообщение бэка (там есть время).
+        setError(detail || "Аккаунт временно заблокирован.");
       } else if (status === 401 || status === 422) {
         setError("Неверный email или пароль");
       } else if (detail) {

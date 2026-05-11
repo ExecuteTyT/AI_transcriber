@@ -41,6 +41,9 @@ services:
     env_file: .env
     environment:
       - ENVIRONMENT=production
+      # 152-ФЗ: путь к audit-журналу. RotatingFileHandler пишет JSON-строки
+      # с событиями consent/audio_deleted/account_deleted/refresh_token_*.
+      - AUDIT_LOG_PATH=/var/log/dicto/audit.log
     depends_on:
       db:
         condition: service_healthy
@@ -48,6 +51,7 @@ services:
         condition: service_healthy
     volumes:
       - uploads:/app/data/uploads
+      - audit_logs:/var/log/dicto
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
     restart: unless-stopped
     logging: *default-logging
@@ -57,6 +61,7 @@ services:
     env_file: .env
     environment:
       - ENVIRONMENT=production
+      - AUDIT_LOG_PATH=/var/log/dicto/audit.log
     depends_on:
       db:
         condition: service_healthy
@@ -64,6 +69,7 @@ services:
         condition: service_healthy
     volumes:
       - uploads:/app/data/uploads
+      - audit_logs:/var/log/dicto
     command: celery -A app.tasks.celery_app worker --loglevel=warning --concurrency=2
     restart: unless-stopped
     logging: *default-logging
@@ -73,11 +79,14 @@ services:
     env_file: .env
     environment:
       - ENVIRONMENT=production
+      - AUDIT_LOG_PATH=/var/log/dicto/audit.log
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - audit_logs:/var/log/dicto
     command: celery -A app.tasks.celery_app beat --loglevel=warning
     restart: unless-stopped
     logging: *default-logging
@@ -162,3 +171,6 @@ volumes:
   certbot-certs:
   prometheus_data:
   grafana_data:
+  # 152-ФЗ: журнал учёта действий с ПДн. RotatingFileHandler 10MB×10 →
+  # ~100MB истории. Volume даёт устойчивость к docker compose down/build.
+  audit_logs:
