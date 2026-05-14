@@ -2,12 +2,22 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-export default defineConfig({
+// Build target определяется через --mode (admin|public). Mode → BUILD_TARGET
+// прокидывается в код через define, читается в main.tsx и условно
+// рендерит AdminApp или App. Vite/Rollup статически шейкит неиспользуемую ветку.
+export default defineConfig(({ mode }) => {
+  const buildTarget = mode === "admin" ? "admin" : "public";
+
+  return {
   plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  // Делаем import.meta.env.VITE_BUILD_TARGET доступным в коде во время сборки.
+  define: {
+    "import.meta.env.VITE_BUILD_TARGET": JSON.stringify(buildTarget),
   },
   ssr: {
     noExternal: ["react-helmet-async"],
@@ -45,4 +55,5 @@ export default defineConfig({
     // Поднимаем лимит warning (наши чанки теперь существенно меньше 500 KB).
     chunkSizeWarningLimit: 600,
   },
+  };
 });

@@ -65,6 +65,11 @@ class Settings(BaseSettings):
     CORS_EXTRA_ORIGINS: str = ""  # Доп. CORS origins через запятую (напр. https://app.vercel.app)
     ENVIRONMENT: str = "development"
 
+    # Origin админ-фронта. /api/admin/* принимает только запросы с этого Origin
+    # (защита глубже чем CORS — middleware валидирует Origin/Referer перед роутингом).
+    # В dev пусто = "" → проверка отключена. На проде должен быть https://admin.dicto.pro.
+    ADMIN_APP_URL: str = ""
+
     # 152-ФЗ: версия текста политики конфиденциальности.
     # Меняется когда мы существенно правим политику и должны заново собрать
     # согласия (или хотя бы зафиксировать что юзер видел новую версию).

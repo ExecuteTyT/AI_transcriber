@@ -19,6 +19,7 @@ deploy'ем — проверить актуальность `.env`.
 | SMTP_PASSWORD | `.env` на проде | ✅ Уже задан |
 | S3_ACCESS_KEY / S3_SECRET_KEY | `.env` на проде | ✅ Уже задан |
 | APP_URL | `.env` на проде | ✅ `https://dicto.pro` |
+| ADMIN_APP_URL | `.env` на проде | 🆕 Должен быть `https://admin.dicto.pro` (origin-guard на /api/admin/*) |
 | ENVIRONMENT | `.env` на проде | ✅ `production` |
 
 **Если YooKassa-ключей нет:** платёжные эндпоинты вернут 503/500, но остальной
@@ -66,6 +67,64 @@ docker compose -f docker-compose.prod.yml up -d --force-recreate api celery
 # Проверка
 docker compose -f docker-compose.prod.yml logs api --tail 20 | grep -i yookassa
 ```
+
+---
+
+## 2b. Включение admin-фронта на `admin.dicto.pro` (один раз)
+
+Админка теперь полностью отделена: отдельный bundle, отдельный nginx server_name,
+IP-allowlist. На том же VPS пока (отдельный VPS — следующий шаг изоляции).
+
+### Шаги настройки
+
+1. **DNS:** добавь A-запись `admin.dicto.pro` → IP того же VPS.
+
+2. **SSL:**
+   ```bash
+   ssh root@176.114.69.152
+   docker compose -f docker-compose.prod.yml run --rm certbot \
+     certonly --webroot -w /var/www/certbot \
+     -d admin.dicto.pro --email <твой-email> --agree-tos --no-eff-email
+   ```
+
+3. **IP-allowlist в `nginx.prod.conf`** — раскомментируй секцию `geo $admin_allowed`
+   и подставь свои IP:
+   ```nginx
+   geo $admin_allowed {
+       default 0;
+       198.51.100.42 1;     # Твой домашний IP
+       203.0.113.10 1;      # Офис (если есть)
+   }
+   ```
+   Если IP меняется — поставь WireGuard/Tailscale между ноутбуком и VPS, добавь
+   IP exit-ноды.
+
+4. **`.env` на проде:** добавь
+   ```
+   ADMIN_APP_URL=https://admin.dicto.pro
+   ```
+
+5. **Сборка и запуск admin-frontend:**
+   ```bash
+   docker compose -f docker-compose.prod.yml build admin-frontend
+   docker compose -f docker-compose.prod.yml up -d admin-frontend nginx api
+   ```
+
+6. **Проверка:**
+   - С разрешённого IP открыть `https://admin.dicto.pro` → форма Login Dicto
+   - С другого IP/мобильного интернета → 403 nginx
+   - `curl -H "Origin: https://evil.com" https://dicto.pro/api/admin/stats` → 403 (origin-guard)
+
+### Переезд на отдельный VPS (следующий шаг)
+
+Когда нужно полностью разнести (рекомендованная цель):
+
+1. Поднять второй VPS (любой, минимум 1GB RAM, 200₽/мес).
+2. На втором VPS: `git clone` + `docker compose up -d admin-frontend nginx` (только эти 2 сервиса).
+3. nginx на втором VPS проксирует `/api/` обратно на основной VPS (через WireGuard tunnel
+   или строгий IP-allowlist).
+4. На основном VPS убрать сервис `admin-frontend` и нужно убрать админский server block
+   из `nginx.prod.conf`.
 
 ---
 

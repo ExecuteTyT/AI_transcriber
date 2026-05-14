@@ -1,5 +1,9 @@
 # Stage 1: Build
+# BUILD_TARGET = public (default) | admin — выбирает entry-point в src/main.tsx.
+# Public bundle для dicto.pro не содержит admin-кода (tree-shake).
+# Admin bundle для admin.dicto.pro — только /login + /admin, минимальная attack surface.
 FROM node:20-alpine AS build
+ARG BUILD_TARGET=public
 
 WORKDIR /app
 
@@ -7,7 +11,11 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 COPY . .
-RUN npm run build:client
+RUN if [ "$BUILD_TARGET" = "admin" ]; then \
+      npm run build:admin && cp -r dist-admin dist; \
+    else \
+      npm run build:public && cp -r dist-public dist; \
+    fi
 
 # Stage 2: Serve static files
 FROM nginx:1.27-alpine

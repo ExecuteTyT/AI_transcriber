@@ -95,6 +95,20 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+      args:
+        BUILD_TARGET: public
+    restart: unless-stopped
+    logging: *default-logging
+
+  # Admin frontend — отдельный контейнер с минимальным bundle (только /login + /admin).
+  # Деплоится либо на том же VPS (nginx server_name admin.dicto.pro + IP-allowlist)
+  # как промежуточный шаг, либо на отдельный VPS (рекомендованная цель).
+  admin-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        BUILD_TARGET: admin
     restart: unless-stopped
     logging: *default-logging
 

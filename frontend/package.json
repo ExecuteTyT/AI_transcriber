@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-server && npx tsx scripts/prerender.ts",
     "build:client": "tsc -b && vite build",
+    "build:public": "tsc -b && vite build --mode public --outDir dist-public",
+    "build:admin": "tsc -b && vite build --mode admin --outDir dist-admin",
     "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist-server",
     "build:og": "npx tsx scripts/generate-og.ts",
     "prerender": "npx tsx scripts/prerender.ts",

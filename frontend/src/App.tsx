@@ -30,7 +30,9 @@ const Upload = lazy(() => import("@/pages/Upload"));
 const Transcription = lazy(() => import("@/pages/Transcription"));
 const Subscription = lazy(() => import("@/pages/Subscription"));
 const Profile = lazy(() => import("@/pages/Profile"));
-const Admin = lazy(() => import("@/pages/Admin"));
+// Admin вынесен в отдельный bundle (src/admin/AdminApp.tsx), деплоится на
+// admin.dicto.pro. В публичном бандле dicto.pro его НЕТ — это снижает
+// attack surface и даёт сетевую изоляцию.
 
 import { useAuthStore } from "@/store/authStore";
 
@@ -125,7 +127,6 @@ export default function App() {
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/app/pricing" element={<Pricing />} />
-          <Route path="/admin" element={<Admin />} />
         </Route>
 
         {/* 404 */}

@@ -48,6 +48,33 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+
+# Admin Origin guard: /api/admin/* принимает запросы только если Origin или
+# Referer совпадает с ADMIN_APP_URL. Без этого админ-эндпоинты теоретически
+# вызываются с любого origin'а с валидным JWT (csrf-style эскалация через XSS
+# в публичном dicto.pro). Защита на уровне middleware ДО прохождения через
+# get_current_admin — отказ происходит без раскрытия что endpoint существует.
+@app.middleware("http")
+async def admin_origin_guard(request: Request, call_next):
+    if request.url.path.startswith("/api/admin/"):
+        admin_origin = settings.ADMIN_APP_URL.rstrip("/") if settings.ADMIN_APP_URL else ""
+        if admin_origin:
+            origin = (request.headers.get("origin") or "").rstrip("/")
+            referer = request.headers.get("referer") or ""
+            referer_origin = ""
+            if referer:
+                # Достаточно проверить начало referer'а — точное совпадение origin'а.
+                from urllib.parse import urlparse
+                parsed = urlparse(referer)
+                if parsed.scheme and parsed.netloc:
+                    referer_origin = f"{parsed.scheme}://{parsed.netloc}"
+            if origin != admin_origin and referer_origin != admin_origin:
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Admin endpoint access denied"},
+                )
+    return await call_next(request)
+
 # CORS: строгий allowlist + санитизация — каждый origin валидируется как
 # https://host[:port] (без trailing slash, без path, без wildcard). Это
 # защищает от случайных пробелов в env-var и от accidental wildcard origin.
@@ -66,6 +93,8 @@ def _validate_origin(raw: str) -> str | None:
 
 
 _cors_origins_raw = [settings.APP_URL]
+if settings.ADMIN_APP_URL:
+    _cors_origins_raw.append(settings.ADMIN_APP_URL)
 if settings.CORS_EXTRA_ORIGINS:
     _cors_origins_raw.extend(settings.CORS_EXTRA_ORIGINS.split(","))
 
