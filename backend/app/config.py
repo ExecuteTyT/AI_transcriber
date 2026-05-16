@@ -43,9 +43,11 @@ class Settings(BaseSettings):
     LOCAL_STORAGE_PATH: str = "./data/uploads"
 
     # YooKassa
+    # WEBHOOK_SECRET удалён — ЮKassa не подписывает webhook'и HMAC. Защита
+    # вебхука: IP-allowlist (services/payment.py:YOOKASSA_WEBHOOK_IP_NETWORKS) +
+    # независимая re-fetch проверка платежа через GET /v3/payments/{id}.
     YOOKASSA_SHOP_ID: str = ""
     YOOKASSA_SECRET_KEY: str = ""
-    YOOKASSA_WEBHOOK_SECRET: str = ""
 
     # SMTP (email)
     SMTP_HOST: str = ""

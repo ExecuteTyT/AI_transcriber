@@ -18,10 +18,12 @@ from app.schemas.payment import (
     WebhookEvent,
 )
 from app.services.payment import (
+    PLAN_PRICES,
     activate_subscription,
     cancel_subscription,
     create_payment,
-    verify_webhook_signature,
+    is_yookassa_ip,
+    verify_payment_via_api,
 )
 
 logger = logging.getLogger(__name__)
@@ -69,17 +71,35 @@ async def yookassa_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    """Вебхук от ЮKassa для обработки платежей."""
-    body = await request.body()
+    """Webhook от ЮKassa для обработки платежей.
 
-    # Проверка подписи вебхука (обязательная)
-    signature = request.headers.get("X-Webhook-Signature", "")
-    if not verify_webhook_signature(body, signature):
-        logger.warning("Webhook rejected: invalid or missing signature")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Невалидная подпись вебхука",
-        )
+    Защита по документированной схеме ЮKassa
+    (https://yookassa.ru/developers/using-api/webhooks):
+
+    1. IP-allowlist — source IP должен быть из YOOKASSA_WEBHOOK_IP_NETWORKS.
+       Это режет 99% форжей. ЮKassa не подписывает webhook'и HMAC.
+    2. Re-fetch verification — берём payment_id из webhook, делаем независимый
+       GET /v3/payments/{id} к ЮKassa с нашими credentials, проверяем что
+       payment реально существует со статусом succeeded и нужным amount.
+       Это закрывает оставшийся 1% (если кто-то спуфит IP).
+    3. Amount check — сравниваем amount из re-fetch с PLAN_PRICES[plan].
+       Гарантирует что юзер не получит Pro заплатив за Start.
+
+    Старый HMAC через YOOKASSA_WEBHOOK_SECRET удалён — этого секрета нет
+    в природе ЮKassa, это был самопал в нашем коде.
+    """
+    # 1. IP-allowlist — берём X-Forwarded-For (за nginx) либо client.host.
+    forwarded = request.headers.get("x-forwarded-for") or ""
+    if forwarded:
+        source_ip = forwarded.split(",")[0].strip()
+    else:
+        source_ip = request.client.host if request.client else ""
+
+    if not is_yookassa_ip(source_ip):
+        logger.warning("Webhook rejected: source IP %s not in YooKassa allowlist", source_ip)
+        # 200 чтобы не дать злоумышленнику feedback что мы не приняли —
+        # ЮKassa retries только на 5xx, 200 окончательно закроет диалог.
+        return {"status": "ok"}
 
     try:
         data = await request.json()
@@ -91,32 +111,62 @@ async def yookassa_webhook(
 
     event_type = data.get("type", "")
     payment_obj = data.get("object", {})
+    yookassa_id = payment_obj.get("id", "")
 
-    if event_type == "payment.succeeded":
-        metadata = payment_obj.get("metadata", {})
-        user_id_str = metadata.get("user_id")
-        plan = metadata.get("plan")
-        yookassa_id = payment_obj.get("id", "")
+    if event_type == "payment.canceled":
+        logger.info("Payment canceled: %s", yookassa_id)
+        return {"status": "ok"}
 
-        if user_id_str and plan:
-            try:
-                await activate_subscription(
-                    user_id=uuid.UUID(user_id_str),
-                    plan=plan,
-                    yookassa_id=yookassa_id,
-                    db=db,
-                )
-            except Exception as e:
-                logger.exception("Subscription activation failed: %s", e)
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Ошибка активации подписки",
-                )
-        else:
-            logger.warning("Webhook payment.succeeded without metadata: %s", yookassa_id)
+    if event_type != "payment.succeeded":
+        logger.info("Webhook event ignored: type=%s id=%s", event_type, yookassa_id)
+        return {"status": "ok"}
 
-    elif event_type == "payment.canceled":
-        logger.info("Payment canceled: %s", payment_obj.get("id"))
+    # 2. Re-fetch payment у ЮKassa — единственный надёжный способ проверить
+    # что webhook реальный, а не форж с поддельным IP.
+    verified = await verify_payment_via_api(yookassa_id)
+    if verified is None:
+        logger.warning("Webhook %s: payment not found via API — possibly forged", yookassa_id)
+        return {"status": "ok"}
+
+    if verified.get("status") != "succeeded":
+        logger.warning(
+            "Webhook %s: API says status=%s, not succeeded — ignoring",
+            yookassa_id, verified.get("status"),
+        )
+        return {"status": "ok"}
+
+    metadata = verified.get("metadata", {})
+    user_id_str = metadata.get("user_id")
+    plan = metadata.get("plan")
+
+    if not (user_id_str and plan):
+        logger.warning("Webhook %s: missing user_id/plan in metadata", yookassa_id)
+        return {"status": "ok"}
+
+    # 3. Amount check — webhook'у нельзя доверять выбор тарифа без подтверждения
+    # что заплатили именно эту сумму. Защищает от подмены metadata.plan.
+    expected_amount = PLAN_PRICES.get(plan)
+    actual_amount = (verified.get("amount") or {}).get("value")
+    if expected_amount is None or actual_amount != expected_amount:
+        logger.error(
+            "Webhook %s: amount mismatch — expected %s for plan=%s, got %s. NOT activating.",
+            yookassa_id, expected_amount, plan, actual_amount,
+        )
+        return {"status": "ok"}
+
+    try:
+        await activate_subscription(
+            user_id=uuid.UUID(user_id_str),
+            plan=plan,
+            yookassa_id=yookassa_id,
+            db=db,
+        )
+    except Exception as e:
+        logger.exception("Subscription activation failed: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка активации подписки",
+        )
 
     return {"status": "ok"}
 

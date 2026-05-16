@@ -12,8 +12,8 @@ deploy'ем — проверить актуальность `.env`.
 |---|---|---|
 | JWT_SECRET_KEY | `.env` на проде | ⚠️ Должен быть `openssl rand -hex 32` — не `change-me-in-production` |
 | YOOKASSA_SHOP_ID | `.env` на проде | 🟡 **Единственный ручной шаг.** Получить от ЮKassa и вставить |
-| YOOKASSA_SECRET_KEY | `.env` на проде | 🟡 То же |
-| YOOKASSA_WEBHOOK_SECRET | `.env` на проде | 🟡 То же |
+| YOOKASSA_SECRET_KEY | `.env` на проде | 🟡 То же. После каждой смены — `docker compose up -d --force-recreate api celery` |
+| ~~YOOKASSA_WEBHOOK_SECRET~~ | — | ❌ Не нужен. У ЮKassa нет HMAC-подписи. Защита: IP-allowlist + re-fetch verification |
 | MISTRAL_API_KEY | `.env` на проде | ✅ Уже задан |
 | GOOGLE_API_KEY | `.env` на проде | ✅ Уже задан |
 | SMTP_PASSWORD | `.env` на проде | ✅ Уже задан |

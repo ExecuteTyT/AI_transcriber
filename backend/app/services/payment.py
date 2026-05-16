@@ -1,7 +1,12 @@
-"""Сервис интеграции с ЮKassa."""
+"""Сервис интеграции с ЮKassa.
 
-import hashlib
-import hmac
+Webhook-защита: IP-allowlist + re-fetch payment (документированная схема).
+ЮKassa НЕ подписывает webhook'и HMAC — у них только IP-whitelist (опубликован
+на yookassa.ru/developers/using-api/webhooks#ip) + способ перепроверить
+платёж через GET /v3/payments/{id}. См. verify_payment_via_api.
+"""
+
+import ipaddress
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -15,6 +20,61 @@ from app.models.user import User
 from app.services.plans import PLANS, get_plan
 
 logger = logging.getLogger(__name__)
+
+# Публичные IPv4-диапазоны ЮKassa с https://yookassa.ru/developers/using-api/webhooks#ip.
+# Только эти source IP могут отправлять webhook на /api/payments/webhook.
+# Если ЮKassa добавит новые — обновить здесь. IPv6-сети у них тоже есть, но
+# Selectel-нода обычно IPv4-only — оставляем IPv4 на старте.
+YOOKASSA_WEBHOOK_IP_NETWORKS: list[ipaddress.IPv4Network] = [
+    ipaddress.IPv4Network("185.71.76.0/27"),
+    ipaddress.IPv4Network("185.71.77.0/27"),
+    ipaddress.IPv4Network("77.75.153.0/25"),
+    ipaddress.IPv4Network("77.75.156.11/32"),
+    ipaddress.IPv4Network("77.75.156.35/32"),
+    ipaddress.IPv4Network("77.75.154.128/25"),
+]
+
+
+def is_yookassa_ip(ip: str) -> bool:
+    """Проверка что webhook пришёл с одного из IP-диапазонов ЮKassa."""
+    try:
+        addr = ipaddress.ip_address(ip)
+    except (ValueError, TypeError):
+        return False
+    if not isinstance(addr, ipaddress.IPv4Address):
+        return False
+    return any(addr in net for net in YOOKASSA_WEBHOOK_IP_NETWORKS)
+
+
+async def verify_payment_via_api(payment_id: str) -> dict | None:
+    """Документированный способ верификации webhook'а: GET payment у ЮKassa.
+
+    После получения webhook'а делаем независимый запрос к ЮKassa API с
+    нашими credentials. Если payment действительно существует со status=succeeded
+    и совпадает amount — это доказательство что webhook не подделан.
+
+    Возвращает payment-object от ЮKassa или None если не найден / ошибка.
+    """
+    import httpx
+
+    if not settings.YOOKASSA_SHOP_ID or not settings.YOOKASSA_SECRET_KEY:
+        logger.error("YooKassa credentials not configured")
+        return None
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://api.yookassa.ru/v3/payments/{payment_id}",
+                auth=(settings.YOOKASSA_SHOP_ID, settings.YOOKASSA_SECRET_KEY),
+                timeout=10,
+            )
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return response.json()
+    except (httpx.HTTPError, httpx.TimeoutException) as exc:
+        logger.warning("verify_payment_via_api failed for %s: %s", payment_id, exc)
+        return None
 
 # Цены — источник истины app.services.plans.PLANS.
 # Здесь формируем формат который нужен ЮKassa (string с 2 знаками после запятой).
@@ -169,16 +229,6 @@ async def cancel_subscription(
     return subscription
 
 
-def verify_webhook_signature(body: bytes, signature: str) -> bool:
-    """Проверка подписи вебхука ЮKassa."""
-    if not settings.YOOKASSA_WEBHOOK_SECRET:
-        logger.error("YOOKASSA_WEBHOOK_SECRET not configured — rejecting webhook")
-        return False
-    if not signature:
-        return False
-    expected = hmac.new(
-        settings.YOOKASSA_WEBHOOK_SECRET.encode(),
-        body,
-        hashlib.sha256,
-    ).hexdigest()
-    return hmac.compare_digest(expected, signature)
+# verify_webhook_signature удалена: ЮKassa не подписывает webhook'и HMAC.
+# Защита переехала в /api/payments/webhook → is_yookassa_ip (source IP whitelist)
+# + verify_payment_via_api (independent re-fetch с проверкой amount/status).
