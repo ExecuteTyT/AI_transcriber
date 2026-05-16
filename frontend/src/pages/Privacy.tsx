@@ -134,6 +134,12 @@ export default function Privacy() {
                     <td className="py-3 px-3">Сумма, email</td>
                     <td className="py-3 px-3">Приём платежей</td>
                   </tr>
+                  <tr>
+                    <td className="py-3 px-3 text-[var(--fg)]">ООО «Яндекс»</td>
+                    <td className="py-3 px-3">Россия</td>
+                    <td className="py-3 px-3">IP, cookies, поведение на сайте</td>
+                    <td className="py-3 px-3">Аналитика (Яндекс.Метрика)</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
