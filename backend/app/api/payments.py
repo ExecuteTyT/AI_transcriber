@@ -109,16 +109,54 @@ async def yookassa_webhook(
             detail="Невалидный JSON",
         )
 
-    event_type = data.get("type", "")
+    # ВАЖНО: ЮKassa шлёт webhook в формате {"type": "notification", "event": "...", "object": {...}}.
+    # Раньше код искал событие в `type` — это всегда "notification". То есть
+    # никакая обработка никогда не срабатывала (даже до Origin-фикса). Берём
+    # из правильного поля `event`. Документация:
+    # https://yookassa.ru/developers/using-api/webhooks#response
+    event_name = data.get("event", "")
     payment_obj = data.get("object", {})
     yookassa_id = payment_obj.get("id", "")
 
-    if event_type == "payment.canceled":
+    # payment.canceled — юзер начал оплату но не завершил (отменил/expired/недостаточно
+    # средств). Подписки ещё нет, нечего откатывать. Просто логируем для аудита.
+    if event_name == "payment.canceled":
         logger.info("Payment canceled: %s", yookassa_id)
         return {"status": "ok"}
 
-    if event_type != "payment.succeeded":
-        logger.info("Webhook event ignored: type=%s id=%s", event_type, yookassa_id)
+    # payment.waiting_for_capture — наши платежи создаются с capture=True
+    # (auto-capture), поэтому это событие у нас не должно возникать. Если
+    # пришло — игнорируем, не падая (логируем для диагностики).
+    if event_name == "payment.waiting_for_capture":
+        logger.info("Payment waiting for capture (unexpected with capture=True): %s", yookassa_id)
+        return {"status": "ok"}
+
+    # refund.succeeded — возврат денег покупателю. Подписка которая была
+    # активирована этим платежом должна быть деактивирована, юзер возвращается
+    # на free план. payment_id в refund-object указывает на оригинальный платёж.
+    if event_name == "refund.succeeded":
+        original_payment_id = payment_obj.get("payment_id", "")
+        if not original_payment_id:
+            logger.warning("refund.succeeded without payment_id: %s", yookassa_id)
+            return {"status": "ok"}
+        # Находим подписку по yookassa_id = original_payment_id и откатываем.
+        result = await db.execute(
+            select(Subscription).where(Subscription.yookassa_id == original_payment_id)
+        )
+        sub = result.scalar_one_or_none()
+        if sub is None:
+            logger.warning("Refund for unknown payment: %s", original_payment_id)
+            return {"status": "ok"}
+        # cancel_subscription переводит status=cancelled и опускает user.plan на free.
+        await cancel_subscription(sub.id, db)
+        logger.info(
+            "Subscription refunded: subscription_id=%s payment_id=%s refund_id=%s",
+            sub.id, original_payment_id, yookassa_id,
+        )
+        return {"status": "ok"}
+
+    if event_name != "payment.succeeded":
+        logger.info("Webhook event ignored: event=%s id=%s", event_name, yookassa_id)
         return {"status": "ok"}
 
     # 2. Re-fetch payment у ЮKassa — единственный надёжный способ проверить
