@@ -73,7 +73,9 @@
     <!-- Yandex.Metrika counter -->
     <!-- НЕ ЗАПУСКАЕТСЯ на admin.dicto.pro: там видны emails других юзеров,
          платежи, audit-логи — webvisor запишет это всё, юридически рискованно.
-         Hostname-проверка отрезает админку. -->
+         Hostname-проверка отрезает админку.
+         <noscript> для пользователей без JS — вынесен в body, т.к. HTML5
+         запрещает <div> внутри noscript-в-head (parse5/Vite строго следует). -->
     <script type="text/javascript">
       (function () {
         if (typeof window === "undefined") return;
@@ -88,7 +90,6 @@
         ym(109251574, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
       })();
     </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/109251574" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
 
     <!-- Schema.org SoftwareApplication -->
@@ -149,5 +150,8 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Yandex.Metrika noscript fallback (для юзеров с отключённым JS).
+         Здесь, не в head — HTML5 запрещает <div> внутри noscript-в-head. -->
+    <noscript><div><img src="https://mc.yandex.ru/watch/109251574" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   </body>
 </html>
