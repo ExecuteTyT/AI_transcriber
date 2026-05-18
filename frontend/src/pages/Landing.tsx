@@ -233,6 +233,31 @@ export default function Landing() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Программный скролл к секции с компенсацией высоты fixed header (64px + safe-area).
+  // Используем вместо <a href="#..."> чтобы:
+  //   1) URL не засоряется хешем (#pricing в адресной строке выглядит "битым")
+  //   2) Fixed-header не перекрывает первые ~64px секции
+  //   3) Скролл всегда плавный (без зависимости от prefers-reduced-motion)
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 72;
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+
+  // Если зашли по deep-link с хешем (dicto.pro/#pricing) — скроллим к секции
+  // программно после mount, затем убираем хеш из URL через replaceState.
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (!hash) return;
+    // Даём React время отрисовать lazy-секции и waveform.
+    const t = setTimeout(() => {
+      scrollToSection(hash);
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }, 200);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <div className="min-h-screen overflow-hidden bg-[var(--bg)] text-[var(--fg)]">
       <Seo
@@ -264,9 +289,9 @@ export default function Landing() {
             Dicto
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[var(--fg-muted)]">
-            <a href="#features" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Возможности</a>
-            <a href="#use-cases" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Кому</a>
-            <a href="#pricing" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Тарифы</a>
+            <button type="button" onMouseEnter={() => play("focus")} onClick={() => scrollToSection("features")} className="hover:text-[var(--fg)] transition-colors">Возможности</button>
+            <button type="button" onMouseEnter={() => play("focus")} onClick={() => scrollToSection("use-cases")} className="hover:text-[var(--fg)] transition-colors">Кому</button>
+            <button type="button" onMouseEnter={() => play("focus")} onClick={() => scrollToSection("pricing")} className="hover:text-[var(--fg)] transition-colors">Тарифы</button>
             <Link to="/blog" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Блог</Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -309,9 +334,9 @@ export default function Landing() {
         >
           <div className="absolute inset-0 bg-[var(--bg)]/95 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)} />
           <nav className="relative flex flex-col items-center justify-center h-full gap-6 font-display text-2xl text-[var(--fg)]">
-            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Возможности</a>
-            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Кому</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Тарифы</a>
+            <button type="button" onClick={() => { setMobileMenuOpen(false); scrollToSection("features"); }} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Возможности</button>
+            <button type="button" onClick={() => { setMobileMenuOpen(false); scrollToSection("use-cases"); }} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Кому</button>
+            <button type="button" onClick={() => { setMobileMenuOpen(false); scrollToSection("pricing"); }} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Тарифы</button>
             <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Блог</Link>
             <div className="mt-4 flex items-center gap-3">
               <SoundToggle />
@@ -356,9 +381,9 @@ export default function Landing() {
               Начать бесплатно
               <span aria-hidden>→</span>
             </Link>
-            <a href="#demo" onClick={() => play("tick")} className="btn-editorial-ghost w-full sm:w-auto justify-center">
+            <button type="button" onClick={() => { play("tick"); scrollToSection("demo"); }} className="btn-editorial-ghost w-full sm:w-auto justify-center">
               Как это работает
-            </a>
+            </button>
           </div>
 
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mt-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
