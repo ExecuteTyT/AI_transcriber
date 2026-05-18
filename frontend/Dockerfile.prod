@@ -22,7 +22,13 @@ FROM nginx:1.27-alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# SPA fallback: all routes -> index.html
+# nginx config:
+#   - /assets/* (vite chunks) — immutable cache 1y
+#   - /*.{ico,png,...} — статика: если файла нет → 404 (НЕ index.html).
+#     Без этого SPA fallback отдавал HTML 8KB вместо favicon → crawler'ы
+#     (Telegram/WhatsApp/Yandex) видели «битый сайт» и кешировали no-preview
+#     на 30+ дней. КОРЕНЬ ПРОБЛЕМЫ почему OG не подтягивался нигде.
+#   - / (всё остальное) — SPA fallback на index.html
 RUN printf 'server {\n\
     listen 3000;\n\
     root /usr/share/nginx/html;\n\
@@ -30,6 +36,11 @@ RUN printf 'server {\n\
     location /assets/ {\n\
         expires 1y;\n\
         add_header Cache-Control "public, immutable";\n\
+    }\n\
+    location ~* \\.(ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|webmanifest|xml|txt|map)$ {\n\
+        try_files $uri =404;\n\
+        expires 1d;\n\
+        add_header Cache-Control "public, max-age=86400";\n\
     }\n\
     location / {\n\
         try_files $uri $uri/ /index.html;\n\

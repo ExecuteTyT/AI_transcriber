@@ -33,8 +33,17 @@
     <meta name="twitter:image" content="https://dicto.pro/og-image.png" />
     <meta name="twitter:image:alt" content="Dicto — транскрибация аудио и видео в текст с AI-анализом" />
 
-    <!-- Favicon -->
+    <!-- Favicon — полный набор для всех crawler'ов и платформ.
+         Раньше был только SVG, но WhatsApp/Yandex Webmaster/iOS share preview
+         не поддерживают SVG favicon и идут за стандартными путями. Без файла
+         nginx SPA fallback отдавал HTML, crawler записывал «битый сайт» в кеш
+         на 30+ дней — это блокировало OG preview во всех соцсетях. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#0e0a06" />
 
     <!-- Fonts: Instrument Serif (display) + Inter (body) + JetBrains Mono (timestamps) -->
