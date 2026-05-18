@@ -28,11 +28,12 @@
   <!-- Eyebrow -->
   <text x="80" y="240" font-family="'JetBrains Mono', ui-monospace, Menlo, monospace" font-size="18" letter-spacing="6" fill="#968b74">ТРАНСКРИБАЦИЯ · AI-АНАЛИЗ · RAG-ЧАТ</text>
 
-  <!-- H1 -->
+  <!-- H1.
+       Используем <tspan> внутри одного <text> для inline styling — sharp/librsvg
+       игнорировал trailing whitespace в отдельных <text> элементах ("превращаем в "
+       терял пробел), из-за чего слово "в" склеивалось с курсивным "текст". -->
   <text x="80" y="335" font-family="Georgia, 'Instrument Serif', serif" font-size="92" fill="#f7f3ec">Аудио и видео</text>
-  <text x="80" y="440" font-family="Georgia, 'Instrument Serif', serif" font-size="92" fill="#f7f3ec">превращаем в </text>
-  <text x="635" y="440" font-family="Georgia, 'Instrument Serif', serif" font-size="92" font-style="italic" fill="#c5f014">текст</text>
-  <text x="865" y="440" font-family="Georgia, 'Instrument Serif', serif" font-size="92" fill="#f7f3ec">.</text>
+  <text x="80" y="440" font-family="Georgia, 'Instrument Serif', serif" font-size="92" fill="#f7f3ec" xml:space="preserve">превращаем в <tspan font-style="italic" fill="#c5f014">текст</tspan>.</text>
 
   <!-- Sub -->
   <text x="80" y="508" font-family="Inter, 'Helvetica Neue', sans-serif" font-size="26" fill="#c9bba4">180 минут бесплатно при регистрации · без карты</text>
