@@ -11,6 +11,18 @@ import AudioToText from "@/pages/seo/AudioToText";
 import VideoToText from "@/pages/seo/VideoToText";
 import NeuralTranscription from "@/pages/seo/NeuralTranscription";
 import VoiceMessages from "@/pages/seo/VoiceMessages";
+import AudioToTextFree from "@/pages/seo/AudioToTextFree";
+import TranskribaciyaAudio from "@/pages/seo/TranskribaciyaAudio";
+import PerevestiAudio from "@/pages/seo/PerevestiAudio";
+import RasshifrovkaAudio from "@/pages/seo/RasshifrovkaAudio";
+import PreobrazovatAudio from "@/pages/seo/PreobrazovatAudio";
+import BezRegistracii from "@/pages/seo/BezRegistracii";
+import IzSsylki from "@/pages/seo/IzSsylki";
+import RusskijYazyk from "@/pages/seo/RusskijYazyk";
+import AnglijskijYazyk from "@/pages/seo/AnglijskijYazyk";
+import KazahskijYazyk from "@/pages/seo/KazahskijYazyk";
+import DlyaPodkastov from "@/pages/seo/DlyaPodkastov";
+import DlyaLekcij from "@/pages/seo/DlyaLekcij";
 import BlogIndex from "@/pages/blog/BlogIndex";
 import BlogArticle from "@/pages/blog/BlogArticle";
 
@@ -102,6 +114,18 @@ export default function App() {
         <Route path="/video-v-tekst" element={<VideoToText />} />
         <Route path="/nejroset-transkribaciya" element={<NeuralTranscription />} />
         <Route path="/rasshifrovka-golosovyh" element={<VoiceMessages />} />
+        <Route path="/audio-v-tekst-besplatno" element={<AudioToTextFree />} />
+        <Route path="/transkribaciya-audio" element={<TranskribaciyaAudio />} />
+        <Route path="/perevesti-audio-v-tekst" element={<PerevestiAudio />} />
+        <Route path="/rasshifrovka-audio" element={<RasshifrovkaAudio />} />
+        <Route path="/preobrazovat-audio" element={<PreobrazovatAudio />} />
+        <Route path="/bez-registracii" element={<BezRegistracii />} />
+        <Route path="/iz-ssylki" element={<IzSsylki />} />
+        <Route path="/russkij-yazyk" element={<RusskijYazyk />} />
+        <Route path="/anglijskij-yazyk" element={<AnglijskijYazyk />} />
+        <Route path="/kazahskij-yazyk" element={<KazahskijYazyk />} />
+        <Route path="/dlya-podkastov" element={<DlyaPodkastov />} />
+        <Route path="/dlya-lekcij" element={<DlyaLekcij />} />
         <Route path="/blog" element={<BlogIndex />} />
         <Route path="/blog/:slug" element={<BlogArticle />} />
 

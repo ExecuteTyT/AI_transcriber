@@ -39,6 +39,18 @@ async function prerender() {
     "/video-v-tekst",
     "/nejroset-transkribaciya",
     "/rasshifrovka-golosovyh",
+    "/audio-v-tekst-besplatno",
+    "/transkribaciya-audio",
+    "/perevesti-audio-v-tekst",
+    "/rasshifrovka-audio",
+    "/preobrazovat-audio",
+    "/bez-registracii",
+    "/iz-ssylki",
+    "/russkij-yazyk",
+    "/anglijskij-yazyk",
+    "/kazahskij-yazyk",
+    "/dlya-podkastov",
+    "/dlya-lekcij",
     "/blog",
   ];
 

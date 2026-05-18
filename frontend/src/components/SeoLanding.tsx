@@ -8,6 +8,12 @@ interface FAQ {
   a: string;
 }
 
+interface RelatedLink {
+  href: string;
+  title: string;
+  desc?: string;
+}
+
 interface SeoLandingProps {
   title: string;
   subtitle: string;
@@ -21,6 +27,9 @@ interface SeoLandingProps {
   faqs: FAQ[];
   cta: string;
   breadcrumb: { label: string; href: string }[];
+  // Внутренняя перелинковка (SEO-фактор + UX). 3-5 ссылок на родственные
+  // страницы/блог. Если не передано — секция не рендерится.
+  relatedLinks?: RelatedLink[];
 }
 
 export default function SeoLanding({
@@ -35,6 +44,7 @@ export default function SeoLanding({
   faqs,
   cta,
   breadcrumb,
+  relatedLinks,
 }: SeoLandingProps) {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
@@ -217,6 +227,37 @@ export default function SeoLanding({
           ))}
         </div>
       </section>
+
+      {/* ─── Related Links (внутренняя перелинковка для SEO + UX) ─── */}
+      {relatedLinks && relatedLinks.length > 0 && (
+        <section className="bg-[var(--bg-elevated)] border-y border-[var(--border)] py-20 md:py-24">
+          <div className="max-w-5xl mx-auto px-5 md:px-8">
+            <p className="eyebrow mb-4">По теме</p>
+            <h2 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] mb-10 max-w-[20ch]">
+              Связанные <em className="italic text-[var(--accent)]">материалы</em>
+            </h2>
+            <div className="grid md:grid-cols-2 gap-3 md:gap-4">
+              {relatedLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="group rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 md:p-6 hover:border-[var(--border-strong)] hover:bg-[var(--bg-elevated)] transition-colors"
+                >
+                  <h3 className="font-display text-lg md:text-xl text-[var(--fg)] leading-tight mb-2 group-hover:text-[var(--accent)] transition-colors">
+                    {link.title}
+                  </h3>
+                  {link.desc && (
+                    <p className="text-[13px] text-[var(--fg-muted)] leading-[1.5]">{link.desc}</p>
+                  )}
+                  <span className="inline-flex items-center gap-1 mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] group-hover:text-[var(--accent)]">
+                    Перейти <span aria-hidden>→</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ─── Final CTA ─── */}
       <section className="max-w-5xl mx-auto px-5 md:px-8 py-20 md:py-28">
