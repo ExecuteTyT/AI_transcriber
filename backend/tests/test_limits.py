@@ -85,8 +85,8 @@ def test_plan_configs():
     """Проверка корректности конфигов тарифов (актуальная сетка)."""
     from app.services.plans import PLANS, get_plan
 
-    expected_keys = {"free", "start", "meet_solo", "pro", "expert", "business", "premium"}
-    assert expected_keys <= set(PLANS.keys())
+    expected_keys = {"free", "start", "pro", "expert", "business"}
+    assert expected_keys == set(PLANS.keys())
 
     free = get_plan("free")
     # Free больше не получает ежемесячных минут — все 180 приходят
@@ -102,32 +102,21 @@ def test_plan_configs():
     assert start.price_rub == 500
     assert start.action_items is True
 
-    meet_solo = get_plan("meet_solo")
-    assert meet_solo.minutes_limit == 2400
-    assert meet_solo.price_rub == 990
-    assert meet_solo.max_users == 1
-    assert meet_solo.action_items is True
-
     pro = get_plan("pro")
-    assert pro.minutes_limit == 1500
-    assert pro.price_rub == 820
+    assert pro.minutes_limit == 1800
+    assert pro.price_rub == 990
     assert pro.action_items is True
 
     expert = get_plan("expert")
-    assert expert.minutes_limit == 4800
+    assert expert.minutes_limit == 4200
     assert expert.price_rub == 1990
     assert expert.max_users == 1
     assert expert.rag_chat_limit == -1
 
     business = get_plan("business")
-    assert business.minutes_limit == 4800
-    assert business.price_rub == 2490
+    assert business.minutes_limit == 5400
+    assert business.price_rub == 2990
     assert business.max_users == 5
-
-    premium = get_plan("premium")
-    assert premium.minutes_limit == 7200
-    assert premium.price_rub == 4600
-    assert premium.max_users == 10
 
     # Неизвестный план → free
     unknown = get_plan("unknown")

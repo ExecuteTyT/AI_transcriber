@@ -29,11 +29,15 @@ type FeatureGroup = {
 };
 
 type Plan = {
-  id: "free" | "start" | "meet_solo" | "pro" | "expert" | "business" | "premium";
+  id: "free" | "start" | "pro" | "expert" | "business";
   name: string;
   tagline: string;
   price: number;
   period: string;
+  /** Минут в тарифе. Для Free — разовый бонус, период не учитывается. */
+  minutesPerMonth: number | null;
+  /** Pre-computed для отображения мелким шрифтом под основной ценой. */
+  pricePerMinute: number | null;
   highlight?: "popular" | "premium";
   groups: FeatureGroup[];
   ctaLabel: string;
@@ -46,12 +50,14 @@ const PLANS: Plan[] = [
     tagline: "Попробуйте без риска",
     price: 0,
     period: "",
+    minutesPerMonth: null,
+    pricePerMinute: null,
     groups: [
       {
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "180 минут при регистрации (единоразово)", included: true },
+          { label: "180 минут при регистрации (разово)", included: true },
           { label: "Файлы до 15 минут", included: true },
         ],
       },
@@ -82,6 +88,8 @@ const PLANS: Plan[] = [
     tagline: "Для подкастеров и фрилансеров",
     price: 500,
     period: "/мес",
+    minutesPerMonth: 600,
+    pricePerMinute: 0.83,
     groups: [
       {
         icon: Clock,
@@ -104,61 +112,26 @@ const PLANS: Plan[] = [
       {
         icon: RefreshCw,
         title: "Экспорт",
-        items: [
-          { label: "TXT / SRT / DOCX", included: true },
-        ],
+        items: [{ label: "TXT / SRT / DOCX", included: true }],
       },
     ],
-    ctaLabel: "Оформить Старт",
-  },
-  {
-    id: "meet_solo",
-    name: "Митинги",
-    tagline: "Для совещаний и расширения",
-    price: 990,
-    period: "/мес",
-    groups: [
-      {
-        icon: Clock,
-        title: "Минуты",
-        items: [
-          { label: "2 400 минут (40 часов)", included: true },
-          { label: "Файлы до 2 часов", included: true },
-        ],
-      },
-      {
-        icon: Sparkles,
-        title: "AI-анализ",
-        items: [
-          { label: "Саммари без лимита", included: true },
-          { label: "Спикеры без ограничений", included: true },
-          { label: "RAG-чат безлимит", included: true },
-          { label: "Задачи (action items)", included: true },
-        ],
-      },
-      {
-        icon: RefreshCw,
-        title: "Экспорт",
-        items: [
-          { label: "TXT / SRT / DOCX", included: true },
-        ],
-      },
-    ],
-    ctaLabel: "Оформить Митинги",
+    ctaLabel: "Выбрать Старт",
   },
   {
     id: "pro",
     name: "Про",
-    tagline: "Для бизнеса и продакшена",
-    price: 820,
+    tagline: "Для журналистов и регулярной работы",
+    price: 990,
     period: "/мес",
+    minutesPerMonth: 1800,
+    pricePerMinute: 0.55,
     highlight: "popular",
     groups: [
       {
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "1 500 минут (25 часов)", included: true },
+          { label: "1 800 минут (30 часов)", included: true },
           { label: "Файлы до 3 часов", included: true },
           { label: "Приоритетная обработка", included: true },
         ],
@@ -176,25 +149,25 @@ const PLANS: Plan[] = [
       {
         icon: RefreshCw,
         title: "Экспорт",
-        items: [
-          { label: "TXT / SRT / DOCX", included: true },
-        ],
+        items: [{ label: "TXT / SRT / DOCX", included: true }],
       },
     ],
-    ctaLabel: "Оформить Про",
+    ctaLabel: "Выбрать Про",
   },
   {
     id: "expert",
     name: "Эксперт",
-    tagline: "Для тех, кто работает с речью каждый день",
+    tagline: "Для адвокатов и ежедневных митингов",
     price: 1990,
     period: "/мес",
+    minutesPerMonth: 4200,
+    pricePerMinute: 0.47,
     groups: [
       {
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "4 800 минут (80 часов)", included: true },
+          { label: "4 200 минут (70 часов)", included: true },
           { label: "Файлы до 4 часов", included: true },
           { label: "Приоритетная обработка", included: true },
         ],
@@ -212,64 +185,27 @@ const PLANS: Plan[] = [
       {
         icon: RefreshCw,
         title: "Экспорт",
-        items: [
-          { label: "TXT / SRT / DOCX", included: true },
-        ],
+        items: [{ label: "TXT / SRT / DOCX", included: true }],
       },
     ],
-    ctaLabel: "Оформить Эксперт",
+    ctaLabel: "Выбрать Эксперт",
   },
   {
     id: "business",
     name: "Бизнес",
     tagline: "Для команд до 5 человек",
-    price: 2490,
+    price: 2990,
     period: "/мес",
-    groups: [
-      {
-        icon: Clock,
-        title: "Минуты",
-        items: [
-          { label: "4 800 минут (80 часов)", included: true },
-          { label: "Файлы до 4 часов", included: true },
-          { label: "Приоритетная обработка", included: true },
-        ],
-      },
-      {
-        icon: Sparkles,
-        title: "AI-анализ",
-        items: [
-          { label: "Всё без лимита", included: true },
-          { label: "Спикеры без ограничений", included: true },
-          { label: "RAG-чат безлимит", included: true },
-          { label: "Задачи (action items)", included: true },
-        ],
-      },
-      {
-        icon: RefreshCw,
-        title: "Экспорт",
-        items: [
-          { label: "TXT / SRT / DOCX", included: true },
-          { label: "До 5 пользователей", included: true },
-        ],
-      },
-    ],
-    ctaLabel: "Оформить Бизнес",
-  },
-  {
-    id: "premium",
-    name: "Премиум",
-    tagline: "Для студий и агентств",
-    price: 4600,
-    period: "/мес",
+    minutesPerMonth: 5400,
+    pricePerMinute: 0.55,
     highlight: "premium",
     groups: [
       {
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "7 200 минут (120 часов)", included: true },
-          { label: "Файлы до 6 часов", included: true },
+          { label: "5 400 минут (90 часов)", included: true },
+          { label: "Файлы до 4 часов", included: true },
           { label: "Приоритетная обработка", included: true },
         ],
       },
@@ -285,14 +221,15 @@ const PLANS: Plan[] = [
       },
       {
         icon: RefreshCw,
-        title: "Экспорт",
+        title: "Команда",
         items: [
+          { label: "До 5 пользователей", included: true },
+          { label: "Общая база транскрипций", included: true },
           { label: "TXT / SRT / DOCX", included: true },
-          { label: "До 10 пользователей", included: true },
         ],
       },
     ],
-    ctaLabel: "Оформить Премиум",
+    ctaLabel: "Выбрать Бизнес",
   },
 ];
 
@@ -344,18 +281,28 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: "Подходит ли для команды?",
-    a: "Тариф Про оптимален для команд до 5 человек. Для больших команд и корпоративных внедрений — напишите нам, согласуем индивидуальные условия.",
+    a: (
+      <>
+        Тариф <strong>Бизнес</strong> рассчитан на команды до 5 человек — общая база транскрипций, разграничение
+        доступа, единый биллинг. Для больших команд (10+ пользователей) или 500+ часов в месяц напишите на{" "}
+        <a
+          href="mailto:support@dicto.pro"
+          className="font-semibold text-[var(--accent)] underline underline-offset-2 decoration-[var(--accent)]/40 hover:decoration-[var(--accent)]"
+        >
+          support@dicto.pro
+        </a>{" "}
+        — согласуем индивидуальные условия.
+      </>
+    ),
   },
 ];
 
 const PLAN_NAMES: Record<string, string> = {
   free: "Free",
   start: "Старт",
-  meet_solo: "Митинги",
   pro: "Про",
   expert: "Эксперт",
   business: "Бизнес",
-  premium: "Премиум",
 };
 
 export default function Pricing() {
@@ -440,7 +387,7 @@ export default function Pricing() {
 
       <motion.div
         variants={fadeUp}
-        className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:items-stretch md:gap-4"
+        className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:items-stretch md:gap-4"
       >
         {PLANS.map((plan) => (
           <PlanCard
@@ -452,6 +399,10 @@ export default function Pricing() {
             onSelect={() => handleSubscribe(plan.id)}
           />
         ))}
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+        <EnterpriseCard />
       </motion.div>
 
       <motion.div variants={fadeUp}>
@@ -532,7 +483,7 @@ export default function Pricing() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <Seo
         title="Тарифы Dicto — транскрибация от 500 ₽/мес"
-        description="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 ч), Митинги (990 ₽, 40 ч), Про (820 ₽, 25 ч), Эксперт (1 990 ₽, 80 ч), Бизнес (2 490 ₽, 80 ч, 5 чел.), Премиум (4 600 ₽, 120 ч). AI-саммари, разметка спикеров, экспорт."
+        description="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 ч), Про (990 ₽, 30 ч), Эксперт (1 990 ₽, 70 ч), Бизнес (2 990 ₽, 90 ч, до 5 чел.). AI-саммари, разметка спикеров, экспорт."
         canonical="https://dicto.pro/pricing"
         jsonLd={{
           "@context": "https://schema.org",
@@ -735,6 +686,13 @@ function PlanCard({
           </span>
           <span className={cn("font-mono text-[12px]", p.fgMuted)}>₽{plan.period}</span>
         </div>
+        {/* Вторичная метрика — ₽/мин. Главная сравнительная цифра для юзера
+            при выборе тарифа: позволяет сразу видеть монотонность скидки. */}
+        {plan.pricePerMinute !== null && (
+          <p className={cn("mt-1.5 font-mono text-[11px] tabular", p.fgSubtle)}>
+            {plan.pricePerMinute.toFixed(2)} ₽ / минута
+          </p>
+        )}
 
         <div className="mt-7 flex-1 space-y-5">
           {plan.groups.map((group) => (
@@ -863,6 +821,31 @@ function FaqRow({
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function EnterpriseCard() {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] px-6 py-8 md:px-10 md:py-10">
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between md:gap-10">
+        <div className="max-w-[52ch]">
+          <p className="eyebrow mb-3">Enterprise</p>
+          <h3 className="font-display text-2xl md:text-[28px] leading-[1.1] tracking-[-0.015em] text-[var(--fg)]">
+            Команда от 10 человек или 500+ часов в месяц?
+          </h3>
+          <p className="mt-3 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
+            Индивидуальные условия для агентств, студий и корпоративных клиентов: выделенный support, DPA по 152-ФЗ,
+            гибкая цена за минуту, on-premise по запросу.
+          </p>
+        </div>
+        <a
+          href="mailto:support@dicto.pro?subject=Enterprise%20%E2%80%94%20Dicto"
+          className="btn-accent !py-3.5 !px-6 !text-[14px] whitespace-nowrap self-start md:self-auto"
+        >
+          Связаться <span aria-hidden>→</span>
+        </a>
+      </div>
     </div>
   );
 }

@@ -1,14 +1,7 @@
 // Единственный источник правды для тарифов на фронте.
 // Зеркало backend/app/services/plans.py — при изменении бэка обновить здесь.
 
-export type PlanId =
-  | "free"
-  | "start"
-  | "meet_solo"
-  | "pro"
-  | "expert"
-  | "business"
-  | "premium";
+export type PlanId = "free" | "start" | "pro" | "expert" | "business";
 
 export interface Plan {
   id: PlanId;
@@ -60,26 +53,11 @@ export const PLANS: readonly Plan[] = [
     overageRubPerMin: 2.0,
   },
   {
-    id: "meet_solo",
-    name: "Митинги",
-    tagline: "Для совещаний и расширения",
-    priceRub: 990,
-    minutesLimit: 2400,
-    maxFileDurationMin: 120,
-    aiSummaries: -1,
-    maxSpeakers: -1,
-    ragChatLimit: -1,
-    actionItems: true,
-    exportFormats: ["txt", "srt", "docx"],
-    maxUsers: 1,
-    overageRubPerMin: 1.5,
-  },
-  {
     id: "pro",
     name: "Про",
-    tagline: "Для бизнеса и продакшена",
-    priceRub: 820,
-    minutesLimit: 1500,
+    tagline: "Для журналистов и регулярной работы",
+    priceRub: 990,
+    minutesLimit: 1800,
     maxFileDurationMin: 180,
     aiSummaries: -1,
     maxSpeakers: -1,
@@ -93,9 +71,9 @@ export const PLANS: readonly Plan[] = [
   {
     id: "expert",
     name: "Эксперт",
-    tagline: "Для тех, кто работает с речью каждый день",
+    tagline: "Для адвокатов и ежедневных митингов",
     priceRub: 1990,
-    minutesLimit: 4800,
+    minutesLimit: 4200,
     maxFileDurationMin: 240,
     aiSummaries: -1,
     maxSpeakers: -1,
@@ -109,8 +87,8 @@ export const PLANS: readonly Plan[] = [
     id: "business",
     name: "Бизнес",
     tagline: "Для команд до 5 человек",
-    priceRub: 2490,
-    minutesLimit: 4800,
+    priceRub: 2990,
+    minutesLimit: 5400,
     maxFileDurationMin: 240,
     aiSummaries: -1,
     maxSpeakers: -1,
@@ -119,22 +97,6 @@ export const PLANS: readonly Plan[] = [
     exportFormats: ["txt", "srt", "docx"],
     maxUsers: 5,
     overageRubPerMin: 0.9,
-  },
-  {
-    id: "premium",
-    name: "Премиум",
-    tagline: "Для студий и агентств",
-    priceRub: 4600,
-    minutesLimit: 7200,
-    maxFileDurationMin: 360,
-    aiSummaries: -1,
-    maxSpeakers: -1,
-    ragChatLimit: -1,
-    actionItems: true,
-    exportFormats: ["txt", "srt", "docx"],
-    maxUsers: 10,
-    overageRubPerMin: 0.8,
-    highlight: "premium",
   },
 ] as const;
 

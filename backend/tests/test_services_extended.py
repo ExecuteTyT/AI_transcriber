@@ -27,30 +27,19 @@ def test_start_plan_limits():
     assert plan.overage_rub_per_min == 2.0
 
 
-def test_meet_solo_plan_limits():
-    """Meet Solo план: 2400 мин (40 ч), для расширения / совещаний."""
-    plan = get_plan("meet_solo")
-    assert plan.minutes_limit == 2400
+def test_pro_plan_limits():
+    """Pro план: 1800 мин (30 ч), 0.55 ₽/мин — для журналистов и регулярной работы."""
+    plan = get_plan("pro")
+    assert plan.minutes_limit == 1800
     assert plan.action_items is True
     assert plan.ai_summaries == -1
     assert plan.price_rub == 990
-    assert plan.max_users == 1
-    assert plan.overage_rub_per_min == 1.5
-
-
-def test_pro_plan_limits():
-    """Pro план: 1500 мин (25 ч), action items."""
-    plan = get_plan("pro")
-    assert plan.minutes_limit == 1500
-    assert plan.action_items is True
-    assert plan.ai_summaries == -1
-    assert plan.price_rub == 820
 
 
 def test_expert_plan_limits():
-    """Expert план: 4800 мин (80 ч), solo power-user (адвокаты, секретари)."""
+    """Expert план: 4200 мин (70 ч), solo power-user — адвокаты, ежедневные митинги."""
     plan = get_plan("expert")
-    assert plan.minutes_limit == 4800
+    assert plan.minutes_limit == 4200
     assert plan.action_items is True
     assert plan.rag_chat_limit == -1
     assert plan.price_rub == 1990
@@ -59,21 +48,12 @@ def test_expert_plan_limits():
 
 
 def test_business_plan_limits():
-    """Business план: 4800 мин (80 ч), 5 пользователей."""
+    """Business план: 5400 мин (90 ч), 5 пользователей — shared workspace."""
     plan = get_plan("business")
-    assert plan.minutes_limit == 4800
+    assert plan.minutes_limit == 5400
     assert plan.max_users == 5
-    assert plan.price_rub == 2490
+    assert plan.price_rub == 2990
     assert plan.overage_rub_per_min == 0.9
-
-
-def test_premium_plan_limits():
-    """Premium план: 7200 мин (120 ч), 10 пользователей."""
-    plan = get_plan("premium")
-    assert plan.minutes_limit == 7200
-    assert plan.max_users == 10
-    assert plan.price_rub == 4600
-    assert plan.max_file_duration_sec == 6 * 60 * 60
 
 
 def test_unknown_plan_defaults_to_free():

@@ -49,6 +49,7 @@ PLANS: dict[str, PlanConfig] = {
         overage_rub_per_min=4.0,
     ),
     "start": PlanConfig(
+        # Soloфрилансер: подкастеры, блогеры, разовые задачи.
         minutes_limit=600,                         # 10 ч/мес
         max_file_duration_sec=2 * 60 * 60,         # 2 часа
         ai_summaries=-1,
@@ -57,27 +58,14 @@ PLANS: dict[str, PlanConfig] = {
         rag_chat_limit=10,
         action_items=True,
         export_formats=("txt", "srt", "docx"),
-        price_rub=500,
+        price_rub=500,                             # 0.83 ₽/мин
         max_users=1,
         overage_rub_per_min=2.0,
     ),
-    "meet_solo": PlanConfig(
-        # Под расширение для совещаний: 40 часов / месяц,
-        # типичный сотрудник с 2-3 встречами в день.
-        minutes_limit=2400,                        # 40 ч/мес
-        max_file_duration_sec=2 * 60 * 60,         # 2 часа
-        ai_summaries=-1,
-        speakers=True,
-        max_speakers=-1,
-        rag_chat_limit=-1,
-        action_items=True,
-        export_formats=("txt", "srt", "docx"),
-        price_rub=990,
-        max_users=1,
-        overage_rub_per_min=1.5,
-    ),
     "pro": PlanConfig(
-        minutes_limit=1500,                        # 25 ч/мес
+        # Регулярная solo-работа: журналисты, контент-команда из 1 человека,
+        # частые митинги. 30 ч/мес = 1 час аудио в рабочий день.
+        minutes_limit=1800,                        # 30 ч/мес (было 1500/25ч)
         max_file_duration_sec=3 * 60 * 60,         # 3 часа
         ai_summaries=-1,
         speakers=True,
@@ -85,14 +73,14 @@ PLANS: dict[str, PlanConfig] = {
         rag_chat_limit=-1,
         action_items=True,
         export_formats=("txt", "srt", "docx"),
-        price_rub=820,
+        price_rub=990,                             # было 820. 0.55 ₽/мин
         max_users=1,
         overage_rub_per_min=1.5,
     ),
     "expert": PlanConfig(
-        # Solo power-user: 80 часов / месяц для адвокатов, секретарей,
-        # журналистов — 3-4 часа аудио в рабочий день.
-        minutes_limit=4800,                        # 80 ч/мес
+        # Solo power-user: адвокаты, секретари, ежедневные митинги
+        # руководителя. 70 ч/мес ≈ 3 часа аудио в день.
+        minutes_limit=4200,                        # 70 ч/мес (было 4800/80ч)
         max_file_duration_sec=4 * 60 * 60,         # 4 часа
         ai_summaries=-1,
         speakers=True,
@@ -100,13 +88,14 @@ PLANS: dict[str, PlanConfig] = {
         rag_chat_limit=-1,
         action_items=True,
         export_formats=("txt", "srt", "docx"),
-        price_rub=1990,
+        price_rub=1990,                            # 0.47 ₽/мин
         max_users=1,
         overage_rub_per_min=0.9,
     ),
     "business": PlanConfig(
-        # Тот же объём, что у expert (80 ч), но 5 мест и расшаривание.
-        minutes_limit=4800,                        # 80 ч/мес (было 60)
+        # Команда до 5 человек с shared workspace. Главное value — team-фичи,
+        # не объём (объём solo дешевле через Эксперт).
+        minutes_limit=5400,                        # 90 ч/мес (было 4800/80ч)
         max_file_duration_sec=4 * 60 * 60,         # 4 часа
         ai_summaries=-1,
         speakers=True,
@@ -114,23 +103,13 @@ PLANS: dict[str, PlanConfig] = {
         rag_chat_limit=-1,
         action_items=True,
         export_formats=("txt", "srt", "docx"),
-        price_rub=2490,                            # было 2300
+        price_rub=2990,                            # было 2490. 0.55 ₽/мин
         max_users=5,
-        overage_rub_per_min=0.9,                   # было 1.0
+        overage_rub_per_min=0.9,
     ),
-    "premium": PlanConfig(
-        minutes_limit=7200,                        # 120 ч/мес
-        max_file_duration_sec=6 * 60 * 60,         # 6 часов
-        ai_summaries=-1,
-        speakers=True,
-        max_speakers=-1,
-        rag_chat_limit=-1,
-        action_items=True,
-        export_formats=("txt", "srt", "docx"),
-        price_rub=4600,
-        max_users=10,
-        overage_rub_per_min=0.8,
-    ),
+    # Премиум-тариф удалён 2026-05-19: студии и агентства уходят в Enterprise CTA
+    # (mailto:support@dicto.pro для индивидуальных условий).
+    # meet_solo удалён: 40-часовой сценарий покрыт Про (30ч) и Эксперт (70ч).
 }
 
 
