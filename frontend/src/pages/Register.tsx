@@ -35,7 +35,7 @@ export default function Register() {
       return;
     }
     if (!consentCrossBorder) {
-      setError("Необходимо согласие на передачу аудио/видео партнёру AI-распознавания (Mistral AI SAS, Франция).");
+      setError("Необходимо согласие на передачу аудио/видео для AI-распознавания зарубежному партнёру.");
       return;
     }
     setError("");
@@ -182,8 +182,7 @@ export default function Register() {
               className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--border-strong)] bg-transparent accent-[var(--accent)]"
             />
             <span className="text-[12px] leading-relaxed text-[var(--fg-muted)]">
-              Согласен на передачу аудио/видео для AI-распознавания партнёру{" "}
-              <span className="text-[var(--fg)]">Mistral AI SAS (Франция)</span> — ст. 12 152-ФЗ.{" "}
+              Согласен на передачу аудио/видео для AI-распознавания зарубежному партнёру в соответствии со ст. 12 152-ФЗ.{" "}
               <Link to="/privacy" target="_blank" className="text-[var(--fg-muted)] underline underline-offset-2 decoration-[var(--border-strong)] hover:text-[var(--fg)] hover:decoration-[var(--accent)]">
                 Подробнее
               </Link>
