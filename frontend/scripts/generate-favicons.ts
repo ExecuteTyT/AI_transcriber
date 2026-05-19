@@ -54,6 +54,9 @@ async function main() {
   const buf16 = await png(16, "favicon-16x16.png");
   const buf32 = await png(32, "favicon-32x32.png");
   const buf48 = await png(48, "favicon-48x48.png");
+  // 120×120 — Яндекс.Вебмастер требует именно этот размер для favicon
+  // в результатах поиска. Без него «Диагностика» жалуется на отсутствие favicon.
+  await png(120, "favicon-120x120.png");
   await png(180, "apple-touch-icon.png");
   await png(192, "android-chrome-192x192.png");
   await png(512, "android-chrome-512x512.png");
