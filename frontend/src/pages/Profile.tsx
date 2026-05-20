@@ -28,7 +28,7 @@ const PLAN_NAMES: Record<string, string> = {
   start: "Старт",
   pro: "Про",
   expert: "Эксперт",
-  business: "Бизнес",
+  premium: "Премиум",
 };
 
 function pluralizeDays(n: number): string {

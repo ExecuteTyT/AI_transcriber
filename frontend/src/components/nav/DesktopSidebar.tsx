@@ -12,7 +12,7 @@ const planNames: Record<string, string> = {
   start: "Старт",
   pro: "Про",
   expert: "Эксперт",
-  business: "Бизнес",
+  premium: "Премиум",
 };
 
 export default function DesktopSidebar() {

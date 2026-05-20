@@ -16,7 +16,7 @@ const PLAN_NAMES: Record<string, string> = {
   start: "Старт",
   pro: "Про",
   expert: "Эксперт",
-  business: "Бизнес",
+  premium: "Премиум",
 };
 
 const PLAN_FEATURES: Record<string, string[]> = {
@@ -43,10 +43,10 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "Всё из Pro",
     "Приоритетная обработка",
   ],
-  business: [
-    "5 400 минут в месяц (90 часов)",
-    "До 5 пользователей",
-    "Общая база транскрипций",
+  premium: [
+    "8 400 минут в месяц (140 часов)",
+    "Для студий и максимальных объёмов",
+    "Файлы до 6 часов",
     "Всё из Expert",
   ],
 };

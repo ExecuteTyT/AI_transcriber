@@ -29,7 +29,7 @@ type FeatureGroup = {
 };
 
 type Plan = {
-  id: "free" | "start" | "pro" | "expert" | "business";
+  id: "free" | "start" | "pro" | "expert" | "premium";
   name: string;
   tagline: string;
   price: number;
@@ -191,21 +191,21 @@ const PLANS: Plan[] = [
     ctaLabel: "Выбрать Эксперт",
   },
   {
-    id: "business",
-    name: "Бизнес",
-    tagline: "Для команд до 5 человек",
-    price: 2990,
+    id: "premium",
+    name: "Премиум",
+    tagline: "Для студий и максимальных объёмов",
+    price: 3490,
     period: "/мес",
-    minutesPerMonth: 5400,
-    pricePerMinute: 0.55,
+    minutesPerMonth: 8400,
+    pricePerMinute: 0.42,
     highlight: "premium",
     groups: [
       {
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "5 400 минут (90 часов)", included: true },
-          { label: "Файлы до 4 часов", included: true },
+          { label: "8 400 минут (140 часов)", included: true },
+          { label: "Файлы до 6 часов", included: true },
           { label: "Приоритетная обработка", included: true },
         ],
       },
@@ -221,15 +221,11 @@ const PLANS: Plan[] = [
       },
       {
         icon: RefreshCw,
-        title: "Команда",
-        items: [
-          { label: "До 5 пользователей", included: true },
-          { label: "Общая база транскрипций", included: true },
-          { label: "TXT / SRT / DOCX", included: true },
-        ],
+        title: "Экспорт",
+        items: [{ label: "TXT / SRT / DOCX", included: true }],
       },
     ],
-    ctaLabel: "Выбрать Бизнес",
+    ctaLabel: "Выбрать Премиум",
   },
 ];
 
@@ -283,15 +279,14 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
     q: "Подходит ли для команды?",
     a: (
       <>
-        Тариф <strong>Бизнес</strong> рассчитан на команды до 5 человек — общая база транскрипций, разграничение
-        доступа, единый биллинг. Для больших команд (10+ пользователей) или 500+ часов в месяц напишите на{" "}
+        Командные тарифы (общий биллинг, shared workspace, роли) — в разработке. Пока для команд напишите на{" "}
         <a
           href="mailto:support@dicto.pro"
           className="font-semibold text-[var(--accent)] underline underline-offset-2 decoration-[var(--accent)]/40 hover:decoration-[var(--accent)]"
         >
           support@dicto.pro
         </a>{" "}
-        — согласуем индивидуальные условия.
+        — оформим несколько связанных аккаунтов с единым счётом и закрывающими документами.
       </>
     ),
   },
@@ -302,7 +297,7 @@ const PLAN_NAMES: Record<string, string> = {
   start: "Старт",
   pro: "Про",
   expert: "Эксперт",
-  business: "Бизнес",
+  premium: "Премиум",
 };
 
 export default function Pricing() {
@@ -483,7 +478,7 @@ export default function Pricing() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <Seo
         title="Тарифы Dicto — транскрибация от 500 ₽/мес"
-        description="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 ч), Про (990 ₽, 30 ч), Эксперт (1 990 ₽, 70 ч), Бизнес (2 990 ₽, 90 ч, до 5 чел.). AI-саммари, разметка спикеров, экспорт."
+        description="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 ч), Про (990 ₽, 30 ч), Эксперт (1 990 ₽, 70 ч), Премиум (3 490 ₽, 140 ч). AI-саммари, разметка спикеров, экспорт TXT/SRT/DOCX."
         canonical="https://dicto.pro/pricing"
         jsonLd={{
           "@context": "https://schema.org",
@@ -830,17 +825,17 @@ function EnterpriseCard() {
     <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] px-6 py-8 md:px-10 md:py-10">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between md:gap-10">
         <div className="max-w-[52ch]">
-          <p className="eyebrow mb-3">Enterprise</p>
+          <p className="eyebrow mb-3">Для команд</p>
           <h3 className="font-display text-2xl md:text-[28px] leading-[1.1] tracking-[-0.015em] text-[var(--fg)]">
-            Команда от 10 человек или 500+ часов в месяц?
+            Нужно несколько мест или 200+ часов в месяц?
           </h3>
           <p className="mt-3 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
-            Индивидуальные условия для агентств, студий и корпоративных клиентов: выделенный support, DPA по 152-ФЗ,
-            гибкая цена за минуту, on-premise по запросу.
+            Командные тарифы (общий биллинг, shared workspace, роли) — в разработке. Сейчас оформляем несколько
+            связанных аккаунтов с единым счётом, закрывающими документами и DPA по 152-ФЗ.
           </p>
         </div>
         <a
-          href="mailto:support@dicto.pro?subject=Enterprise%20%E2%80%94%20Dicto"
+          href="mailto:support@dicto.pro?subject=Dicto%20%E2%80%94%20%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D0%B0"
           className="btn-accent !py-3.5 !px-6 !text-[14px] whitespace-nowrap self-start md:self-auto"
         >
           Связаться <span aria-hidden>→</span>

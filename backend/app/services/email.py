@@ -299,7 +299,7 @@ async def send_subscription_email(to_email: str, plan: str) -> bool:
         "start": "Старт — 500 ₽/мес · 10 часов",
         "pro": "Про — 990 ₽/мес · 30 часов",
         "expert": "Эксперт — 1 990 ₽/мес · 70 часов",
-        "business": "Бизнес — 2 990 ₽/мес · 90 часов (до 5 человек)",
+        "premium": "Премиум — 3 490 ₽/мес · 140 часов",
     }
     plan_display = plan_names.get(plan, plan)
     subject = f"Подписка активирована — {plan_display}"

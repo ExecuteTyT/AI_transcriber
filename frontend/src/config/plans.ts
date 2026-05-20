@@ -1,7 +1,7 @@
 // Единственный источник правды для тарифов на фронте.
 // Зеркало backend/app/services/plans.py — при изменении бэка обновить здесь.
 
-export type PlanId = "free" | "start" | "pro" | "expert" | "business";
+export type PlanId = "free" | "start" | "pro" | "expert" | "premium";
 
 export interface Plan {
   id: PlanId;
@@ -84,19 +84,20 @@ export const PLANS: readonly Plan[] = [
     overageRubPerMin: 0.9,
   },
   {
-    id: "business",
-    name: "Бизнес",
-    tagline: "Для команд до 5 человек",
-    priceRub: 2990,
-    minutesLimit: 5400,
-    maxFileDurationMin: 240,
+    id: "premium",
+    name: "Премиум",
+    tagline: "Для студий и максимальных объёмов",
+    priceRub: 3490,
+    minutesLimit: 8400,
+    maxFileDurationMin: 360,
     aiSummaries: -1,
     maxSpeakers: -1,
     ragChatLimit: -1,
     actionItems: true,
     exportFormats: ["txt", "srt", "docx"],
-    maxUsers: 5,
-    overageRubPerMin: 0.9,
+    maxUsers: 1,
+    overageRubPerMin: 0.7,
+    highlight: "premium",
   },
 ] as const;
 

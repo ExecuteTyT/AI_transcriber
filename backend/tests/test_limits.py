@@ -85,7 +85,7 @@ def test_plan_configs():
     """Проверка корректности конфигов тарифов (актуальная сетка)."""
     from app.services.plans import PLANS, get_plan
 
-    expected_keys = {"free", "start", "pro", "expert", "business"}
+    expected_keys = {"free", "start", "pro", "expert", "premium"}
     assert expected_keys == set(PLANS.keys())
 
     free = get_plan("free")
@@ -113,10 +113,11 @@ def test_plan_configs():
     assert expert.max_users == 1
     assert expert.rag_chat_limit == -1
 
-    business = get_plan("business")
-    assert business.minutes_limit == 5400
-    assert business.price_rub == 2990
-    assert business.max_users == 5
+    premium = get_plan("premium")
+    assert premium.minutes_limit == 8400
+    assert premium.price_rub == 3490
+    assert premium.max_users == 1
+    assert premium.max_file_duration_sec == 6 * 60 * 60
 
     # Неизвестный план → free
     unknown = get_plan("unknown")

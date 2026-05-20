@@ -92,23 +92,25 @@ PLANS: dict[str, PlanConfig] = {
         max_users=1,
         overage_rub_per_min=0.9,
     ),
-    "business": PlanConfig(
-        # Команда до 5 человек с shared workspace. Главное value — team-фичи,
-        # не объём (объём solo дешевле через Эксперт).
-        minutes_limit=5400,                        # 90 ч/мес (было 4800/80ч)
-        max_file_duration_sec=4 * 60 * 60,         # 4 часа
+    "premium": PlanConfig(
+        # Solo power-user++ для очень больших объёмов: студии, юристы с
+        # ежедневной практикой, секретари топ-менеджеров. 140 ч/мес =
+        # 4-5 часов аудио в день. Дешевле Эксперта per-minute (0.42 vs 0.47).
+        minutes_limit=8400,                        # 140 ч/мес
+        max_file_duration_sec=6 * 60 * 60,         # 6 часов
         ai_summaries=-1,
         speakers=True,
         max_speakers=-1,
         rag_chat_limit=-1,
         action_items=True,
         export_formats=("txt", "srt", "docx"),
-        price_rub=2990,                            # было 2490. 0.55 ₽/мин
-        max_users=5,
-        overage_rub_per_min=0.9,
+        price_rub=3490,                            # 0.42 ₽/мин
+        max_users=1,
+        overage_rub_per_min=0.7,
     ),
-    # Премиум-тариф удалён 2026-05-19: студии и агентства уходят в Enterprise CTA
-    # (mailto:support@dicto.pro для индивидуальных условий).
+    # Бизнес-тариф удалён 2026-05-19: multi-user механика (invite, shared
+    # workspace, общий биллинг) не реализована — продавать нечего. Команды
+    # уходят в Enterprise CTA (mailto:support@dicto.pro) до реализации фичи.
     # meet_solo удалён: 40-часовой сценарий покрыт Про (30ч) и Эксперт (70ч).
 }
 

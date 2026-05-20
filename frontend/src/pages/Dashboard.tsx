@@ -23,7 +23,7 @@ const PLAN_NAMES: Record<string, string> = {
   start: "Старт",
   pro: "Про",
   expert: "Эксперт",
-  business: "Бизнес",
+  premium: "Премиум",
 };
 
 type FilterKey = "all" | "active" | "completed";

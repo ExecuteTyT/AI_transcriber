@@ -47,13 +47,14 @@ def test_expert_plan_limits():
     assert plan.overage_rub_per_min == 0.9
 
 
-def test_business_plan_limits():
-    """Business план: 5400 мин (90 ч), 5 пользователей — shared workspace."""
-    plan = get_plan("business")
-    assert plan.minutes_limit == 5400
-    assert plan.max_users == 5
-    assert plan.price_rub == 2990
-    assert plan.overage_rub_per_min == 0.9
+def test_premium_plan_limits():
+    """Premium план: 8400 мин (140 ч), solo power-user++ — для студий и юристов."""
+    plan = get_plan("premium")
+    assert plan.minutes_limit == 8400
+    assert plan.max_users == 1
+    assert plan.price_rub == 3490
+    assert plan.overage_rub_per_min == 0.7
+    assert plan.max_file_duration_sec == 6 * 60 * 60
 
 
 def test_unknown_plan_defaults_to_free():
