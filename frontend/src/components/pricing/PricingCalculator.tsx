@@ -32,7 +32,8 @@ export default function PricingCalculator() {
   const fitPercent = Math.min(100, Math.round((hours * 60) / selected.minutesLimit * 100));
 
   // Для визуализации «сколько часов на каждом тарифе».
-  const scale = 120; // максимум часов на шкале
+  // 140 совпадает с лимитом Премиума — самой длинной полоской.
+  const scale = 140;
 
   const handleSliderChange = (v: number) => {
     const prev = Math.floor(hours / 10);
@@ -90,13 +91,13 @@ export default function PricingCalculator() {
           className="w-full cursor-pointer accent-[var(--accent)]"
           aria-label="Часов в месяц"
         />
-        <div className="mt-2 grid grid-cols-6 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--fg-subtle)] tabular">
+        {/* Тики совмещены с границами тарифов: 10ч Старт, 30ч Про, 70ч Эксперт, 140ч Премиум. */}
+        <div className="mt-2 grid grid-cols-5 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--fg-subtle)] tabular">
           <span>1</span>
           <span className="text-center">10</span>
-          <span className="text-center">25</span>
-          <span className="text-center">60</span>
-          <span className="text-center">90</span>
-          <span className="text-right">120</span>
+          <span className="text-center">30</span>
+          <span className="text-center">70</span>
+          <span className="text-right">140</span>
         </div>
       </div>
 

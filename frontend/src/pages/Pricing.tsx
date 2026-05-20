@@ -7,7 +7,6 @@ import {
   ChevronDown,
   Clock,
   CreditCard,
-  Crown,
   RefreshCw,
   Shield,
   Sparkles,
@@ -38,7 +37,17 @@ type Plan = {
   minutesPerMonth: number | null;
   /** Pre-computed для отображения мелким шрифтом под основной ценой. */
   pricePerMinute: number | null;
-  highlight?: "popular" | "premium";
+  /**
+   * Сильный визуальный highlight — только для «default choice» (Pro).
+   * Использовать максимум на ОДНОМ тарифе чтобы не конкурировать за внимание.
+   * Premium-вариант (тёмный градиент) больше не используется — заменён на topLabel-чип.
+   */
+  highlight?: "popular";
+  /**
+   * Eyebrow-чип над названием тарифа («Популярный», «Максимум»).
+   * Лёгкая визуальная метка без перекраски всей карточки.
+   */
+  topLabel?: string;
   groups: FeatureGroup[];
   ctaLabel: string;
 };
@@ -126,6 +135,7 @@ const PLANS: Plan[] = [
     minutesPerMonth: 1800,
     pricePerMinute: 0.55,
     highlight: "popular",
+    topLabel: "Популярный",
     groups: [
       {
         icon: Clock,
@@ -141,7 +151,7 @@ const PLANS: Plan[] = [
         title: "AI-анализ",
         items: [
           { label: "Всё без лимита", included: true },
-          { label: "Спикеры без ограничений", included: true },
+          { label: "До 10 спикеров", included: true },
           { label: "RAG-чат безлимит", included: true },
           { label: "Задачи (action items)", included: true },
         ],
@@ -177,7 +187,7 @@ const PLANS: Plan[] = [
         title: "AI-анализ",
         items: [
           { label: "Всё без лимита", included: true },
-          { label: "Спикеры без ограничений", included: true },
+          { label: "До 10 спикеров", included: true },
           { label: "RAG-чат безлимит", included: true },
           { label: "Задачи (action items)", included: true },
         ],
@@ -198,7 +208,7 @@ const PLANS: Plan[] = [
     period: "/мес",
     minutesPerMonth: 8400,
     pricePerMinute: 0.42,
-    highlight: "premium",
+    topLabel: "Максимум",
     groups: [
       {
         icon: Clock,
@@ -214,7 +224,7 @@ const PLANS: Plan[] = [
         title: "AI-анализ",
         items: [
           { label: "Всё без лимита", included: true },
-          { label: "Спикеры без ограничений", included: true },
+          { label: "До 10 спикеров", included: true },
           { label: "RAG-чат безлимит", included: true },
           { label: "Задачи (action items)", included: true },
         ],
@@ -380,9 +390,22 @@ export default function Pricing() {
         </motion.div>
       )}
 
+      {/* На мобильном — горизонтальный snap-scroll с peek следующей карточки
+          (iOS-native pattern). На md+ — обычный grid. Отрицательный margin/padding
+          расширяет область скролла до краёв экрана, а scroll-px удерживает
+          выровненную snap-точку с учётом отступов layout-контейнера. */}
       <motion.div
         variants={fadeUp}
-        className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:items-stretch md:gap-4"
+        className={cn(
+          "flex md:grid gap-4 md:gap-4",
+          "overflow-x-auto md:overflow-visible",
+          "snap-x snap-mandatory md:snap-none",
+          "-mx-4 sm:-mx-6 md:mx-0 px-4 sm:px-6 md:px-0",
+          "scroll-px-4 sm:scroll-px-6 md:scroll-px-0",
+          "pb-4 md:pb-0",
+          "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:items-stretch",
+          "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        )}
       >
         {PLANS.map((plan) => (
           <PlanCard
@@ -575,12 +598,15 @@ function CurrentPlanBar({
   );
 }
 
-type PlanVariant = "default" | "popular" | "premium";
+type PlanVariant = "default" | "popular";
 
 // Тема-зависимая палитра для карточки:
-// - popular   → --highlight-* (в dark: acid bg + ink текст, в light: ink bg + cream текст)
-// - premium   → always-dark gradient + cream-50 текст + acid accent (инвариантно к теме)
-// - default   → обычная elevated cream/ink карточка
+// - popular → --highlight-* (в dark: acid bg + ink текст, в light: ink bg + cream текст).
+//             Применяется ТОЛЬКО к одному тарифу — иначе борьба за внимание.
+// - default → обычная elevated cream/ink карточка.
+//
+// Visual hierarchy: ровно один «popular» = default choice (Pro), остальные — default.
+// Дополнительная дифференциация через `topLabel`-чип («Максимум» у Премиума и т.п.).
 function usePlanPalette(variant: PlanVariant) {
   if (variant === "popular") {
     return {
@@ -591,17 +617,7 @@ function usePlanPalette(variant: PlanVariant) {
       accent: "text-[var(--highlight-accent)]",
       ctaBg: "bg-[var(--highlight-accent)] text-[var(--highlight-accent-fg)] hover:opacity-90",
       ctaDisabled: "bg-[var(--highlight-accent)]/15 text-[var(--highlight-fg-muted)]",
-    };
-  }
-  if (variant === "premium") {
-    return {
-      surface: "bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 border-ink-600/40",
-      fg: "text-cream-50",
-      fgMuted: "text-cream-50/75",
-      fgSubtle: "text-cream-50/55",
-      accent: "text-acid-300",
-      ctaBg: "bg-acid-300 text-ink-900 hover:bg-acid-400",
-      ctaDisabled: "bg-cream-50/10 text-cream-50/55",
+      topLabelBg: "bg-[var(--highlight-accent)]/15 text-[var(--highlight-accent)] ring-1 ring-[var(--highlight-accent)]/30",
     };
   }
   return {
@@ -612,6 +628,7 @@ function usePlanPalette(variant: PlanVariant) {
     accent: "text-[var(--accent)]",
     ctaBg: "border border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--bg-muted)]",
     ctaDisabled: "bg-[var(--border)] text-[var(--fg-subtle)]",
+    topLabelBg: "bg-[var(--bg-muted)] text-[var(--fg-muted)] ring-1 ring-[var(--border)]",
   };
 }
 
@@ -628,33 +645,35 @@ function PlanCard({
   disabled: boolean;
   onSelect: () => void;
 }) {
-  const variant: PlanVariant =
-    plan.highlight === "popular" ? "popular" : plan.highlight === "premium" ? "premium" : "default";
+  const variant: PlanVariant = plan.highlight === "popular" ? "popular" : "default";
   const p = usePlanPalette(variant);
+
+  // Top-label чип: «Текущий» приоритетнее plan.topLabel («Популярный», «Максимум»).
+  const topLabel = isCurrent ? "✓ Текущий" : plan.topLabel;
+  const topLabelStyle = isCurrent
+    ? cn("bg-[var(--bg-muted)]/40 ring-1", p.accent, variant === "popular" ? "ring-[var(--highlight-accent)]/40" : "ring-[var(--accent)]/30")
+    : p.topLabelBg;
 
   return (
     <motion.article
       whileHover={{ y: -2 }}
       transition={springTight}
       className={cn(
-        "relative flex min-w-0 flex-col overflow-hidden rounded-3xl border p-5 xs:p-6 md:p-7",
+        // min-w на мобильном: 85% ширины контейнера = peek следующей карточки справа
+        // = подсказка «здесь скроллится». На md+ — обычное grid-поведение.
+        "relative flex min-w-[85%] xs:min-w-[80%] sm:min-w-[60%] md:min-w-0 flex-col overflow-hidden rounded-3xl border p-5 xs:p-6 md:p-7",
+        "snap-center md:snap-align-none",
         p.surface
       )}
     >
-      {variant === "popular" && !isCurrent && (
-        <span className={cn("absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em]", p.fgMuted)}>
-          Популярный
-        </span>
-      )}
-      {variant === "premium" && !isCurrent && (
-        <span className="absolute top-5 right-5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-acid-300">
-          <Icon icon={Crown} size={10} />
-          Премиум
-        </span>
-      )}
-      {isCurrent && (
-        <span className={cn("absolute top-5 right-5 font-mono text-[10px] uppercase tracking-[0.2em]", p.accent)}>
-          ✓ Текущий
+      {topLabel && (
+        <span
+          className={cn(
+            "absolute top-5 right-5 inline-flex items-center rounded-full px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.18em]",
+            topLabelStyle
+          )}
+        >
+          {topLabel}
         </span>
       )}
 
