@@ -162,11 +162,11 @@ async def upload_file(
     db: AsyncSession = Depends(get_db),
 ):
     """Загрузка аудио/видео файла для транскрибации."""
-    # Проверка лимитов (админы без ограничений).
+    # Проверка лимитов (админы и безлимитные аккаунты без ограничений).
     # Учитываем бонусные минуты (welcome-bonus, one-time) + ежемесячный лимит.
     plan = get_plan(user.plan)
     available_minutes = user.bonus_minutes + max(0, user.minutes_limit - user.minutes_used)
-    if not user.is_admin and available_minutes <= 0:
+    if not user.is_admin and not user.is_unlimited and available_minutes <= 0:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Лимит минут исчерпан. Перейдите на более высокий тариф.",
@@ -300,7 +300,7 @@ async def upload_by_url(
 
     # 2. Лимит минут (как у обычного upload — учитываем bonus + monthly).
     available_minutes = user.bonus_minutes + max(0, user.minutes_limit - user.minutes_used)
-    if not user.is_admin and available_minutes <= 0:
+    if not user.is_admin and not user.is_unlimited and available_minutes <= 0:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Лимит минут исчерпан. Перейдите на более высокий тариф.",

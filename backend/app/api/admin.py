@@ -34,6 +34,7 @@ class AdminUserResponse(BaseModel):
     minutes_used: int
     minutes_limit: int
     is_admin: bool
+    is_unlimited: bool
     is_email_verified: bool
     created_at: datetime | None
     transcription_count: int = 0
@@ -47,6 +48,7 @@ class AdminUserUpdate(BaseModel):
     minutes_used: int | None = None
     minutes_limit: int | None = None
     is_admin: bool | None = None
+    is_unlimited: bool | None = None
 
 
 class AdminTranscriptionResponse(BaseModel):
@@ -172,6 +174,7 @@ async def list_users(
             "minutes_used": u.minutes_used,
             "minutes_limit": u.minutes_limit,
             "is_admin": u.is_admin,
+            "is_unlimited": u.is_unlimited,
             "is_email_verified": u.is_email_verified,
             "created_at": u.created_at,
             "transcription_count": t_count,
@@ -199,7 +202,8 @@ async def get_user(
     return AdminUserResponse(
         id=user.id, email=user.email, name=user.name, plan=user.plan,
         minutes_used=user.minutes_used, minutes_limit=user.minutes_limit,
-        is_admin=user.is_admin, is_email_verified=user.is_email_verified,
+        is_admin=user.is_admin, is_unlimited=user.is_unlimited,
+        is_email_verified=user.is_email_verified,
         created_at=user.created_at, transcription_count=t_count,
     )
 

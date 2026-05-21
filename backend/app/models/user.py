@@ -25,6 +25,14 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Admin access
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Безлимитный аккаунт: для инфлюенсеров / партнёров / бартера.
+    # Включается админом из админ-панели. При True:
+    #   - bypass проверки минут в transcriptions.py при загрузке
+    #   - minutes_used продолжает инкрементироваться (для аналитики потребления)
+    #   - reset_monthly_limits сбрасывает minutes_used как у всех — лимит всё равно неважен
+    # Отдельный флаг от is_admin: инфлюенсер не должен иметь админ-доступ.
+    is_unlimited: Mapped[bool] = mapped_column(Boolean, default=False)
+
     # Password reset token (хранится хеш, не сам токен)
     password_reset_token_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_reset_expires_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)

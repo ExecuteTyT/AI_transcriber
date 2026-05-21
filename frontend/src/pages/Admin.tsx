@@ -24,6 +24,7 @@ interface AdminUser {
   minutes_used: number;
   minutes_limit: number;
   is_admin: boolean;
+  is_unlimited: boolean;
   created_at: string;
   transcription_count: number;
 }
@@ -131,6 +132,16 @@ export default function Admin() {
       loadUsers();
     } catch (err) {
       adminError("Не удалось изменить права", err);
+    }
+  };
+
+  const toggleUnlimited = async (userId: string, isUnlimited: boolean) => {
+    try {
+      await api.patch(`/admin/users/${userId}`, { is_unlimited: !isUnlimited });
+      toast.success(isUnlimited ? "Безлимит отключён" : "Безлимит включён");
+      loadUsers();
+    } catch (err) {
+      adminError("Не удалось переключить безлимит", err);
     }
   };
 
@@ -301,7 +312,19 @@ export default function Admin() {
                     <tr key={u.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-muted)] transition-colors">
                       <td className="py-3 px-4">
                         <div>
-                          <p className="font-medium text-[var(--fg)]">{u.name || "—"} {u.is_admin && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold ml-1">ADMIN</span>}</p>
+                          <p className="font-medium text-[var(--fg)]">
+                            {u.name || "—"}
+                            {u.is_admin && (
+                              <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold ml-1">
+                                ADMIN
+                              </span>
+                            )}
+                            {u.is_unlimited && (
+                              <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold ml-1">
+                                ∞ БЕЗЛИМИТ
+                              </span>
+                            )}
+                          </p>
                           <p className="text-xs text-[var(--fg-subtle)]">{u.email}</p>
                         </div>
                       </td>
@@ -317,7 +340,15 @@ export default function Admin() {
                         </select>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-[var(--fg-muted)] tabular-nums">{u.minutes_used} / {u.minutes_limit} мин</span>
+                        {u.is_unlimited ? (
+                          <span className="text-amber-600 tabular-nums font-semibold">
+                            {u.minutes_used} мин · ∞
+                          </span>
+                        ) : (
+                          <span className="text-[var(--fg-muted)] tabular-nums">
+                            {u.minutes_used} / {u.minutes_limit} мин
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 px-4 tabular-nums text-[var(--fg-muted)]">{u.transcription_count}</td>
                       <td className="py-3 px-4 text-right">
@@ -330,6 +361,17 @@ export default function Admin() {
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
                             </svg>
+                          </button>
+                          <button
+                            onClick={() => toggleUnlimited(u.id, u.is_unlimited)}
+                            className={`px-2 py-1 rounded-lg transition-colors text-[11px] font-bold tabular-nums leading-none ${
+                              u.is_unlimited
+                                ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                                : "text-[var(--fg-subtle)] hover:text-amber-600 hover:bg-amber-50"
+                            }`}
+                            title={u.is_unlimited ? "Снять безлимит" : "Включить безлимит (инфлюенсер)"}
+                          >
+                            ∞
                           </button>
                           <button
                             onClick={() => deleteUser(u.id, u.email)}
