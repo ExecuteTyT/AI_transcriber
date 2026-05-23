@@ -9,6 +9,7 @@ import { ErrorState } from "@/components/states/ErrorState";
 import { fadeUp, staggerChildren } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { useSound } from "@/lib/sound";
+import { reachGoal } from "@/lib/metrika";
 import Seo from "@/components/Seo";
 
 const PLAN_NAMES: Record<string, string> = {
@@ -58,6 +59,23 @@ export default function Subscription() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState("");
+
+  // YooKassa возвращает на /subscription?status=success после оплаты.
+  // Шлём macro-цель «purchase» один раз и чистим query, чтобы перезагрузка
+  // страницы не задвоила конверсию.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("status") === "success") {
+      reachGoal("purchase");
+      params.delete("status");
+      const clean = params.toString();
+      window.history.replaceState(
+        {},
+        "",
+        window.location.pathname + (clean ? `?${clean}` : ""),
+      );
+    }
+  }, []);
 
   useEffect(() => {
     paymentsApi

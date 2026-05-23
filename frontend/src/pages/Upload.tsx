@@ -13,6 +13,7 @@ import { LanguageSelect } from "@/components/ui/LanguageSelect";
 import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { useSound } from "@/lib/sound";
+import { reachGoal } from "@/lib/metrika";
 import Seo from "@/components/Seo";
 
 const ACCEPTED_TYPES = {
@@ -82,6 +83,7 @@ export default function Upload() {
           controller.signal,
         );
         setStage("processing");
+        reachGoal("upload", { source: "file" });
         setTimeout(() => {
           play("confirm");
           toast.success("Файл загружен — обрабатываем!");
@@ -152,6 +154,7 @@ export default function Upload() {
     try {
       const { data } = await transcriptionApi.uploadUrl(trimmed, language);
       setStage("processing");
+      reachGoal("upload", { source: "url" });
       setTimeout(() => {
         play("confirm");
         toast.success("Ссылка принята — скачиваем и обрабатываем!");

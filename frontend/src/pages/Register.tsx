@@ -6,6 +6,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import { Icon } from "@/components/Icon";
 import { useAuthStore } from "@/store/authStore";
 import { useSound } from "@/lib/sound";
+import { reachGoal } from "@/lib/metrika";
 import WaveformLoader from "@/components/ui/WaveformLoader";
 import Seo from "@/components/Seo";
 
@@ -48,6 +49,8 @@ export default function Register() {
         consent_marketing: consentMarketing,
       });
       play("confirm");
+      // Цель Метрики — primary-конверсия для автостратегий Директа.
+      reachGoal("registration");
       toast.success("🎉 Добро пожаловать! +180 минут на тест", { duration: 5000 });
       navigate("/dashboard");
     } catch (err) {

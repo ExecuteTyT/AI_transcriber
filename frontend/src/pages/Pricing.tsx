@@ -19,6 +19,7 @@ import { Icon } from "@/components/Icon";
 import { ErrorState } from "@/components/states/ErrorState";
 import PricingCalculator from "@/components/pricing/PricingCalculator";
 import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
+import { reachGoal } from "@/lib/metrika";
 import { cn } from "@/lib/cn";
 
 type FeatureGroup = {
@@ -327,6 +328,8 @@ export default function Pricing() {
     setError("");
     try {
       const result = await paymentsApi.subscribe(planId);
+      // Цель Метрики — intent на оплату (перед уходом на YooKassa).
+      reachGoal("subscribe_click", { plan: planId });
       window.location.href = result.confirmation_url;
     } catch (err) {
       const axiosErr = err as {

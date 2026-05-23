@@ -46,3 +46,6 @@ data/
 # Alembic
 alembic/versions/__pycache__/
 frontend/tsconfig.tsbuildinfo
+
+# Yandex Direct API config — содержит OAuth-токен, НИКОГДА не коммитить
+.claude/yandex-direct.json
