@@ -78,10 +78,33 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Жёсткий гейт: ловит класс инцидента 2026-05 (несколько heads / миграции
+      # не накатываются на чистую БД).
+      - name: DB migrations (single head + apply)
+        env:
+          DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test
+          JWT_SECRET_KEY: ci-test-secret-key
+          ENVIRONMENT: testing
+        run: |
+          heads=$(alembic heads | grep -c .)
+          if [ "$heads" -ne 1 ]; then echo "::error::Multiple alembic heads ($heads) — добавь merge-миграцию"; alembic heads; exit 1; fi
+          alembic upgrade head
+
+      # Advisory: модель разошлась с миграциями (нет автоген-миграции).
+      # continue-on-error — пока не валидировано, что нет ложных срабатываний
+      # на кастомных типах (INETType/Vector). Красный шаг = сигнал, не блок.
+      - name: Schema drift check (advisory)
+        continue-on-error: true
+        env:
+          DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test
+          JWT_SECRET_KEY: ci-test-secret-key
+          ENVIRONMENT: testing
+        run: alembic check
+
       - name: Run tests
         env:
           DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test
           REDIS_URL: redis://localhost:6379/0
           JWT_SECRET_KEY: ci-test-secret-key
           ENVIRONMENT: testing
-        run: python -m pytest tests/ -v --tb=short || true
+        run: python -m pytest tests/ -v --tb=short

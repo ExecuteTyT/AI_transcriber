@@ -34,7 +34,7 @@ async def _get_admin_token(client: AsyncClient, db: AsyncSession) -> str:
 async def _get_user_token(client: AsyncClient) -> str:
     """Создать обычного пользователя и получить токен."""
     email = f"user-{uuid.uuid4().hex[:6]}@test.com"
-    resp = await client.post("/api/auth/register", json={"email": email, "password": "pass1234"})
+    resp = await client.post("/api/auth/register", json={"email": email, "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True})
     return resp.json()["access_token"]
 
 
@@ -90,8 +90,8 @@ async def test_admin_list_users(client: AsyncClient, db_session: AsyncSession):
     """Админ видит список пользователей."""
     token = await _get_admin_token(client, db_session)
     # Создаём пару юзеров
-    await client.post("/api/auth/register", json={"email": "u1@test.com", "password": "pass1234", "name": "User1"})
-    await client.post("/api/auth/register", json={"email": "u2@test.com", "password": "pass1234", "name": "User2"})
+    await client.post("/api/auth/register", json={"email": "u1@test.com", "password": "pass1234", "name": "User1", "consent_pd_processing": True, "consent_cross_border": True})
+    await client.post("/api/auth/register", json={"email": "u2@test.com", "password": "pass1234", "name": "User2", "consent_pd_processing": True, "consent_cross_border": True})
 
     resp = await client.get("/api/admin/users", headers=_h(token))
     assert resp.status_code == 200
@@ -104,7 +104,7 @@ async def test_admin_list_users(client: AsyncClient, db_session: AsyncSession):
 async def test_admin_search_users(client: AsyncClient, db_session: AsyncSession):
     """Поиск пользователей по email."""
     token = await _get_admin_token(client, db_session)
-    await client.post("/api/auth/register", json={"email": "searchme@test.com", "password": "pass1234"})
+    await client.post("/api/auth/register", json={"email": "searchme@test.com", "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True})
 
     resp = await client.get("/api/admin/users", headers=_h(token), params={"search": "searchme"})
     assert resp.status_code == 200
@@ -115,7 +115,7 @@ async def test_admin_search_users(client: AsyncClient, db_session: AsyncSession)
 async def test_admin_get_user(client: AsyncClient, db_session: AsyncSession):
     """Получить конкретного пользователя."""
     token = await _get_admin_token(client, db_session)
-    reg = await client.post("/api/auth/register", json={"email": "getme@test.com", "password": "pass1234", "name": "GetMe"})
+    reg = await client.post("/api/auth/register", json={"email": "getme@test.com", "password": "pass1234", "name": "GetMe", "consent_pd_processing": True, "consent_cross_border": True})
     me = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {reg.json()['access_token']}"})
     user_id = me.json()["id"]
 
@@ -129,7 +129,7 @@ async def test_admin_get_user(client: AsyncClient, db_session: AsyncSession):
 async def test_admin_update_user_plan(client: AsyncClient, db_session: AsyncSession):
     """Админ меняет план пользователя."""
     token = await _get_admin_token(client, db_session)
-    reg = await client.post("/api/auth/register", json={"email": "upgrade@test.com", "password": "pass1234"})
+    reg = await client.post("/api/auth/register", json={"email": "upgrade@test.com", "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True})
     me = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {reg.json()['access_token']}"})
     user_id = me.json()["id"]
 
@@ -143,7 +143,7 @@ async def test_admin_update_user_plan(client: AsyncClient, db_session: AsyncSess
 async def test_admin_toggle_admin(client: AsyncClient, db_session: AsyncSession):
     """Админ может назначить другого админа."""
     token = await _get_admin_token(client, db_session)
-    reg = await client.post("/api/auth/register", json={"email": "newadmin@test.com", "password": "pass1234"})
+    reg = await client.post("/api/auth/register", json={"email": "newadmin@test.com", "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True})
     me = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {reg.json()['access_token']}"})
     user_id = me.json()["id"]
 
@@ -156,7 +156,7 @@ async def test_admin_toggle_admin(client: AsyncClient, db_session: AsyncSession)
 async def test_admin_delete_user(client: AsyncClient, db_session: AsyncSession):
     """Админ удаляет пользователя."""
     token = await _get_admin_token(client, db_session)
-    reg = await client.post("/api/auth/register", json={"email": "deleteme@test.com", "password": "pass1234"})
+    reg = await client.post("/api/auth/register", json={"email": "deleteme@test.com", "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True})
     me = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {reg.json()['access_token']}"})
     user_id = me.json()["id"]
 
@@ -199,7 +199,7 @@ async def test_admin_list_transcriptions(client: AsyncClient, db_session: AsyncS
     user = await _create_admin(db_session)
     t = Transcription(
         user_id=user.id, title="test.mp3", status="completed",
-        original_filename="test.mp3", full_text="hello world",
+        original_filename="test.mp3", full_text="hello world", file_key="k1.mp3",
     )
     db_session.add(t)
     await db_session.commit()
@@ -216,7 +216,7 @@ async def test_admin_delete_transcription(client: AsyncClient, db_session: Async
     user = await _create_admin(db_session)
     t = Transcription(
         user_id=user.id, title="del.mp3", status="completed",
-        original_filename="del.mp3", full_text="delete me",
+        original_filename="del.mp3", full_text="delete me", file_key="k2.mp3",
     )
     db_session.add(t)
     await db_session.commit()

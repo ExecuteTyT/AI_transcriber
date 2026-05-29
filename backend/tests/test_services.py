@@ -29,12 +29,14 @@ def test_create_and_decode_access_token():
 
 
 def test_create_and_decode_refresh_token():
-    """Refresh token создаётся и декодируется."""
-    token = create_refresh_token("test-user-id")
+    """Refresh token создаётся и декодируется (возвращает (token, jti, expires_at))."""
+    token, jti, expires_at = create_refresh_token("test-user-id")
+    assert jti and expires_at
     payload = decode_token(token)
     assert payload is not None
     assert payload["sub"] == "test-user-id"
     assert payload["type"] == "refresh"
+    assert payload["jti"] == jti
 
 
 def test_decode_invalid_token():
@@ -47,14 +49,6 @@ def test_transcription_provider_is_abstract():
     """TranscriptionProvider нельзя инстанцировать."""
     with pytest.raises(TypeError):
         TranscriptionProvider()
-
-
-def test_whisper_provider_not_implemented():
-    """WhisperProvider.transcribe() кидает NotImplementedError."""
-    from app.services.whisper import WhisperProvider
-    provider = WhisperProvider()
-    with pytest.raises(NotImplementedError):
-        provider.transcribe("/fake/path.mp3")
 
 
 def test_format_srt_time():

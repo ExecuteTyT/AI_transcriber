@@ -11,7 +11,7 @@ async def _register_and_get_token(client: AsyncClient) -> str:
     email = f"test-{uuid.uuid4().hex[:8]}@example.com"
     resp = await client.post(
         "/api/auth/register",
-        json={"email": email, "password": "pass123"},
+        json={"email": email, "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True},
     )
     return resp.json()["access_token"]
 
@@ -64,7 +64,7 @@ async def test_upload_allowed_when_bonus_left(client: AsyncClient, db_session: A
         files={"file": ("test.mp3", b"fake", "audio/mpeg")},
     )
     # 503 = S3 не настроен, но значит проверка лимита прошла.
-    assert response.status_code == 503
+    assert response.status_code == 201  # local-fallback: upload принят, лимит пройден
 
 
 @pytest.mark.asyncio
@@ -78,7 +78,7 @@ async def test_upload_within_limit(client: AsyncClient):
         files={"file": ("test.mp3", b"fake", "audio/mpeg")},
     )
     # 503 потому что S3 не настроен — но это значит, что проверка лимитов прошла
-    assert response.status_code == 503
+    assert response.status_code == 201  # local-fallback: upload принят, лимит пройден
 
 
 def test_plan_configs():

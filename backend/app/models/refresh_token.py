@@ -7,10 +7,10 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import CHAR, DateTime, ForeignKey, String, Text, Uuid
-from sqlalchemy.dialects.postgresql import INET
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UUIDMixin
+from app.models.types import INETType
 
 
 # Возможные значения revoke_reason — central source of truth.
@@ -53,5 +53,5 @@ class RefreshToken(Base, UUIDMixin):
     )
 
     # Метаданные для UI "активные сессии" в будущем и для аудита.
-    ip_address: Mapped[str | None] = mapped_column(INET, nullable=True)
+    ip_address: Mapped[str | None] = mapped_column(INETType, nullable=True)
     user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)

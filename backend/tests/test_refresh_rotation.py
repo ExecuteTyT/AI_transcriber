@@ -13,7 +13,7 @@ from app.services.auth import hash_jti
 VALID_PASSWORD = "TestPassword123!"
 
 
-async def _register(client, email: str = "rotation@test.local") -> dict:
+async def _register(client, email: str = "rotation@test.example.com") -> dict:
     """Register helper. Возвращает access/refresh tokens."""
     r = await client.post(
         "/api/auth/register",
@@ -85,7 +85,7 @@ async def test_refresh_reuse_detection_revokes_all_user(client, db_session):
     # Делаем дополнительный login, чтобы у пользователя было 2 активные сессии.
     r_login = await client.post(
         "/api/auth/login",
-        json={"email": "rotation@test.local", "password": VALID_PASSWORD},
+        json={"email": "rotation@test.example.com", "password": VALID_PASSWORD},
     )
     assert r_login.status_code == 200
     other_session_refresh = r_login.json()["refresh_token"]
@@ -113,7 +113,7 @@ async def test_logout_revokes_only_current_session(client, db_session):
     # Второй login.
     r_login = await client.post(
         "/api/auth/login",
-        json={"email": "rotation@test.local", "password": VALID_PASSWORD},
+        json={"email": "rotation@test.example.com", "password": VALID_PASSWORD},
     )
     other_refresh = r_login.json()["refresh_token"]
 
@@ -143,7 +143,7 @@ async def test_logout_all_devices(client, db_session):
 
     r_login = await client.post(
         "/api/auth/login",
-        json={"email": "rotation@test.local", "password": VALID_PASSWORD},
+        json={"email": "rotation@test.example.com", "password": VALID_PASSWORD},
     )
     other_refresh = r_login.json()["refresh_token"]
 

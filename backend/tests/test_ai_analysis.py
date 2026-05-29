@@ -10,7 +10,7 @@ async def _register_and_get_token(client: AsyncClient) -> str:
     email = f"test-{uuid.uuid4().hex[:8]}@example.com"
     resp = await client.post(
         "/api/auth/register",
-        json={"email": email, "password": "pass123"},
+        json={"email": email, "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True},
     )
     return resp.json()["access_token"]
 

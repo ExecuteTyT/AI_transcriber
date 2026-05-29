@@ -53,6 +53,20 @@ else
   bad "/api/transcriptions unauth → $UNAUTH (expected 401/403)"
 fi
 
+# ─── 3b. Deep health (DB через ORM) ───
+# Ловит дрейф схемы: /api/health (liveness) отдаёт ok даже когда любой
+# запрос к users падает 500. /api/health/deep делает SELECT User → 503 если
+# схема разъехалась. Инцидент 2026-05: smoke был зелёный при лежащем app.
+sec "Deep health (DB)"
+DEEP=$(curl -sk -o /dev/null -w "%{http_code}" "$HOST/api/health/deep")
+if [[ "$DEEP" == "200" ]]; then
+  ok "/api/health/deep → 200 (БД отвечает через ORM)"
+elif [[ "$DEEP" == "404" ]]; then
+  bad "/api/health/deep → 404 — старый образ без deep-health, обнови деплой"
+else
+  bad "/api/health/deep → $DEEP (БД/схема недоступна — приложение нездорово!)"
+fi
+
 # ─── 4. OpenAPI schema ───
 sec "OpenAPI schema"
 

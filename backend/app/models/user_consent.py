@@ -3,10 +3,10 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, Uuid
-from sqlalchemy.dialects.postgresql import INET
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UUIDMixin
+from app.models.types import INETType
 
 
 # Возможные значения consent_type — один источник правды для бэкенда и валидации.
@@ -38,7 +38,7 @@ class UserConsent(Base, UUIDMixin):
     granted: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # IP и User-Agent в момент действия — для доказательства "это был именно тот юзер".
-    ip_address: Mapped[str | None] = mapped_column(INET, nullable=True)
+    ip_address: Mapped[str | None] = mapped_column(INETType, nullable=True)
     user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Версия текста политики (settings.POLICY_VERSION) — позволяет позже

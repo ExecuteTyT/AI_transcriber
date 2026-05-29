@@ -104,5 +104,5 @@ npx tsc --noEmit                      # проверка типов
 
 ## Контекст для решений
 - Себестоимость 1 часа аудио: ~5.24 ₽ (Voxtral 4.80 + AI-анализ 0.42 + embeddings 0.02)
-- AI-анализ: Gemini 2.5-flash (актуальная модель в `services/ai_analysis.py`), embeddings: Mistral mistral-embed (1024d)
+- AI-анализ и RAG-чат: Mistral `mistral-small-latest` (`services/ai_analysis.py`, `services/rag_chat.py`); embeddings: Mistral `mistral-embed` (1024d). Gemini/Google НЕ используется (заблокирован из РФ) — мёртвый `GOOGLE_API_KEY`/`GEMINI_MODEL` в `.env.example` игнорируются.
 - Задачи проекта: `docs/tasks_v2.md`

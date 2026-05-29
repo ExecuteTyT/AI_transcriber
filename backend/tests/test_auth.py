@@ -7,7 +7,7 @@ async def test_register(client: AsyncClient):
     """Регистрация нового пользователя."""
     response = await client.post(
         "/api/auth/register",
-        json={"email": "test@example.com", "password": "secret123", "name": "Тест"},
+        json={"email": "test@example.com", "password": "secret123", "name": "Тест", "consent_pd_processing": True, "consent_cross_border": True},
     )
     assert response.status_code == 201
     data = response.json()
@@ -19,7 +19,7 @@ async def test_register(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_register_duplicate_email(client: AsyncClient):
     """Нельзя зарегистрироваться с тем же email."""
-    payload = {"email": "dup@example.com", "password": "secret123"}
+    payload = {"email": "dup@example.com", "password": "secret123", "consent_pd_processing": True, "consent_cross_border": True}
     await client.post("/api/auth/register", json=payload)
     response = await client.post("/api/auth/register", json=payload)
     assert response.status_code == 409
@@ -30,11 +30,11 @@ async def test_login(client: AsyncClient):
     """Вход по email + пароль."""
     await client.post(
         "/api/auth/register",
-        json={"email": "login@example.com", "password": "pass123"},
+        json={"email": "login@example.com", "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True},
     )
     response = await client.post(
         "/api/auth/login",
-        json={"email": "login@example.com", "password": "pass123"},
+        json={"email": "login@example.com", "password": "pass1234"},
     )
     assert response.status_code == 200
     assert "access_token" in response.json()
@@ -45,7 +45,7 @@ async def test_login_wrong_password(client: AsyncClient):
     """Неверный пароль."""
     await client.post(
         "/api/auth/register",
-        json={"email": "wrong@example.com", "password": "correct"},
+        json={"email": "wrong@example.com", "password": "correct1", "consent_pd_processing": True, "consent_cross_border": True},
     )
     response = await client.post(
         "/api/auth/login",
@@ -59,7 +59,7 @@ async def test_refresh_token(client: AsyncClient):
     """Обновление токенов через refresh."""
     reg = await client.post(
         "/api/auth/register",
-        json={"email": "refresh@example.com", "password": "pass123"},
+        json={"email": "refresh@example.com", "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True},
     )
     refresh_token = reg.json()["refresh_token"]
 
@@ -83,7 +83,7 @@ async def test_me_authorized(client: AsyncClient):
     """Доступ к /me с валидным токеном."""
     reg = await client.post(
         "/api/auth/register",
-        json={"email": "me@example.com", "password": "pass123", "name": "Вася"},
+        json={"email": "me@example.com", "password": "pass1234", "name": "Вася", "consent_pd_processing": True, "consent_cross_border": True},
     )
     token = reg.json()["access_token"]
 
@@ -96,7 +96,7 @@ async def test_me_authorized(client: AsyncClient):
     assert data["email"] == "me@example.com"
     assert data["name"] == "Вася"
     assert data["plan"] == "free"
-    assert data["minutes_limit"] == 15
+    assert data["minutes_limit"] == 0  # free: лимит 0, минуты идут из bonus_minutes (180)
 
 
 @pytest.mark.asyncio
@@ -104,12 +104,13 @@ async def test_logout(client: AsyncClient):
     """Выход с валидным токеном → 200."""
     reg = await client.post(
         "/api/auth/register",
-        json={"email": "logout@example.com", "password": "pass123"},
+        json={"email": "logout@example.com", "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True},
     )
     token = reg.json()["access_token"]
     response = await client.post(
         "/api/auth/logout",
         headers={"Authorization": f"Bearer {token}"},
+        json={},
     )
     assert response.status_code == 200
     assert response.json()["message"] == "Выход выполнен"
@@ -130,7 +131,7 @@ async def test_register_invalid_email(client: AsyncClient):
     """Регистрация с невалидным email → 422."""
     response = await client.post(
         "/api/auth/register",
-        json={"email": "not-an-email", "password": "pass123"},
+        json={"email": "not-an-email", "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True},
     )
     assert response.status_code == 422
 
@@ -140,6 +141,6 @@ async def test_login_nonexistent_user(client: AsyncClient):
     """Вход несуществующего пользователя → 401."""
     response = await client.post(
         "/api/auth/login",
-        json={"email": "nobody@example.com", "password": "pass123"},
+        json={"email": "nobody@example.com", "password": "pass1234"},
     )
     assert response.status_code == 401

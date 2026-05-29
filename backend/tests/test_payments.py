@@ -8,7 +8,7 @@ async def _register_and_get_token(client: AsyncClient) -> str:
     email = f"test-{uuid.uuid4().hex[:8]}@example.com"
     resp = await client.post(
         "/api/auth/register",
-        json={"email": email, "password": "pass123"},
+        json={"email": email, "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True},
     )
     return resp.json()["access_token"]
 
@@ -28,7 +28,7 @@ async def test_get_subscription_free(client: AsyncClient):
     data = response.json()
     assert data["plan"] == "free"
     assert data["status"] == "none"
-    assert data["minutes_limit"] == 15
+    assert data["minutes_limit"] == 0  # free: лимит 0, минуты из bonus_minutes
     assert data["minutes_used"] == 0
 
 
@@ -80,41 +80,55 @@ async def test_cancel_no_active_subscription(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_webhook_invalid_body(client: AsyncClient):
-    """Вебхук с невалидным JSON."""
+async def test_webhook_non_yookassa_ip_rejected(client: AsyncClient):
+    """Вебхук с не-YooKassa IP отклоняется (200 без обработки — не даём feedback).
+
+    IP-allowlist срабатывает ДО парсинга тела, поэтому даже невалидный JSON
+    с не-доверенного IP получает 200 (а не 400). Это by design (см. payments.py).
+    """
     response = await client.post(
         "/api/payments/webhook",
         content=b"not-json",
         headers={"Content-Type": "application/json"},
     )
-    assert response.status_code == 400
+    assert response.status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_webhook_payment_succeeded(client: AsyncClient, db_session):
-    """Вебхук payment.succeeded активирует подписку."""
-    # Создаём пользователя
+async def test_webhook_payment_succeeded(client: AsyncClient, db_session, monkeypatch):
+    """Вебхук payment.succeeded активирует подписку.
+
+    Мокаем внешние проверки YooKassa (IP-allowlist + re-fetch через API), т.к.
+    в тестах нет реального IP YooKassa и реального платежа.
+    """
+    from app.api import payments as payments_api
+    from app.services.payment import PLAN_PRICES
+
     token = await _register_and_get_token(client)
     me = await client.get("/api/auth/me", headers=_auth_headers(token))
     user_id = me.json()["id"]
 
-    # Имитируем вебхук
+    # IP-allowlist → пропускаем; re-fetch → возвращаем валидный succeeded-платёж.
+    monkeypatch.setattr(payments_api, "is_yookassa_ip", lambda ip: True)
+
+    async def _fake_verify(yk_id):
+        return {
+            "status": "succeeded",
+            "metadata": {"user_id": user_id, "plan": "start"},
+            "amount": {"value": PLAN_PRICES["start"]},
+        }
+
+    monkeypatch.setattr(payments_api, "verify_payment_via_api", _fake_verify)
+
     response = await client.post(
         "/api/payments/webhook",
         json={
-            "type": "payment.succeeded",
-            "object": {
-                "id": "test-payment-123",
-                "metadata": {
-                    "user_id": user_id,
-                    "plan": "start",
-                },
-            },
+            "event": "payment.succeeded",
+            "object": {"id": "test-payment-123"},
         },
     )
     assert response.status_code == 200
 
-    # Проверяем что подписка активирована
     sub_resp = await client.get(
         "/api/payments/subscription", headers=_auth_headers(token)
     )

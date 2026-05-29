@@ -12,7 +12,7 @@ async def _register_and_get_token(client: AsyncClient) -> str:
     email = f"test-{uuid.uuid4().hex[:8]}@example.com"
     resp = await client.post(
         "/api/auth/register",
-        json={"email": email, "password": "pass123"},
+        json={"email": email, "password": "pass1234", "consent_pd_processing": True, "consent_cross_border": True},
     )
     return resp.json()["access_token"]
 
@@ -86,17 +86,16 @@ async def test_upload_invalid_mime_type(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_upload_no_s3(client: AsyncClient):
-    """Загрузка файла когда S3 не настроен → 503."""
+async def test_upload_local_storage_fallback(client: AsyncClient):
+    """Без S3 хранилище уходит в local-fallback → загрузка принимается (201, queued)."""
     token = await _register_and_get_token(client)
-    # S3 не настроен в тестовом окружении (s3_service = None)
     response = await client.post(
         "/api/transcriptions/upload",
         headers=_auth_headers(token),
         files={"file": ("test.mp3", b"fake-audio-data", "audio/mpeg")},
     )
-    assert response.status_code == 503
-    assert "S3" in response.json()["detail"]
+    assert response.status_code == 201
+    assert response.json()["status"] == "queued"
 
 
 @pytest.mark.asyncio
@@ -158,10 +157,9 @@ async def test_crud_with_db_record(client: AsyncClient, db_session):
     assert "00:00:00,000" in resp.text
     assert "Привет мир" in resp.text
 
-    # Export DOCX
+    # Export DOCX — free тариф НЕ имеет docx (платная фича) → 403
     resp = await client.get(f"/api/transcriptions/{t_id}/export/docx", headers=_auth_headers(token))
-    assert resp.status_code == 200
-    assert resp.headers["content-type"] == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    assert resp.status_code == 403
 
     # Export invalid format
     resp = await client.get(f"/api/transcriptions/{t_id}/export/pdf", headers=_auth_headers(token))
@@ -232,3 +230,28 @@ async def test_list_pagination(client: AsyncClient):
         "/api/transcriptions?offset=-1", headers=_auth_headers(token)
     )
     assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_export_docx_gated_for_free(client: AsyncClient, db_session):
+    """Free тариф: txt разрешён, docx → 403 (платная фича)."""
+    token = await _register_and_get_token(client)
+    me = await client.get("/api/auth/me", headers=_auth_headers(token))
+    user_id = me.json()["id"]
+    tr = Transcription(
+        user_id=uuid.UUID(user_id), title="exp.mp3", file_key="uploads/e.mp3",
+        original_filename="e.mp3", content_type="audio/mpeg", status="completed",
+        full_text="Привет мир",
+        segments=[{"start": 0, "end": 5, "text": "Привет мир", "speaker": "S1"}],
+        language="ru", duration_sec=5,
+    )
+    db_session.add(tr)
+    await db_session.commit()
+    await db_session.refresh(tr)
+    t_id = str(tr.id)
+
+    txt = await client.get(f"/api/transcriptions/{t_id}/export/txt", headers=_auth_headers(token))
+    assert txt.status_code == 200
+
+    docx = await client.get(f"/api/transcriptions/{t_id}/export/docx", headers=_auth_headers(token))
+    assert docx.status_code == 403

@@ -13,7 +13,7 @@ async def _register(client: AsyncClient) -> tuple[str, str]:
     email = f"test-{uuid.uuid4().hex[:8]}@example.com"
     resp = await client.post(
         "/api/auth/register",
-        json={"email": email, "password": "password1", "name": "T"},
+        json={"email": email, "password": "password1", "name": "T", "consent_pd_processing": True, "consent_cross_border": True},
     )
     return resp.json()["access_token"], email
 
@@ -49,7 +49,7 @@ async def test_upload_allowed_when_only_bonus(client: AsyncClient, db_session: A
         files={"file": ("test.mp3", b"fake", "audio/mpeg")},
     )
     # 503 = S3 не настроен, значит лимит прошёл.
-    assert response.status_code == 503
+    assert response.status_code == 201  # local-fallback: upload принят, лимит пройден
 
 
 @pytest.mark.asyncio

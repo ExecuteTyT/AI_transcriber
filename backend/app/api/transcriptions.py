@@ -280,9 +280,9 @@ async def upload_by_url(
 ):
     """Транскрибация по URL видео — YouTube / VK / Rutube / OK / Дзен.
 
-    Доступна только на платных планах (start+) для защиты от ToS-abuse.
-    Длительность и probe выполняет Celery task (yt-dlp), здесь мы только
-    валидируем host и создаём Transcription-запись.
+    Доступна всем тарифам в пределах минут (bonus + monthly) — отдельного
+    plan-гейта нет. Длительность и probe выполняет Celery task (yt-dlp), здесь
+    мы только валидируем host, проверяем лимит минут и создаём Transcription.
     """
     from urllib.parse import urlparse
 
@@ -662,6 +662,26 @@ async def export_transcription(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Транскрипция ещё не завершена",
+        )
+
+    # Сначала валидность формата (несуществующий → 400), потом гейтинг по тарифу
+    # (формат есть, но не на твоём тарифе → 403). Порядок важен: иначе free,
+    # запросивший несуществующий 'pdf', получил бы 403 вместо 400.
+    if format not in ("txt", "srt", "docx"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Неподдерживаемый формат: {format}. Допустимые: txt, srt, docx",
+        )
+
+    # Гейтинг по тарифу: docx — только для платных (free: txt/srt). Без этой
+    # проверки эндпоинт раздавал docx всем (утечка платной фичи).
+    from app.services.plans import get_plan
+
+    allowed_formats = get_plan(user.plan).export_formats
+    if not user.is_admin and format not in allowed_formats:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Формат {format} доступен на платных тарифах. Доступно: {', '.join(allowed_formats)}.",
         )
 
     from urllib.parse import quote

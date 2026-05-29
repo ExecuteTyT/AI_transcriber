@@ -28,14 +28,20 @@ def event_loop():
     loop.close()
 
 
+# Таблица embeddings использует pgvector (тип Vector), который не компилируется
+# на SQLite. RAG-чат в тест-сьюте не покрыт, поэтому исключаем её из тестовой
+# схемы — остальные таблицы создаются нормально (INET см. app/models/types.py).
+_SQLITE_TABLES = [t for t in Base.metadata.sorted_tables if t.name != "embeddings"]
+
+
 @pytest_asyncio.fixture(autouse=True)
 async def setup_db():
     """Создание и очистка таблиц перед каждым тестом."""
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(lambda c: Base.metadata.create_all(c, tables=_SQLITE_TABLES))
     yield
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(lambda c: Base.metadata.drop_all(c, tables=_SQLITE_TABLES))
 
 
 async def override_get_db() -> AsyncGenerator[AsyncSession, None]:

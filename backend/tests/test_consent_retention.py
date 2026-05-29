@@ -11,7 +11,10 @@ from app.models.user import User
 
 async def _register(client: AsyncClient, *, extra: dict | None = None) -> tuple[str, str]:
     email = f"test-{uuid.uuid4().hex[:8]}@example.com"
-    payload = {"email": email, "password": "password1", "name": "Tester"}
+    payload = {
+        "email": email, "password": "password1", "name": "Tester",
+        "consent_pd_processing": True, "consent_cross_border": True,
+    }
     if extra:
         payload.update(extra)
     resp = await client.post("/api/auth/register", json=payload)
@@ -37,15 +40,13 @@ async def test_register_records_consent_timestamps(client: AsyncClient, db_sessi
 
 
 @pytest.mark.asyncio
-async def test_register_without_consent_leaves_timestamps_null(
-    client: AsyncClient, db_session: AsyncSession
-):
-    """Регистрация без consent (фронт не прислал) — таймстампы пустые, но аккаунт создан."""
-    token, email = await _register(client)
-    result = await db_session.execute(select(User).where(User.email == email))
-    user = result.scalar_one()
-    assert user.consent_terms_at is None
-    assert user.consent_cross_border_at is None
+async def test_register_without_consent_rejected(client: AsyncClient):
+    """152-ФЗ: регистрация без обязательных согласий → 422 (аккаунт НЕ создаётся)."""
+    resp = await client.post(
+        "/api/auth/register",
+        json={"email": "noconsent@example.com", "password": "password1", "name": "X"},
+    )
+    assert resp.status_code == 422
 
 
 # ─── Data retention ───

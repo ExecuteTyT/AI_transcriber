@@ -1,9 +1,12 @@
 import logging
 import sys
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -134,5 +137,25 @@ Instrumentator(
 
 @app.get("/api/health", tags=["system"])
 async def health_check():
-    """Проверка работоспособности API."""
+    """Liveness-проба: жив ли процесс. НЕ трогает БД (см. /api/health/deep)."""
     return {"status": "ok"}
+
+
+@app.get("/api/health/deep", tags=["system"])
+async def health_check_deep(db: "AsyncSession" = Depends(get_db)):
+    """Readiness-проба: реально дёргает БД через ORM (SELECT всех колонок User).
+
+    Ловит дрейф схемы (например, отсутствующую колонку после незакатанной
+    миграции) — именно тот класс сбоя, который /api/health и поверхностный
+    smoke не видят (инцидент 2026-05: register/login → 500, smoke зелёный).
+    """
+    from sqlalchemy import select
+
+    from app.models.user import User
+
+    try:
+        await db.execute(select(User).limit(1))
+    except Exception as e:
+        logging.getLogger(__name__).error("Deep health DB check failed: %s", e)
+        return JSONResponse(status_code=503, content={"status": "error", "db": "error"})
+    return {"status": "ok", "db": "ok"}

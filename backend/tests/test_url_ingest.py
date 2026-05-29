@@ -13,7 +13,7 @@ async def _register(client: AsyncClient) -> tuple[str, str]:
     email = f"test-{uuid.uuid4().hex[:8]}@example.com"
     resp = await client.post(
         "/api/auth/register",
-        json={"email": email, "password": "password1"},
+        json={"email": email, "password": "password1", "consent_pd_processing": True, "consent_cross_border": True},
     )
     return resp.json()["access_token"], email
 
@@ -25,16 +25,16 @@ def _h(token: str) -> dict:
 # ─── Plan gate ───
 
 @pytest.mark.asyncio
-async def test_free_plan_blocked_from_url_ingest(client: AsyncClient):
-    """Free юзер → 403 с понятным текстом."""
-    token, _ = await _register(client)
+async def test_free_plan_allowed_url_ingest_with_bonus(client: AsyncClient):
+    """URL-ingest больше не закрыт по тарифу: free с bonus-минутами проходит (201)."""
+    token, _ = await _register(client)  # новый free-юзер: bonus_minutes=180
     resp = await client.post(
         "/api/transcriptions/upload-url",
         headers=_h(token),
         json={"url": "https://www.youtube.com/watch?v=abc"},
     )
-    assert resp.status_code == 403
-    assert "Старт" in resp.json()["detail"]
+    assert resp.status_code == 201
+    assert resp.json()["status"] == "queued"
 
 
 @pytest.mark.asyncio

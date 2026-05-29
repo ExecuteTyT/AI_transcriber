@@ -8,7 +8,7 @@ def _h(token: str) -> dict:
 
 
 async def _register(client: AsyncClient, email: str = "profile@test.com", password: str = "pass1234", name: str = "Test") -> str:
-    resp = await client.post("/api/auth/register", json={"email": email, "password": password, "name": name})
+    resp = await client.post("/api/auth/register", json={"email": email, "password": password, "name": name, "consent_pd_processing": True, "consent_cross_border": True})
     return resp.json()["access_token"]
 
 
