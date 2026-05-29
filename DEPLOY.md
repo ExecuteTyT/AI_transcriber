@@ -41,6 +41,12 @@ docker compose -f docker-compose.prod.yml run --rm api alembic upgrade head
 docker compose -f docker-compose.prod.yml build --pull api frontend
 docker compose -f docker-compose.prod.yml up -d --force-recreate api frontend celery celery-beat
 
+# ОБЯЗАТЕЛЬНО после пересоздания api: nginx кэширует старый IP upstream'а →
+# иначе 502 на /api и /docs (статика при этом жива). reload, НЕ restart
+# (рестарт nginx = мина с admin-cert). Сначала -t, чтобы не уронить конфигом.
+docker compose -f docker-compose.prod.yml exec nginx nginx -t
+docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+
 # Подождать прогрева API (~30с) и проверить
 sleep 30
 ./scripts/check-prod.sh https://dicto.pro
