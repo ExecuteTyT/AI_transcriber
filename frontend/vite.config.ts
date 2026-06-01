@@ -5,7 +5,7 @@ import path from "path";
 // Build target определяется через --mode (admin|public). Mode → BUILD_TARGET
 // прокидывается в код через define, читается в main.tsx и условно
 // рендерит AdminApp или App. Vite/Rollup статически шейкит неиспользуемую ветку.
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, isSsrBuild }) => {
   const buildTarget = mode === "admin" ? "admin" : "public";
 
   return {
@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
     // навсегда (immutable hash в имени), не перегружая на каждом relasе кода.
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: isSsrBuild ? undefined : {
           // React core — самое большое и стабильное
           "vendor-react": ["react", "react-dom", "react-router-dom", "react-router"],
           // Motion — ~80 KB, нужен во всём приложении
