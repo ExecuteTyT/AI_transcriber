@@ -23,6 +23,23 @@ import AnglijskijYazyk from "@/pages/seo/AnglijskijYazyk";
 import KazahskijYazyk from "@/pages/seo/KazahskijYazyk";
 import DlyaPodkastov from "@/pages/seo/DlyaPodkastov";
 import DlyaLekcij from "@/pages/seo/DlyaLekcij";
+import Transkribaciya from "@/pages/seo/Transkribaciya";
+import PerevodAudio from "@/pages/seo/PerevodAudio";
+import TranskribaciyaVideo from "@/pages/seo/TranskribaciyaVideo";
+import TranskribaciyaOnlayn from "@/pages/seo/TranskribaciyaOnlayn";
+import RasshifrovkaVideo from "@/pages/seo/RasshifrovkaVideo";
+import RaspoznavanieRechi from "@/pages/seo/RaspoznavanieRechi";
+import ProtocolSoveshchaniya from "@/pages/seo/ProtocolSoveshchaniya";
+import RasshifrovkaIntervyu from "@/pages/seo/RasshifrovkaIntervyu";
+import YoutubeVTekst from "@/pages/seo/YoutubeVTekst";
+import Mp3VTekst from "@/pages/seo/Mp3VTekst";
+import DiktofonVTekst from "@/pages/seo/DiktofonVTekst";
+import DlyaBiznesa from "@/pages/seo/DlyaBiznesa";
+import DlyaZhurnalistov from "@/pages/seo/DlyaZhurnalistov";
+import SubtitryDlyaVideo from "@/pages/seo/SubtitryDlyaVideo";
+import ZoomVTekst from "@/pages/seo/ZoomVTekst";
+import NemeckijYazyk from "@/pages/seo/NemeckijYazyk";
+import FrancuzskijYazyk from "@/pages/seo/FrancuzskijYazyk";
 import BlogIndex from "@/pages/blog/BlogIndex";
 import BlogArticle from "@/pages/blog/BlogArticle";
 
@@ -126,6 +143,23 @@ export default function App() {
         <Route path="/kazahskij-yazyk" element={<KazahskijYazyk />} />
         <Route path="/dlya-podkastov" element={<DlyaPodkastov />} />
         <Route path="/dlya-lekcij" element={<DlyaLekcij />} />
+        <Route path="/transkribaciya" element={<Transkribaciya />} />
+        <Route path="/perevod-audio-v-tekst" element={<PerevodAudio />} />
+        <Route path="/transkribaciya-video" element={<TranskribaciyaVideo />} />
+        <Route path="/transkribaciya-onlayn" element={<TranskribaciyaOnlayn />} />
+        <Route path="/rasshifrovka-video" element={<RasshifrovkaVideo />} />
+        <Route path="/raspoznavanie-rechi" element={<RaspoznavanieRechi />} />
+        <Route path="/protokol-soveshchaniya" element={<ProtocolSoveshchaniya />} />
+        <Route path="/rasshifrovka-intervyu" element={<RasshifrovkaIntervyu />} />
+        <Route path="/youtube-v-tekst" element={<YoutubeVTekst />} />
+        <Route path="/mp3-v-tekst" element={<Mp3VTekst />} />
+        <Route path="/diktofon-v-tekst" element={<DiktofonVTekst />} />
+        <Route path="/dlya-biznesa" element={<DlyaBiznesa />} />
+        <Route path="/dlya-zhurnalistov" element={<DlyaZhurnalistov />} />
+        <Route path="/subtitry-dlya-video" element={<SubtitryDlyaVideo />} />
+        <Route path="/zoom-v-tekst" element={<ZoomVTekst />} />
+        <Route path="/nemeckij-yazyk" element={<NemeckijYazyk />} />
+        <Route path="/francuzskij-yazyk" element={<FrancuzskijYazyk />} />
         <Route path="/blog" element={<BlogIndex />} />
         <Route path="/blog/:slug" element={<BlogArticle />} />
 

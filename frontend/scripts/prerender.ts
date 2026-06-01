@@ -51,6 +51,12 @@ async function prerender() {
     "/kazahskij-yazyk",
     "/dlya-podkastov",
     "/dlya-lekcij",
+    "/transkribaciya",
+    "/perevod-audio-v-tekst",
+    "/transkribaciya-video",
+    "/transkribaciya-onlayn",
+    "/rasshifrovka-video",
+    "/raspoznavanie-rechi",
     "/blog",
   ];
 

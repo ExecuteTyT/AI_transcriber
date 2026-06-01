@@ -37,6 +37,13 @@ export default function NeuralTranscription() {
         { q: "Можно ли использовать нейросеть бесплатно?", a: "Да, при регистрации даём 180 минут бонусом — без карты и без подписки. Этого достаточно чтобы протестировать сервис на реальных записях." },
         { q: "Нейросеть определяет спикеров?", a: "Да, встроенная функция diarization автоматически определяет и размечает до 10 спикеров в записи." },
       ]}
+      relatedLinks={[
+        { href: "/transkribaciya-audio", title: "Транскрибация аудио", desc: "Полный обзор возможностей сервиса" },
+        { href: "/raspoznavanie-rechi", title: "Распознавание речи онлайн", desc: "Как работает ASR-технология" },
+        { href: "/audio-v-tekst", title: "Аудио в текст онлайн", desc: "MP3, WAV, FLAC, OGG — все форматы" },
+        { href: "/blog/nejroset-dlya-transkribacii", title: "Сравнение нейросетей для транскрибации", desc: "Voxtral vs Whisper vs GigaChat 2026" },
+        { href: "/blog/chto-takoe-diarization", title: "Что такое diarization", desc: "Как работает разметка спикеров" },
+      ]}
     />
   );
 }
