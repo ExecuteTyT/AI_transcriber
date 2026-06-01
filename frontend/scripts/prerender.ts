@@ -57,6 +57,17 @@ async function prerender() {
     "/transkribaciya-onlayn",
     "/rasshifrovka-video",
     "/raspoznavanie-rechi",
+    "/protokol-soveshchaniya",
+    "/rasshifrovka-intervyu",
+    "/youtube-v-tekst",
+    "/mp3-v-tekst",
+    "/diktofon-v-tekst",
+    "/dlya-biznesa",
+    "/dlya-zhurnalistov",
+    "/subtitry-dlya-video",
+    "/zoom-v-tekst",
+    "/nemeckij-yazyk",
+    "/francuzskij-yazyk",
     "/blog",
   ];
 
