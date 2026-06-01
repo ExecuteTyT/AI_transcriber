@@ -31,6 +31,11 @@ export default defineConfig(({ mode, isSsrBuild }) => {
       },
     },
   },
+  preview: {
+    port: 3000,
+    host: "0.0.0.0",
+    allowedHosts: ["dicto.pro", "www.dicto.pro"],
+  },
   build: {
     // Разбиваем vendor-библиотеки на отдельные чанки — браузер кеширует их
     // навсегда (immutable hash в имени), не перегружая на каждом relasе кода.
