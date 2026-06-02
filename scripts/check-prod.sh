@@ -129,12 +129,15 @@ fi
 # ─── 6. Frontend branding ───
 sec "Frontend"
 HTML=$(curl -sk "$HOST/")
-if echo "$HTML" | grep -q "Dicto"; then
+# Here-string, не пайп: при `echo … | grep -q` grep выходит на первом совпадении,
+# закрывает пайп, echo ловит SIGPIPE (141), и `set -o pipefail` выдаёт этот 141
+# как результат пайплайна → ложный провал ИМЕННО при успешном матче.
+if grep -q "Dicto" <<<"$HTML"; then
   ok "Frontend carries 'Dicto' branding"
 else
   bad "Frontend does not show 'Dicto' brand — stale deploy?"
 fi
-if echo "$HTML" | grep -qE "Voitra|Scribi"; then
+if grep -qE "Voitra|Scribi" <<<"$HTML"; then
   bad "Frontend still has 'Voitra'/'Scribi' references — brand rename incomplete"
 else
   ok "No 'Voitra'/'Scribi' residue in index.html"
@@ -145,7 +148,7 @@ sec "Security headers"
 HEADERS=$(curl -skI "$HOST/")
 check_header() {
   local name="$1"
-  if echo "$HEADERS" | grep -qi "^$name:"; then
+  if grep -qi "^$name:" <<<"$HEADERS"; then
     ok "$name header present"
   else
     bad "$name header missing"
