@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import Seo from "@/components/Seo";
+import SiteFooter from "@/components/SiteFooter";
+import { SEO_CLUSTERS } from "@/config/seoLinks";
 import HeroWaveform from "@/components/HeroWaveform";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
@@ -291,7 +293,7 @@ export default function Landing() {
           <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[var(--fg-muted)]">
             <button type="button" onMouseEnter={() => play("focus")} onClick={() => scrollToSection("features")} className="hover:text-[var(--fg)] transition-colors">Возможности</button>
             <button type="button" onMouseEnter={() => play("focus")} onClick={() => scrollToSection("use-cases")} className="hover:text-[var(--fg)] transition-colors">Кому</button>
-            <button type="button" onMouseEnter={() => play("focus")} onClick={() => scrollToSection("pricing")} className="hover:text-[var(--fg)] transition-colors">Тарифы</button>
+            <Link to="/pricing" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Тарифы</Link>
             <Link to="/blog" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Блог</Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -336,7 +338,7 @@ export default function Landing() {
           <nav className="relative flex flex-col items-center justify-center h-full gap-6 font-display text-2xl text-[var(--fg)]">
             <button type="button" onClick={() => { setMobileMenuOpen(false); scrollToSection("features"); }} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Возможности</button>
             <button type="button" onClick={() => { setMobileMenuOpen(false); scrollToSection("use-cases"); }} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Кому</button>
-            <button type="button" onClick={() => { setMobileMenuOpen(false); scrollToSection("pricing"); }} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Тарифы</button>
+            <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Тарифы</Link>
             <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Блог</Link>
             <div className="mt-4 flex items-center gap-3">
               <SoundToggle />
@@ -557,6 +559,9 @@ export default function Landing() {
               <Link to="/register" onClick={() => play("tick")} className="btn-editorial-ghost w-full justify-center">
                 Начать бесплатно
               </Link>
+              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+                180 минут бесплатно · без карты
+              </p>
             </div>
 
             {/* Start */}
@@ -665,33 +670,68 @@ export default function Landing() {
         </FadeInOnScroll>
       </section>
 
-      {/* ─── Footer (editorial) ─── */}
-      <footer className="py-16 bg-[var(--bg)] border-t border-[var(--border)]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-[var(--border)]">
-            <div className="flex items-center gap-2">
-              <span className="dot-accent" aria-hidden />
-              <span className="font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">Dicto</span>
-              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] ml-3">© 2026</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[var(--fg-muted)]">
-              <Link to="/audio-v-tekst" className="hover:text-[var(--fg)] transition">Аудио в текст</Link>
-              <Link to="/video-v-tekst" className="hover:text-[var(--fg)] transition">Видео в текст</Link>
-              <Link to="/nejroset-transkribaciya" className="hover:text-[var(--fg)] transition">Нейросеть</Link>
-              <Link to="/rasshifrovka-golosovyh" className="hover:text-[var(--fg)] transition">Голосовые</Link>
-              <Link to="/blog" className="hover:text-[var(--fg)] transition">Блог</Link>
-              <Link to="/pricing" className="hover:text-[var(--fg)] transition">Тарифы</Link>
-            </div>
-          </div>
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-[11px] font-mono uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
-            <div className="flex flex-wrap gap-5">
-              <Link to="/privacy" className="hover:text-[var(--fg)] transition">Конфиденциальность</Link>
-              <Link to="/terms" className="hover:text-[var(--fg)] transition">Соглашение</Link>
-            </div>
-            <a href="mailto:support@dicto.pro" className="hover:text-[var(--fg)] transition normal-case tracking-normal font-sans text-[13px]">support@dicto.pro</a>
+      {/* ─── SEO-текст (ранжирование главной по ВЧ-запросам) ─── */}
+      <section className="py-20 md:py-24 bg-[var(--bg)] border-t border-[var(--border)]">
+        <FadeInOnScroll>
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="font-display text-3xl md:text-4xl leading-tight tracking-[-0.02em] text-[var(--fg)] mb-6">
+            Транскрибация и расшифровка аудио в текст онлайн
+          </h2>
+          <div className="space-y-4 text-[15px] text-[var(--fg-muted)] leading-[1.6]">
+            <p>
+              Dicto — сервис транскрибации: загрузите аудио или видео, и нейросеть переведёт
+              речь в текст за 2 минуты на час записи с точностью до 98% на русском языке.
+              Поддерживаются MP3, WAV, FLAC, OGG, M4A, MP4 и ещё несколько форматов, а также
+              ссылки на YouTube, VK Video и Rutube.
+            </p>
+            <p>
+              Расшифровка аудио в текст пригодится для протоколов совещаний, интервью, подкастов,
+              лекций и голосовых сообщений. Помимо самого текста с таймкодами вы получаете
+              разметку спикеров, AI-саммари, ключевые тезисы и action items, а также чат с записью
+              через RAG — можно задать вопрос и получить цитату с точным таймкодом.
+            </p>
+            <p>
+              Перевод аудио в текст начинается бесплатно: 180 минут при регистрации без банковской
+              карты. Файлы хранятся в России в соответствии с 152-ФЗ и удаляются автоматически.
+            </p>
           </div>
         </div>
-      </footer>
+        </FadeInOnScroll>
+      </section>
+
+      {/* ─── По теме (внутренняя перелинковка SEO) ─── */}
+      <section className="py-20 md:py-28 bg-[var(--bg-elevated)] border-t border-[var(--border)]">
+        <FadeInOnScroll>
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-12">
+            <p className="eyebrow mb-4">По теме</p>
+            <h2 className="font-display text-4xl md:text-6xl leading-[0.95] tracking-[-0.02em] text-[var(--fg)] max-w-[20ch]">
+              Транскрибация <em className="italic text-[var(--accent)]">под вашу задачу</em>
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
+            {SEO_CLUSTERS.map((cluster) => (
+              <nav key={cluster.title} aria-label={cluster.title}>
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-4">
+                  {cluster.title}
+                </p>
+                <ul className="space-y-2.5">
+                  {cluster.links.map((link) => (
+                    <li key={link.href}>
+                      <Link to={link.href} className="text-[14px] text-[var(--fg-muted)] hover:text-[var(--accent)] transition-colors">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
+          </div>
+        </div>
+        </FadeInOnScroll>
+      </section>
+
+      <SiteFooter />
 
       {/* Schema.org FAQPage */}
       <script
