@@ -3,6 +3,7 @@ import { getArticleBySlug, articles } from "./articles";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SoundToggle from "@/components/ui/SoundToggle";
 import Seo from "@/components/Seo";
+import SiteFooter from "@/components/SiteFooter";
 
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
@@ -286,22 +287,7 @@ export default function BlogArticle() {
         )}
       </article>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--border)] py-10">
-        <div className="max-w-7xl mx-auto px-5 md:px-8 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="dot-accent" aria-hidden />
-            <span className="font-display text-xl text-[var(--fg)] leading-none">Dicto</span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] ml-3">© 2026</span>
-          </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-[var(--fg-muted)]">
-            <Link to="/blog" className="hover:text-[var(--fg)] transition">Все статьи</Link>
-            <Link to="/pricing" className="hover:text-[var(--fg)] transition">Тарифы</Link>
-            <Link to="/register" className="hover:text-[var(--fg)] transition">Регистрация</Link>
-            <Link to="/privacy" className="hover:text-[var(--fg)] transition">Конфиденциальность</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       {/* Schema.org Article */}
       <script
