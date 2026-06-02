@@ -14,7 +14,7 @@ COPY . .
 RUN if [ "$BUILD_TARGET" = "admin" ]; then \
       npm run build:admin && cp -r dist-admin dist; \
     else \
-      npm run build:public && cp -r dist-public dist; \
+      npm run build; \
     fi
 
 # Stage 2: Serve static files
