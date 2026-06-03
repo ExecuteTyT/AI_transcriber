@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { paymentsApi, type SubscriptionInfo } from "@/api/payments";
+import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { ErrorState } from "@/components/states/ErrorState";
 import { fadeUp, staggerChildren } from "@/lib/motion";
@@ -55,6 +56,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
 export default function Subscription() {
   const navigate = useNavigate();
   const { play } = useSound();
+  const { user } = useAuthStore();
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
@@ -138,6 +140,10 @@ export default function Subscription() {
   const planFeatures = PLAN_FEATURES[sub.plan] || [];
   const isPopular = sub.plan === "pro";
   const low = usagePercent >= 80;
+  // Приветственный бонус (разовый, 180 мин при регистрации) живёт отдельно от
+  // месячного лимита тарифа и расходуется ПЕРВЫМ. Показываем его явной строкой,
+  // чтобы «0 / 600» на карточке не путало с реально доступным остатком.
+  const bonusMinutes = user?.bonus_minutes ?? 0;
 
   return (
     <motion.div
@@ -264,6 +270,31 @@ export default function Subscription() {
                   )}
                 />
               </div>
+            </div>
+          )}
+
+          {/* Бонусные минуты — отдельный кошелёк поверх тарифа, тратится первым. */}
+          {bonusMinutes > 0 && (
+            <div
+              className={cn(
+                "mt-4 flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-[12px] leading-[1.4]",
+                isPopular
+                  ? "bg-[var(--highlight-accent)]/10 text-[var(--highlight-fg-muted)]"
+                  : "bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] text-[var(--fg-muted)]"
+              )}
+            >
+              <Icon
+                icon={Check}
+                size={13}
+                strokeWidth={2}
+                className={cn("flex-shrink-0", isPopular ? "text-[var(--highlight-accent)]" : "text-[var(--accent)]")}
+              />
+              <span>
+                <span className={cn("font-semibold", isPopular ? "text-[var(--highlight-fg)]" : "text-[var(--fg)]")}>
+                  +{bonusMinutes} бонусных минут
+                </span>{" "}
+                на счету сверх тарифа — расходуются первыми.
+              </span>
             </div>
           )}
 
