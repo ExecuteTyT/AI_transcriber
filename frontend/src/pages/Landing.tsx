@@ -263,12 +263,14 @@ export default function Landing() {
             Транскрибация · AI-саммари · RAG-чат
           </p>
 
-          {/* Editorial H1 — левоприжатый, serif с italic акцентом */}
-          <h1 className="display-h1 text-[var(--fg)] max-w-[18ch] mb-8 md:mb-10 animate-fade-up" style={{ animationDelay: "0.05s" }}>
+          {/* Editorial H1 — левоприжатый, serif с italic акцентом.
+              Без entrance-анимации: это LCP-элемент, fade-in от opacity:0
+              откладывал засчёт LCP (особенно на медленном CPU). Рисуется сразу. */}
+          <h1 className="display-h1 text-[var(--fg)] max-w-[18ch] mb-8 md:mb-10">
             От записи к <em>готовому тексту</em> за две минуты.
           </h1>
 
-          <p className="font-sans text-lg md:text-xl text-[var(--fg-muted)] max-w-[48ch] leading-[1.55] mb-10 md:mb-12 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+          <p className="font-sans text-lg md:text-xl text-[var(--fg-muted)] max-w-[48ch] leading-[1.55] mb-10 md:mb-12">
             Говорите&nbsp;— мы расшифруем. Текст с таймкодами, разметка спикеров, AI‑саммари и ключевые выводы&nbsp;— в один клик.
           </p>
 
