@@ -23,6 +23,7 @@ interface AdminUser {
   plan: string;
   minutes_used: number;
   minutes_limit: number;
+  bonus_minutes: number;
   is_admin: boolean;
   is_unlimited: boolean;
   created_at: string;
@@ -347,6 +348,9 @@ export default function Admin() {
                         ) : (
                           <span className="text-[var(--fg-muted)] tabular-nums">
                             {u.minutes_used} / {u.minutes_limit} мин
+                            {u.bonus_minutes > 0 && (
+                              <span className="text-[var(--accent)]"> · +{u.bonus_minutes} бонус</span>
+                            )}
                           </span>
                         )}
                       </td>

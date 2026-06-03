@@ -33,6 +33,10 @@ class AdminUserResponse(BaseModel):
     plan: str
     minutes_used: int
     minutes_limit: int
+    # Welcome-бонус (180 мин при регистрации). У free-юзеров расход списывается
+    # СНАЧАЛА отсюда, и только после исчерпания растёт minutes_used — поэтому без
+    # этого поля админка показывала «0 / 0» даже у активно расходующих free.
+    bonus_minutes: int = 0
     is_admin: bool
     is_unlimited: bool
     is_email_verified: bool
@@ -173,6 +177,7 @@ async def list_users(
             "plan": u.plan,
             "minutes_used": u.minutes_used,
             "minutes_limit": u.minutes_limit,
+            "bonus_minutes": u.bonus_minutes,
             "is_admin": u.is_admin,
             "is_unlimited": u.is_unlimited,
             "is_email_verified": u.is_email_verified,
@@ -202,6 +207,7 @@ async def get_user(
     return AdminUserResponse(
         id=user.id, email=user.email, name=user.name, plan=user.plan,
         minutes_used=user.minutes_used, minutes_limit=user.minutes_limit,
+        bonus_minutes=user.bonus_minutes,
         is_admin=user.is_admin, is_unlimited=user.is_unlimited,
         is_email_verified=user.is_email_verified,
         created_at=user.created_at, transcription_count=t_count,
