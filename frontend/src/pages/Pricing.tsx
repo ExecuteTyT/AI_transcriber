@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Seo from "@/components/Seo";
 import SiteHeader from "@/components/SiteHeader";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import {
   Check,
   ChevronDown,
@@ -339,18 +340,23 @@ export default function Pricing() {
       };
       const status = axiosErr.response?.status;
       const detail = axiosErr.response?.data?.detail;
+      let msg: string;
       if (status === 401 || status === 403) {
         // Сессия истекла прямо во время оформления — даём явное сообщение
         // и сохраняем намерение, чтобы вернуть юзера обратно после re-login.
         sessionStorage.setItem("pending_subscribe_plan", planId);
-        setError("Сессия истекла. Войдите снова — мы вернём вас сюда.");
+        msg = "Сессия истекла. Войдите снова — мы вернём вас сюда.";
       } else if (status === 502 || status === 503) {
-        setError("Платёжный сервис временно недоступен. Попробуйте позже.");
+        msg = "Платёжный сервис временно недоступен. Попробуйте позже.";
       } else if (status === 500) {
-        setError("Ошибка сервера. Попробуйте позже.");
+        msg = "Ошибка сервера. Попробуйте позже.";
       } else {
-        setError(detail || axiosErr.message || "Ошибка создания платежа");
+        msg = detail || axiosErr.message || "Ошибка создания платежа";
       }
+      setError(msg);
+      // Toast — чтобы фидбек был у места клика: баннер ErrorState рисуется вверху
+      // страницы и на мобиле часто за пределами экрана («ничего не произошло»).
+      toast.error(msg);
     } finally {
       setLoading(null);
     }

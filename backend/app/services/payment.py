@@ -97,7 +97,7 @@ async def create_payment(user_id: uuid.UUID, plan: str) -> dict:
     import httpx
 
     if plan not in PLAN_PRICES:
-        raise ValueError(f"Недопустимый план: {plan}. Допустимые: start, pro")
+        raise ValueError(f"Недопустимый план: {plan}. Допустимые: {', '.join(PLAN_PRICES)}")
 
     idempotency_key = str(uuid.uuid4())
 

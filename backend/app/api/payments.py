@@ -38,10 +38,13 @@ async def subscribe(
     db: AsyncSession = Depends(get_db),
 ):
     """Создание платежа для подписки через ЮKassa."""
-    if req.plan not in ("start", "pro"):
+    # Источник истины — PLAN_PRICES (все платные тарифы: start, pro, expert,
+    # premium). Раньше тут был жёстко зашит ("start", "pro"), из-за чего клик
+    # по Эксперт/Премиум на /pricing возвращал 400 и оплата не открывалась.
+    if req.plan not in PLAN_PRICES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Допустимые планы: start, pro",
+            detail=f"Допустимые планы: {', '.join(PLAN_PRICES)}",
         )
 
     if user.plan == req.plan:
