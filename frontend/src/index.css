@@ -76,6 +76,8 @@
   /* Границы */
   --border: rgba(247, 243, 236, 0.08);
   --border-strong: rgba(247, 243, 236, 0.18);
+  /* Текст ошибок: светло-красный, читаемый на тёмном bg-red-500/10. */
+  --error-fg: #fca5a5;
   color-scheme: dark;
 }
 
@@ -106,6 +108,8 @@
   --highlight-accent-fg: #0b0805;
   --border: rgba(11, 8, 5, 0.12);
   --border-strong: rgba(11, 8, 5, 0.24);
+  /* Текст ошибок: тёмно-красный, читаемый на светлом bg-red-500/10. */
+  --error-fg: #b91c1c;
   color-scheme: light;
 }
 

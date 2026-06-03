@@ -95,7 +95,7 @@ export default function ResetPassword() {
       }
     >
       {error && (
-        <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-[13px] text-red-200">
+        <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-[13px] text-[var(--error-fg)]">
           {error}
         </div>
       )}
