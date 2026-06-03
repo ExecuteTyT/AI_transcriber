@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
-import ThemeToggle from "@/components/ui/ThemeToggle";
-import SoundToggle from "@/components/ui/SoundToggle";
+import SiteHeader from "@/components/SiteHeader";
 
 interface Props {
   /** Eyebrow строкой над заголовком, mono-uppercase. */
@@ -24,22 +23,8 @@ interface Props {
 export default function AuthLayout({ eyebrow, title, subtitle, children, footer }: Props) {
   return (
     <div className="min-h-dvh bg-[var(--bg)] text-[var(--fg)] flex flex-col">
-      {/* Top bar */}
-      <header
-        className="border-b border-[var(--border)]"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 md:px-8">
-          <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
-            <span className="dot-accent" aria-hidden />
-            Dicto
-          </Link>
-          <div className="flex items-center gap-1.5">
-            <SoundToggle />
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+      {/* Единая шапка (как на остальных страницах) */}
+      <SiteHeader />
 
       {/* Main */}
       <main className="flex-1 flex items-start md:items-center justify-center px-5 md:px-8 py-10 md:py-16">

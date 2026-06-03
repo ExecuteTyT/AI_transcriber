@@ -25,6 +25,10 @@ describe("Register page", () => {
 
   it("renders login link", () => {
     renderRegister();
-    expect(screen.getByRole("link", { name: "Войти" })).toBeInTheDocument();
+    // На странице несколько ссылок «Войти» (в общей шапке SiteHeader и в футере
+    // формы) — обе ведут на /login. Достаточно, что хотя бы одна присутствует.
+    const loginLinks = screen.getAllByRole("link", { name: "Войти" });
+    expect(loginLinks.length).toBeGreaterThan(0);
+    expect(loginLinks.every((a) => a.getAttribute("href") === "/login")).toBe(true);
   });
 });
