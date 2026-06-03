@@ -4,7 +4,7 @@ import secrets
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy import select
@@ -393,6 +393,7 @@ async def change_password(
 async def request_password_reset(
     request: Request,
     data: RequestPasswordResetRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """Запрос на сброс пароля — отправляет ссылку на email."""
@@ -409,18 +410,21 @@ async def request_password_reset(
         )
         await db.commit()
 
-        # Fire-and-forget чтобы не держать клиента в ожидании SMTP-ответа.
-        import asyncio as _asyncio
-
-        async def _send_reset_background(email: str, _token: str):
-            try:
-                await send_password_reset_email(email, _token)
-            except Exception:
-                logger.warning("Password reset email failed for %s (background)", email)
-
-        _asyncio.create_task(_send_reset_background(user.email, token))
+        # FastAPI BackgroundTasks: задача гарантированно выполняется ПОСЛЕ ответа
+        # и удерживается фреймворком до завершения. Раньше был «голый»
+        # asyncio.create_task без сохранения ссылки — такую задачу мог собрать
+        # GC до завершения, и письмо для реального аккаунта иногда не уходило.
+        background_tasks.add_task(_send_reset_email_safe, user.email, token)
 
     return MessageResponse(message="Если аккаунт существует, мы отправили ссылку для сброса пароля")
+
+
+async def _send_reset_email_safe(email: str, token: str) -> None:
+    """Отправка письма сброса с проглатыванием ошибок (не валит фон-задачу)."""
+    try:
+        await send_password_reset_email(email, token)
+    except Exception:
+        logger.warning("Password reset email failed for %s (background)", email)
 
 
 @router.post("/reset-password", response_model=MessageResponse)
