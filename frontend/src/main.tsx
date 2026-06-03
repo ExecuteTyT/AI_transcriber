@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -6,6 +6,29 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/lib/theme";
 import { SoundProvider } from "@/lib/sound";
 import "./index.css";
+
+/**
+ * Toaster (sonner) — client-only виджет. На SSR (entry-server) он не рендерится,
+ * поэтому на первом клиентском рендере (момент гидратации) его тоже не должно
+ * быть: иначе в гидрируемом дереве появляется лишний хвостовой компонент,
+ * которого нет в серверном HTML → рассинхрон гидратации (React #418/#423),
+ * из-за которого React выбрасывает весь пре-рендеренный HTML и перерисовывает
+ * страницу на клиенте (медленный FCP/LCP). Рендерим Toaster уже после mount.
+ */
+function DeferredToaster() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return (
+    <Toaster
+      position="top-center"
+      richColors
+      closeButton
+      offset="calc(16px + env(safe-area-inset-top))"
+      toastOptions={{ className: "!font-sans" }}
+    />
+  );
+}
 
 // Build target. Управляется через VITE_BUILD_TARGET во время сборки:
 //   - "public" (default): полный сайт dicto.pro без админки.
@@ -28,13 +51,7 @@ async function bootstrap() {
           <SoundProvider>
             <BrowserRouter>
               <RootApp />
-              <Toaster
-                position="top-center"
-                richColors
-                closeButton
-                offset="calc(16px + env(safe-area-inset-top))"
-                toastOptions={{ className: "!font-sans" }}
-              />
+              <DeferredToaster />
             </BrowserRouter>
           </SoundProvider>
         </ThemeProvider>
