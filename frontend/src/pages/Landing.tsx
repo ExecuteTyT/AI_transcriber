@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from "react";
+import { useState, useEffect, useRef, lazy, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import Seo from "@/components/Seo";
 import SiteHeader from "@/components/SiteHeader";
+import ClientOnly from "@/components/ClientOnly";
 import { scrollToSection } from "@/lib/scrollToSection";
 import SiteFooter from "@/components/SiteFooter";
 import { SEO_CLUSTERS } from "@/config/seoLinks";
@@ -9,8 +10,9 @@ import HeroWaveform from "@/components/HeroWaveform";
 import { useSound } from "@/lib/sound";
 import { useMagnetic } from "@/hooks/useMagnetic";
 
-// Heavy client-only компоненты — lazy. В SSR они не рендерятся (Suspense fallback null),
-// значит их JS не грузится в main bundle — только когда юзер реально докрутит до них.
+// Heavy client-only компоненты — lazy + рендерятся через <ClientOnly> (после mount).
+// На SSR отдаётся fallback-плейсхолдер (без Suspense-границы → без React #419),
+// а JS виджета грузится только на клиенте.
 const HeroLiveDemo = lazy(() => import("@/components/HeroLiveDemo"));
 const MicDemoButton = lazy(() => import("@/components/MicDemoButton"));
 const LiveInsightsSection = lazy(() => import("@/components/landing/LiveInsightsSection"));
@@ -291,17 +293,17 @@ export default function Landing() {
 
           {/* Mic demo — signature interactive moment */}
           <div className="mt-10 md:mt-12 animate-fade-up" style={{ animationDelay: "0.25s" }}>
-            <Suspense fallback={<div className="h-8" />}>
+            <ClientOnly fallback={<div className="h-8" />}>
               <MicDemoButton />
-            </Suspense>
+            </ClientOnly>
           </div>
         </div>
 
         {/* Live transcription demo */}
         <div id="demo">
-          <Suspense fallback={<div className="h-[420px]" aria-hidden />}>
+          <ClientOnly fallback={<div className="h-[420px]" aria-hidden />}>
             <HeroLiveDemo />
-          </Suspense>
+          </ClientOnly>
         </div>
       </section>
 
@@ -393,9 +395,9 @@ export default function Landing() {
       </section>
 
       {/* ─── Live insights scroll-section ─── */}
-      <Suspense fallback={<div className="h-[600px]" aria-hidden />}>
+      <ClientOnly fallback={<div className="h-[600px]" aria-hidden />}>
         <LiveInsightsSection />
-      </Suspense>
+      </ClientOnly>
 
       {/* ─── Use cases (editorial cards on ink) ─── */}
       <section id="use-cases" className="py-24 md:py-32 bg-[var(--bg-elevated)] border-t border-[var(--border)]">
