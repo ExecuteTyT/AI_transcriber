@@ -8,7 +8,6 @@ import SiteFooter from "@/components/SiteFooter";
 import { SEO_CLUSTERS } from "@/config/seoLinks";
 import HeroWaveform from "@/components/HeroWaveform";
 import { useSound } from "@/lib/sound";
-import { useMagnetic } from "@/hooks/useMagnetic";
 
 // Heavy client-only компоненты — lazy + рендерятся через <ClientOnly> (после mount).
 // На SSR отдаётся fallback-плейсхолдер (без Suspense-границы → без React #419),
@@ -213,8 +212,6 @@ function FadeInOnScroll({ children, className = "" }: { children: ReactNode; cla
 
 export default function Landing() {
   const { play } = useSound();
-  const heroCtaRef = useMagnetic<HTMLAnchorElement>({ radius: 110, strength: 0.32 });
-  const finalCtaRef = useMagnetic<HTMLAnchorElement>({ radius: 110, strength: 0.32 });
 
   // Если зашли по deep-link с хешем (dicto.pro/#pricing) — скроллим к секции
   // программно после mount, затем убираем хеш из URL через replaceState.
@@ -281,10 +278,9 @@ export default function Landing() {
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 animate-fade-up" style={{ animationDelay: "0.15s" }}>
             <Link
-              ref={heroCtaRef}
               to="/register"
               onClick={() => play("confirm")}
-              className="btn-accent w-full sm:w-auto will-change-transform"
+              className="btn-accent w-full sm:w-auto"
             >
               Начать бесплатно
               <span aria-hidden>→</span>
@@ -564,10 +560,9 @@ export default function Landing() {
             Зарегистрируйтесь бесплатно — 180 минут на тест без карты, и попробуйте на своей записи.
           </p>
           <Link
-            ref={finalCtaRef}
             to="/register"
             onClick={() => play("confirm")}
-            className="btn-accent !py-4 !px-8 !text-[16px] will-change-transform"
+            className="btn-accent !py-4 !px-8 !text-[16px]"
           >
             Попробовать бесплатно
             <span aria-hidden>→</span>

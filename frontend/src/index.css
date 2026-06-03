@@ -124,6 +124,16 @@
     color: var(--fg);
     transition: background-color 280ms ease, color 280ms ease;
   }
+  /* Во время переключения темы временно глушим CSS-transition на ВСЕХ элементах.
+     Иначе color/background, завязанные на var(--fg)/var(--bg), анимируются между
+     темами и проезжают через грязный промежуточный цвет (особенно заметно на
+     крупном тексте мобильного меню). Атрибут ставится/снимается на один кадр в
+     lib/theme.tsx::applyThemeToDocument. */
+  [data-theme-switching] *,
+  [data-theme-switching] *::before,
+  [data-theme-switching] *::after {
+    transition: none !important;
+  }
   /* Prevent iOS auto-zoom on input focus */
   input, select, textarea {
     font-size: 16px;

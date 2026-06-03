@@ -14,10 +14,17 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function applyThemeToDocument(theme: Theme) {
   const root = document.documentElement;
+  // Глушим transition на момент смены темы (см. правило [data-theme-switching]
+  // в index.css), иначе элементы анимируют смену var(--fg)/var(--bg) через
+  // промежуточный цвет. Снимаем через два кадра, когда новые цвета уже применены.
+  root.setAttribute("data-theme-switching", "");
   root.dataset.theme = theme;
   // Обновляем цвет системного UI (адрес-бар на мобиле).
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute("content", theme === "dark" ? "#0b0805" : "#faf7f2");
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => root.removeAttribute("data-theme-switching"));
+  });
 }
 
 function readStoredTheme(): Theme {

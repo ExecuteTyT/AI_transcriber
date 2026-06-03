@@ -131,6 +131,20 @@ export default function SiteHeader({ overlay = false }: SiteHeaderProps) {
           style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
         >
           <div className="absolute inset-0 bg-[var(--bg)]/95 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)} />
+          {/* Крестик закрытия живёт внутри оверлея: кнопка в шапке (z-50) перекрыта
+              самим оверлеем (z-[60]) и недоступна для нажатия. */}
+          <button
+            type="button"
+            onClick={() => {
+              play("tick");
+              setMobileMenuOpen(false);
+            }}
+            aria-label="Закрыть меню"
+            className="absolute top-4 right-4 z-10 p-3 rounded-xl text-[var(--fg)] hover:bg-[var(--bg-muted)] transition touch-target"
+            style={{ top: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+          >
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
           <nav className="relative flex flex-col items-center justify-center h-full gap-6 font-display text-2xl text-[var(--fg)]">
             {NAV_SECTIONS.map((s) => renderSection(s.id, s.label, true))}
             <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Тарифы</Link>
