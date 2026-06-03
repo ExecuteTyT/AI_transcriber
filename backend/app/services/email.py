@@ -274,7 +274,7 @@ async def send_consent_confirmation_email(
         )
         + _p(
             f'<span style="color:{_FG_SUBTLE};">По вопросам защиты данных пишите на '
-            f'<a href="mailto:privacy@dicto.pro" style="color:{_FG};text-decoration:underline;text-decoration-color:{_BORDER};">privacy@dicto.pro</a> '
+            f'<a href="mailto:info@dicto.pro" style="color:{_FG};text-decoration:underline;text-decoration-color:{_BORDER};">info@dicto.pro</a> '
             "— ответим в течение 10 рабочих дней.</span>"
         )
     )
@@ -288,7 +288,7 @@ async def send_consent_confirmation_email(
         + (f"• Получение рассылки — {today}\n" if consent_marketing else "")
         + f"\nПолитика конфиденциальности: {settings.APP_URL}/privacy\n"
         f"Управление согласиями: {settings.APP_URL}/profile\n"
-        f"Защита данных: privacy@dicto.pro"
+        f"Защита данных: info@dicto.pro"
     )
     return await send_email(to_email, subject, _wrap_html(content, "Подтверждение согласий"), text)
 

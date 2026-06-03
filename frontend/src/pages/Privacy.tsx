@@ -181,8 +181,8 @@ export default function Privacy() {
             </ul>
             <p>
               Обращения направляйте на{" "}
-              <a href="mailto:privacy@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
-                privacy@dicto.pro
+              <a href="mailto:info@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
+                info@dicto.pro
               </a>
               . Срок ответа — не позднее 10 рабочих дней.
             </p>
@@ -206,8 +206,8 @@ export default function Privacy() {
               в личном кабинете. Полное удаление с серверов происходит в течение 24 часов
               после запроса. Резервные копии стираются в течение 30 дней. По всем вопросам
               удаления — пишите на{" "}
-              <a href="mailto:privacy@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
-                privacy@dicto.pro
+              <a href="mailto:info@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
+                info@dicto.pro
               </a>.
             </p>
 
@@ -217,8 +217,8 @@ export default function Privacy() {
               ИНН: <span className="font-mono text-[13px] text-[var(--fg)]">165110340786</span><br />
               ОГРНИП: <span className="font-mono text-[13px] text-[var(--fg)]">326169000103722</span> (присвоен 27.04.2026)<br />
               Email для запросов по ПДн:{" "}
-              <a href="mailto:privacy@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
-                privacy@dicto.pro
+              <a href="mailto:info@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
+                info@dicto.pro
               </a>
               <br />
               Срок ответа на обращения — не позднее 10 рабочих дней.
