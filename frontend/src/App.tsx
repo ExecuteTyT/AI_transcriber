@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "@/components/Layout";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // ─── Eager imports ───
 // Эти страницы пре-рендерятся через scripts/prerender.ts для SEO — их HTML должен
@@ -123,6 +124,7 @@ export default function App() {
 
   return (
     <Suspense fallback={<RouteLoader />}>
+      <ScrollToTop />
       <Routes>
         {/* Public pages (eager, prerendered) */}
         <Route path="/" element={<HomePage />} />
