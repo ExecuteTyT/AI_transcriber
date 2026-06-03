@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -75,6 +75,7 @@ const TABS: { key: Tab; label: string; proOnly?: boolean }[] = [
 
 export default function Transcription() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const userPlan = useAuthStore((s) => s.user?.plan);
   const actionItemsLocked = userPlan === "free" || userPlan === "start";
 
@@ -541,8 +542,18 @@ export default function Transcription() {
       a.click();
       URL.revokeObjectURL(url);
       toast.success(`Файл ${format.toUpperCase()} скачан`);
-    } catch {
-      toast.error("Не удалось скачать файл");
+    } catch (err) {
+      // 403 — формат доступен только на платных тарифах (free: TXT/SRT).
+      // Показываем понятное сообщение с переходом на тарифы, а не «ошибку».
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 403) {
+        toast.error(`${format.toUpperCase()} доступен на платных тарифах`, {
+          description: "Бесплатно — TXT и SRT. DOCX откроется на любом платном тарифе.",
+          action: { label: "Тарифы", onClick: () => navigate("/app/pricing") },
+        });
+      } else {
+        toast.error("Не удалось скачать файл");
+      }
     }
   };
 
