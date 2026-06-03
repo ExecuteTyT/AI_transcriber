@@ -12,8 +12,11 @@ def export_txt(transcription: Transcription) -> str:
     return transcription.full_text or ""
 
 
-def _format_srt_time(seconds: float) -> str:
+def _format_srt_time(seconds: float | None) -> str:
     """Форматирование секунд в SRT-формат (HH:MM:SS,mmm)."""
+    # Сегмент может прийти без тайминга (start/end = None) — трактуем как 0,
+    # иначе `None // 3600` роняет весь экспорт (500 при скачивании SRT/DOCX).
+    seconds = seconds or 0.0
     h = int(seconds // 3600)
     m = int((seconds % 3600) // 60)
     s = int(seconds % 60)
@@ -21,8 +24,9 @@ def _format_srt_time(seconds: float) -> str:
     return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
 
 
-def _format_time_short(seconds: float) -> str:
+def _format_time_short(seconds: float | None) -> str:
     """Форматирование секунд в короткий формат (MM:SS)."""
+    seconds = seconds or 0.0  # None-тайминг → 0 (см. _format_srt_time)
     m = int(seconds // 60)
     s = int(seconds % 60)
     return f"{m:02d}:{s:02d}"
