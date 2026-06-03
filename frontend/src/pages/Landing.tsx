@@ -254,7 +254,12 @@ export default function Landing() {
       {/* ─── Hero (editorial dark) ─── */}
       <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 bg-[var(--bg)]">
 
-        <HeroWaveform />
+        {/* Декоративный ambient-фон (blur-блобы + анимации) — дорогой paint.
+            Рендерим после mount, чтобы не блокировать первую отрисовку hero
+            (LCP/FCP считаются до него). aria-hidden, SEO/UX не страдают. */}
+        <ClientOnly fallback={null}>
+          <HeroWaveform />
+        </ClientOnly>
 
         <div className="relative max-w-6xl mx-auto px-6">
           {/* Eyebrow */}

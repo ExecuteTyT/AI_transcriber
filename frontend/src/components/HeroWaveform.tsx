@@ -43,10 +43,13 @@ export default function HeroWaveform() {
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
 
       {/* ─── Ambient glow blobs ─── */}
-      <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-primary-500/12 rounded-full blur-[120px]" />
-      <div className="absolute top-[20%] left-[25%] -translate-x-1/2 w-[300px] h-[250px] bg-violet-500/8 rounded-full blur-[80px]" />
-      <div className="absolute top-[20%] left-[75%] -translate-x-1/2 w-[300px] h-[250px] bg-accent-500/6 rounded-full blur-[80px]" />
-      <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary-600/10 rounded-full blur-[100px]" />
+      {/* Радиусы размытия снижены (было 120/80/100px): blur такого радиуса —
+          самая дорогая растеризация для GPU. 48-64px визуально почти идентично,
+          но в разы дешевле по paint/composite (важно на слабых мобильных). */}
+      <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-primary-500/12 rounded-full blur-[64px]" />
+      <div className="absolute top-[20%] left-[25%] -translate-x-1/2 w-[300px] h-[250px] bg-violet-500/8 rounded-full blur-[48px]" />
+      <div className="absolute top-[20%] left-[75%] -translate-x-1/2 w-[300px] h-[250px] bg-accent-500/6 rounded-full blur-[48px]" />
+      <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary-600/10 rounded-full blur-[64px]" />
 
       {/* ─── Upper sine waves — behind title area (subtle) ─── */}
       <svg className="absolute top-0 left-0 w-full h-[40%]" viewBox="0 0 1200 300" preserveAspectRatio="none">
