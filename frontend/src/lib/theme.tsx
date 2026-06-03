@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 export type Theme = "dark" | "light";
 
@@ -28,17 +28,41 @@ function readStoredTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(readStoredTheme);
+  // Первый рендер ВСЕГДА "dark" — это SSR-дефолт, совпадающий с пре-рендеренным
+  // HTML. Если читать localStorage прямо в useState, клиент с сохранённой "light"
+  // отрендерит тогглы темы иначе, чем серверный HTML → рассинхрон гидратации
+  // (React error #418/#423, перерисовка поддерева). Сохранённую тему применяем
+  // уже ПОСЛЕ гидратации, в эффекте.
+  const [theme, setTheme] = useState<Theme>("dark");
 
+  // Адаптируем сохранённую тему после монтирования (это уже клиент, без SSR).
   useEffect(() => {
+    setTheme(readStoredTheme());
+  }, []);
+
+  // Применяем тему к документу при изменении. На самом первом проходе НЕ трогаем
+  // DOM: data-theme уже выставлен инлайн-скриптом в <head> до краски, иначе
+  // мигнём дефолтом перед adoption-эффектом.
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
     applyThemeToDocument(theme);
-    window.localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
+
+  // Запись в localStorage — только по действию пользователя (не в эффекте на
+  // [theme]), чтобы initial-дефолт не затирал сохранённое значение.
+  const persist = (t: Theme) => {
+    window.localStorage.setItem(STORAGE_KEY, t);
+    setTheme(t);
+  };
 
   const value: ThemeContextValue = {
     theme,
-    toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")),
-    set: setTheme,
+    toggle: () => persist(theme === "dark" ? "light" : "dark"),
+    set: persist,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

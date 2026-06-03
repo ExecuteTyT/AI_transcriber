@@ -25,9 +25,18 @@ function readStored(): boolean {
  * Отключаются при prefers-reduced-motion или ручным toggle.
  */
 export function SoundProvider({ children }: { children: ReactNode }) {
-  const [enabled, setEnabled] = useState<boolean>(readStored);
+  // Первый рендер = SSR-дефолт (true), совпадает с пре-рендеренным HTML.
+  // Сохранённое значение читаем ПОСЛЕ гидратации — иначе клиент с "off"
+  // отрендерит SoundToggle иначе, чем серверный HTML → рассинхрон гидратации
+  // (React error #418/#423).
+  const [enabled, setEnabled] = useState<boolean>(true);
   const ctxRef = useRef<AudioContext | null>(null);
   const reducedMotionRef = useRef<boolean>(false);
+
+  // Адаптируем сохранённое значение после монтирования.
+  useEffect(() => {
+    setEnabled(readStored());
+  }, []);
 
   useEffect(() => {
     reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -36,10 +45,6 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     mql.addEventListener?.("change", handler);
     return () => mql.removeEventListener?.("change", handler);
   }, []);
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, enabled ? "on" : "off");
-  }, [enabled]);
 
   const getCtx = useCallback((): AudioContext | null => {
     if (typeof window === "undefined") return null;
@@ -85,12 +90,19 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     osc.stop(now + p.dur + 0.02);
   }, [enabled, getCtx]);
 
+  // Запись в localStorage — только по действию пользователя (не в эффекте на
+  // [enabled]), чтобы initial-дефолт не затирал сохранённое значение до adoption.
+  const persist = useCallback((v: boolean) => {
+    window.localStorage.setItem(STORAGE_KEY, v ? "on" : "off");
+    setEnabled(v);
+  }, []);
+
   const value: SoundContextValue = useMemo(() => ({
     enabled,
-    toggle: () => setEnabled((v) => !v),
-    set: setEnabled,
+    toggle: () => persist(!enabled),
+    set: persist,
     play,
-  }), [enabled, play]);
+  }), [enabled, persist, play]);
 
   return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;
 }

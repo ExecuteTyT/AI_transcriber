@@ -50,15 +50,23 @@
     <!-- Fonts: Instrument Serif (display) + Inter (body) + JetBrains Mono (timestamps) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Шрифты грузим НЕ блокируя отрисовку: rel=preload + onload→stylesheet.
+         Без этого внешний fonts.googleapis.com (медленный/нестабильный из РФ)
+         задерживал FCP/LCP на ~1.5 с. Fallback-шрифты с size-adjust (Arial/
+         Georgia, см. index.css) рисуются мгновенно и без CLS, веб-шрифт
+         подменяется по готовности. -->
     <link
       rel="preload"
       as="style"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
-    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+      />
+    </noscript>
 
     <!-- Robots -->
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
