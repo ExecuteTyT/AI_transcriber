@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import Seo from "@/components/Seo";
+import SiteHeader from "@/components/SiteHeader";
+import { scrollToSection } from "@/lib/scrollToSection";
 import SiteFooter from "@/components/SiteFooter";
 import { SEO_CLUSTERS } from "@/config/seoLinks";
 import HeroWaveform from "@/components/HeroWaveform";
-import ThemeToggle from "@/components/ui/ThemeToggle";
-import SoundToggle from "@/components/ui/SoundToggle";
 import { useSound } from "@/lib/sound";
 import { useMagnetic } from "@/hooks/useMagnetic";
 
@@ -210,42 +210,9 @@ function FadeInOnScroll({ children, className = "" }: { children: ReactNode; cla
 }
 
 export default function Landing() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const { play } = useSound();
   const heroCtaRef = useMagnetic<HTMLAnchorElement>({ radius: 110, strength: 0.32 });
   const finalCtaRef = useMagnetic<HTMLAnchorElement>({ radius: 110, strength: 0.32 });
-
-  useEffect(() => {
-    let ticking = false;
-    let prev = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const next = window.scrollY > 60;
-        if (next !== prev) {
-          prev = next;
-          setScrolled(next);
-        }
-        ticking = false;
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Программный скролл к секции с компенсацией высоты fixed header (64px + safe-area).
-  // Используем вместо <a href="#..."> чтобы:
-  //   1) URL не засоряется хешем (#pricing в адресной строке выглядит "битым")
-  //   2) Fixed-header не перекрывает первые ~64px секции
-  //   3) Скролл всегда плавный (без зависимости от prefers-reduced-motion)
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - 72;
-    window.scrollTo({ top, behavior: "smooth" });
-  };
 
   // Если зашли по deep-link с хешем (dicto.pro/#pricing) — скроллим к секции
   // программно после mount, затем убираем хеш из URL через replaceState.
@@ -280,77 +247,7 @@ export default function Landing() {
         }}
       />
 
-      {/* ─── Header (dark-first, editorial) ─── */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${scrolled ? "bg-[var(--bg)]/80 backdrop-blur-2xl border-b border-[var(--border)]" : "bg-transparent border-b border-transparent"}`}
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
-            <span className="dot-accent" aria-hidden />
-            Dicto
-          </Link>
-          <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[var(--fg-muted)]">
-            <button type="button" onMouseEnter={() => play("focus")} onClick={() => scrollToSection("features")} className="hover:text-[var(--fg)] transition-colors">Возможности</button>
-            <button type="button" onMouseEnter={() => play("focus")} onClick={() => scrollToSection("use-cases")} className="hover:text-[var(--fg)] transition-colors">Кому</button>
-            <Link to="/pricing" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Тарифы</Link>
-            <Link to="/blog" onMouseEnter={() => play("focus")} className="hover:text-[var(--fg)] transition-colors">Блог</Link>
-          </nav>
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-1.5">
-              <SoundToggle />
-              <ThemeToggle />
-            </div>
-            <Link to="/login" onClick={() => play("tick")} className="text-[13px] px-3 py-2 rounded-full font-medium text-[var(--fg-muted)] hover:text-[var(--fg)] hidden sm:inline-flex transition-colors">
-              Войти
-            </Link>
-            <Link to="/register" onClick={() => play("confirm")} className="btn-accent hidden sm:inline-flex !py-2.5 !px-5 !text-[13px]">
-              Попробовать
-            </Link>
-            <button
-              onClick={() => {
-                play("tick");
-                setMobileMenuOpen((v) => !v);
-              }}
-              className="md:hidden p-3 rounded-xl transition touch-target hover:bg-[var(--bg-muted)]"
-              aria-label={mobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
-            >
-              {mobileMenuOpen ? (
-                <svg className="w-6 h-6 text-[var(--fg)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-              ) : (
-                <svg className="w-6 h-6 text-[var(--fg)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* ─── Mobile Menu ─── */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-[60] md:hidden"
-          style={{
-            paddingTop: "env(safe-area-inset-top)",
-            paddingBottom: "env(safe-area-inset-bottom)",
-          }}
-        >
-          <div className="absolute inset-0 bg-[var(--bg)]/95 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)} />
-          <nav className="relative flex flex-col items-center justify-center h-full gap-6 font-display text-2xl text-[var(--fg)]">
-            <button type="button" onClick={() => { setMobileMenuOpen(false); scrollToSection("features"); }} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Возможности</button>
-            <button type="button" onClick={() => { setMobileMenuOpen(false); scrollToSection("use-cases"); }} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Кому</button>
-            <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Тарифы</Link>
-            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition py-2 px-4 touch-target">Блог</Link>
-            <div className="mt-4 flex items-center gap-3">
-              <SoundToggle />
-              <ThemeToggle />
-            </div>
-            <div className="flex flex-col gap-3 mt-2 w-64">
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="px-8 py-3.5 rounded-full border border-[var(--border-strong)] text-center text-[var(--fg)] hover:bg-[var(--bg-muted)] transition font-sans text-[15px]">Войти</Link>
-              <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="btn-accent justify-center text-center">Попробовать</Link>
-            </div>
-          </nav>
-        </div>
-      )}
+      <SiteHeader overlay />
 
       {/* ─── Hero (editorial dark) ─── */}
       <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 bg-[var(--bg)]">
