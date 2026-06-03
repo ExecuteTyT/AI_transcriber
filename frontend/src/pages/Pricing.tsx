@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Seo from "@/components/Seo";
+import SiteHeader from "@/components/SiteHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -515,25 +516,7 @@ export default function Pricing() {
           ],
         }}
       />
-      <header
-        className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
-            <span className="dot-accent" aria-hidden />
-            Dicto
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="text-[13px] px-3 py-2 rounded-full font-medium text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors">
-              Войти
-            </Link>
-            <Link to="/register" className="btn-accent !py-2.5 !px-5 !text-[13px]">
-              Попробовать
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">{content}</div>
     </div>
   );

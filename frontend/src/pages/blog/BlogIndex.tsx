@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { articles } from "./articles";
-import ThemeToggle from "@/components/ui/ThemeToggle";
-import SoundToggle from "@/components/ui/SoundToggle";
 import Seo from "@/components/Seo";
+import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export default function BlogIndex() {
@@ -38,30 +37,7 @@ export default function BlogIndex() {
         ]}
       />
 
-      {/* Header */}
-      <header
-        className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-display text-2xl tracking-[-0.015em] text-[var(--fg)] leading-none">
-            <span className="dot-accent" aria-hidden />
-            Dicto
-          </Link>
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-1.5">
-              <SoundToggle />
-              <ThemeToggle />
-            </div>
-            <Link to="/login" className="text-[13px] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors hidden sm:inline-flex px-3 py-2">
-              Войти
-            </Link>
-            <Link to="/register" className="btn-accent !py-2.5 !px-5 !text-[13px]">
-              Попробовать
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="max-w-4xl mx-auto px-5 md:px-8 py-16 md:py-24">
         <p className="eyebrow mb-4">Блог</p>
