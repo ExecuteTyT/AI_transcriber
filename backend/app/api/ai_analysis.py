@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime, timezone
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import extract, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -61,10 +62,18 @@ async def _check_analysis_limits(
 async def _get_or_create_analysis(
     transcription_id: uuid.UUID,
     analysis_type: str,
+    length: str,
     user: User,
     db: AsyncSession,
 ) -> AiAnalysis:
-    """Получить кэшированный анализ или создать новый."""
+    """Получить кэшированный анализ или создать/перегенерировать под нужный объём.
+
+    Логика по уровню (short/standard/detailed):
+    - кэш есть и совпадает length → отдаём кэш (лимит не тратится);
+    - кэш есть, но другой length → ПЕРЕгенерируем и обновляем ту же строку
+      (UPDATE, не новая запись → счётчик лимита не растёт);
+    - кэша нет → проверяем лимит тарифа и создаём.
+    """
     # Проверяем доступ к транскрипции
     result = await db.execute(
         select(Transcription).where(
@@ -90,19 +99,30 @@ async def _get_or_create_analysis(
         )
     )
     cached = result.scalar_one_or_none()
-    if cached:
+    if cached and cached.length == length:
         return cached
 
-    # Проверяем лимиты тарифа (только если нет кэша)
-    await _check_analysis_limits(user, analysis_type, db)
+    if cached is None:
+        # Первая генерация для (transcription, type) — считается в лимит тарифа.
+        await _check_analysis_limits(user, analysis_type, db)
 
-    # Генерируем анализ
-    content, tokens = await generate_analysis(transcription.full_text, analysis_type)
+    # Генерируем (или перегенерируем под новый объём).
+    content, tokens = await generate_analysis(transcription.full_text, analysis_type, length)
+
+    if cached:
+        # Смена уровня: обновляем ту же строку — лимит не задваивается.
+        cached.content = content
+        cached.length = length
+        cached.tokens_used = tokens
+        await db.commit()
+        await db.refresh(cached)
+        return cached
 
     analysis = AiAnalysis(
         transcription_id=transcription_id,
         type=analysis_type,
         content=content,
+        length=length,
         model_used="gemini-2.5-flash",
         tokens_used=tokens,
     )
@@ -112,31 +132,37 @@ async def _get_or_create_analysis(
     return analysis
 
 
+Length = Literal["short", "standard", "detailed"]
+
+
 @router.get("/{transcription_id}/summary", response_model=AiAnalysisResponse)
 async def get_summary(
     transcription_id: uuid.UUID,
+    length: Length = Query("standard"),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """AI-саммари транскрипции."""
-    return await _get_or_create_analysis(transcription_id, "summary", user, db)
+    """AI-саммари транскрипции (объём: short/standard/detailed)."""
+    return await _get_or_create_analysis(transcription_id, "summary", length, user, db)
 
 
 @router.get("/{transcription_id}/key-points", response_model=AiAnalysisResponse)
 async def get_key_points(
     transcription_id: uuid.UUID,
+    length: Length = Query("standard"),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Ключевые тезисы транскрипции."""
-    return await _get_or_create_analysis(transcription_id, "key_points", user, db)
+    """Ключевые тезисы транскрипции (объём: short/standard/detailed)."""
+    return await _get_or_create_analysis(transcription_id, "key_points", length, user, db)
 
 
 @router.get("/{transcription_id}/action-items", response_model=AiAnalysisResponse)
 async def get_action_items(
     transcription_id: uuid.UUID,
+    length: Length = Query("standard"),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Action items из транскрипции."""
-    return await _get_or_create_analysis(transcription_id, "action_items", user, db)
+    """Action items из транскрипции (объём: short/standard/detailed)."""
+    return await _get_or_create_analysis(transcription_id, "action_items", length, user, db)

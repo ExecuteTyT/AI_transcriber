@@ -21,6 +21,7 @@ import {
   transcriptionApi,
   type Transcription as TranscriptionType,
   type AiAnalysis,
+  type AnalysisLength,
   type ChatMessage as ChatMessageType,
 } from "@/api/transcriptions";
 import { useAuthStore } from "@/store/authStore";
@@ -82,6 +83,7 @@ export default function Transcription() {
   const [transcription, setTranscription] = useState<TranscriptionType | null>(null);
   const [tab, setTab] = useState<Tab>("transcript");
   const [analysis, setAnalysis] = useState<AiAnalysis | null>(null);
+  const [analysisLength, setAnalysisLength] = useState<AnalysisLength>("standard");
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<{ status: number; message: string } | null>(null);
   const [search, setSearch] = useState("");
@@ -194,14 +196,17 @@ export default function Transcription() {
     }
     setAnalysisLoading(true);
     setAnalysisError(null);
-    const fetchers: Record<string, (id: string) => ReturnType<typeof transcriptionApi.getSummary>> = {
+    const fetchers: Record<
+      string,
+      (id: string, length: AnalysisLength) => ReturnType<typeof transcriptionApi.getSummary>
+    > = {
       summary: transcriptionApi.getSummary,
       key_points: transcriptionApi.getKeyPoints,
       action_items: transcriptionApi.getActionItems,
     };
     const fetchAnalysis = fetchers[tab];
     if (!fetchAnalysis) return;
-    fetchAnalysis(id)
+    fetchAnalysis(id, analysisLength)
       .then(({ data }) => setAnalysis(data))
       .catch((err: unknown) => {
         setAnalysis(null);
@@ -211,7 +216,7 @@ export default function Transcription() {
         if (status === 403 && message) setAnalysisError({ status, message });
       })
       .finally(() => setAnalysisLoading(false));
-  }, [id, tab]);
+  }, [id, tab, analysisLength]);
 
   useEffect(() => {
     if (!id || tab !== "chat") return;
@@ -1053,6 +1058,34 @@ export default function Transcription() {
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
           >
+            {/* Селектор объёма — смена уровня перегенерирует анализ (effect по analysisLength). */}
+            <div className="mb-4 flex items-center gap-2.5">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+                Объём
+              </span>
+              <div className="inline-flex rounded-full border border-[var(--border)] p-0.5">
+                {([
+                  ["short", "Кратко"],
+                  ["standard", "Стандарт"],
+                  ["detailed", "Подробно"],
+                ] as const).map(([val, label]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    disabled={analysisLoading}
+                    onClick={() => setAnalysisLength(val)}
+                    className={cn(
+                      "rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors disabled:opacity-50",
+                      analysisLength === val
+                        ? "bg-[var(--accent)] text-[var(--accent-fg)]"
+                        : "text-[var(--fg-muted)] hover:text-[var(--fg)]"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {analysisLoading ? (
               <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-5 md:p-8">
                 {[0, 1, 2, 3].map((i) => (

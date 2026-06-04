@@ -29,6 +29,11 @@ class AiAnalysis(Base, UUIDMixin, TimestampMixin):
         String(30)
     )  # summary/key_points/action_items
     content: Mapped[str] = mapped_column(Text)
+    # Объём анализа: short / standard / detailed. Та же строка (transcription_id,
+    # type) перегенерируется при смене уровня (см. api/ai_analysis.py).
+    length: Mapped[str] = mapped_column(
+        String(20), default="standard", server_default="standard"
+    )
     model_used: Mapped[str] = mapped_column(String(50), default="gemini-2.5-flash")
     tokens_used: Mapped[int] = mapped_column(Integer, default=0)
 

@@ -10,6 +10,7 @@ class AiAnalysisResponse(BaseModel):
     transcription_id: uuid.UUID
     type: str
     content: str
+    length: str
     model_used: str
     tokens_used: int
 

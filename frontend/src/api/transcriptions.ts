@@ -44,11 +44,14 @@ export interface PaginatedTranscriptions {
   offset: number;
 }
 
+export type AnalysisLength = "short" | "standard" | "detailed";
+
 export interface AiAnalysis {
   id: string;
   transcription_id: string;
   type: string;
   content: string;
+  length: AnalysisLength;
   model_used: string;
   tokens_used: number;
 }
@@ -130,14 +133,14 @@ export const transcriptionApi = {
   updateRetention: (id: string, retentionDays: number) =>
     api.put(`/transcriptions/${id}/retention`, { retention_days: retentionDays }),
 
-  getSummary: (id: string) =>
-    api.get<AiAnalysis>(`/transcriptions/${id}/summary`),
+  getSummary: (id: string, length: AnalysisLength = "standard") =>
+    api.get<AiAnalysis>(`/transcriptions/${id}/summary`, { params: { length } }),
 
-  getKeyPoints: (id: string) =>
-    api.get<AiAnalysis>(`/transcriptions/${id}/key-points`),
+  getKeyPoints: (id: string, length: AnalysisLength = "standard") =>
+    api.get<AiAnalysis>(`/transcriptions/${id}/key-points`, { params: { length } }),
 
-  getActionItems: (id: string) =>
-    api.get<AiAnalysis>(`/transcriptions/${id}/action-items`),
+  getActionItems: (id: string, length: AnalysisLength = "standard") =>
+    api.get<AiAnalysis>(`/transcriptions/${id}/action-items`, { params: { length } }),
 
   exportFile: (id: string, format: "txt" | "srt" | "docx") =>
     api.get(`/transcriptions/${id}/export/${format}`, { responseType: "blob" }),

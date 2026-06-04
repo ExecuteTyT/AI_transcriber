@@ -56,12 +56,46 @@ PROMPTS = {
     "action_items": ACTION_ITEMS_PROMPT,
 }
 
+# Уровни объёма анализа. (max_tokens, директива в промпт).
+# max_tokens поднят с прежних жёстких 2000 — на длинных записях вывод обрывался
+# посреди слова (генерация упиралась в лимит). mistral-small держит такой вывод.
+LENGTH_SPECS: dict[str, tuple[int, str]] = {
+    "short": (
+        1200,
+        "Уровень детализации — КРАТКО: только самые важные пункты, максимально "
+        "сжато, без второстепенных деталей.",
+    ),
+    "standard": (
+        3000,
+        "Уровень детализации — СТАНДАРТ: сбалансированный объём, основные пункты "
+        "с короткими пояснениями.",
+    ),
+    "detailed": (
+        6000,
+        "Уровень детализации — ПОДРОБНО: максимально полно — больше пунктов, с "
+        "пояснениями, контекстом и нюансами.",
+    ),
+}
+DEFAULT_LENGTH = "standard"
 
-async def generate_analysis(text: str, analysis_type: str) -> tuple[str, int]:
-    """Генерация AI-анализа через Mistral AI."""
+
+def _length_spec(length: str) -> tuple[int, str]:
+    """(max_tokens, директива) для уровня; неизвестный → standard."""
+    return LENGTH_SPECS.get(length, LENGTH_SPECS[DEFAULT_LENGTH])
+
+
+async def generate_analysis(
+    text: str, analysis_type: str, length: str = DEFAULT_LENGTH
+) -> tuple[str, int]:
+    """Генерация AI-анализа через Mistral AI с заданным объёмом (short/standard/detailed)."""
     prompt_template = PROMPTS.get(analysis_type)
     if not prompt_template:
         raise ValueError(f"Неизвестный тип анализа: {analysis_type}")
+
+    max_tokens, directive = _length_spec(length)
+
+    def _with_directive(body: str) -> str:
+        return f"{directive}\n\n{body}"
 
     # Map-reduce для длинных текстов
     max_chars = 12000  # ~4000 токенов
@@ -70,20 +104,27 @@ async def generate_analysis(text: str, analysis_type: str) -> tuple[str, int]:
         partial_results = []
         total_tokens = 0
         for chunk in chunks:
-            content, tokens = await _call_llm(prompt_template.format(text=chunk))
+            content, tokens = await _call_llm(
+                _with_directive(prompt_template.format(text=chunk)), max_tokens
+            )
             partial_results.append(content)
             total_tokens += tokens
 
-        # Объединение результатов
+        # Объединение результатов. Сохраняем формат и уровень детализации
+        # (раньше merge «сокращал» и терял Markdown-структуру).
         combined = "\n\n".join(partial_results)
-        merge_prompt = f"Объедини и сократи следующие частичные результаты в единый связный текст:\n\n{combined}"
-        final_content, final_tokens = await _call_llm(merge_prompt)
+        merge_prompt = _with_directive(
+            "Объедини следующие частичные результаты в единый связный текст в том "
+            "же Markdown-формате: убери повторы, сохрани заголовки и структуру, "
+            "соблюдай указанный уровень детализации.\n\n" + combined
+        )
+        final_content, final_tokens = await _call_llm(merge_prompt, max_tokens)
         return final_content, total_tokens + final_tokens
     else:
-        return await _call_llm(prompt_template.format(text=text))
+        return await _call_llm(_with_directive(prompt_template.format(text=text)), max_tokens)
 
 
-async def _call_llm(prompt: str) -> tuple[str, int]:
+async def _call_llm(prompt: str, max_tokens: int) -> tuple[str, int]:
     """Вызов Mistral AI API для генерации анализа."""
     async with httpx.AsyncClient() as client:
         response = await client.post(
@@ -96,9 +137,9 @@ async def _call_llm(prompt: str) -> tuple[str, int]:
                 "model": "mistral-small-latest",
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.3,
-                "max_tokens": 2000,
+                "max_tokens": max_tokens,
             },
-            timeout=60,
+            timeout=90,
         )
         response.raise_for_status()
         data = response.json()
