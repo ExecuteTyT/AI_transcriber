@@ -24,7 +24,7 @@ const ACCEPTED_TYPES = {
 const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
 
 const FORMATS = ["MP3", "WAV", "FLAC", "OGG", "M4A", "MP4", "MOV", "WEBM"];
-const URL_SUPPORTED = ["YouTube", "VK Video", "Rutube", "OK", "Дзен"];
+const URL_SUPPORTED = ["YouTube", "VK Video", "Rutube", "OK", "Дзен", "Яндекс.Видео"];
 
 type SourceTab = "file" | "url";
 

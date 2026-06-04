@@ -192,3 +192,73 @@ def test_transient_errors_are_retried():
 
     assert _is_permanent_ytdlp_error("Read timed out") is False
     assert _is_permanent_ytdlp_error("Temporary failure in name resolution") is False
+
+
+# ─── Яндекс.Видео (видеопоиск) резолвер ───
+
+def test_is_yandex_preview_url():
+    from app.services.yandex_video import is_yandex_preview_url
+
+    assert is_yandex_preview_url("https://yandex.ru/video/preview/123")
+    assert is_yandex_preview_url("https://ya.ru/video/preview/999")
+    assert is_yandex_preview_url("https://www.yandex.ru/video/preview/5")
+    assert not is_yandex_preview_url("https://yandex.ru/video/search?text=x")
+    assert not is_yandex_preview_url("https://www.youtube.com/watch?v=x")
+
+
+def test_extract_source_from_html():
+    from app.services.yandex_video import extract_source_from_html
+
+    # videoUrl нужного ролика идёт после его videoId; videoSrc-тизер игнорим.
+    html = (
+        '{"videoId":"123","videoSrc":"https://video-preview.s3.yandex.net/x.mp4",'
+        '"playerUri":"<iframe","videoUrl":"http://vk.com/video-1_2"}'
+        '{"videoId":"777","videoUrl":"http://rutube.ru/video/zzz/"}'
+    )
+    assert extract_source_from_html(html, "123") == "http://vk.com/video-1_2"
+    # экранированные слеши
+    html2 = '{"videoId":"7","videoUrl":"https:\\/\\/rutube.ru\\/video\\/abc\\/"}'
+    assert extract_source_from_html(html2, "7") == "https://rutube.ru/video/abc/"
+    # капча → None
+    assert extract_source_from_html("... showcaptcha ...", "123") is None
+    # нет videoUrl → None
+    assert extract_source_from_html('{"videoId":"123"}', "123") is None
+
+
+@pytest.mark.asyncio
+async def test_yandex_preview_resolves_to_source(client: AsyncClient, monkeypatch):
+    """Yandex preview резолвится в источник → 201."""
+    import app.services.yandex_video as yv
+
+    async def fake_resolve(url):
+        return "https://vk.com/video-1_2"
+
+    monkeypatch.setattr(yv, "resolve_yandex_video", fake_resolve)
+
+    token, _ = await _register(client)  # free + bonus → проходит
+    resp = await client.post(
+        "/api/transcriptions/upload-url",
+        headers=_h(token),
+        json={"url": "https://yandex.ru/video/preview/123"},
+    )
+    assert resp.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_yandex_preview_unresolved_gives_hint(client: AsyncClient, monkeypatch):
+    """Не зарезолвилось → 400 с подсказкой вставить ссылку на источник."""
+    import app.services.yandex_video as yv
+
+    async def fake_resolve(url):
+        return None
+
+    monkeypatch.setattr(yv, "resolve_yandex_video", fake_resolve)
+
+    token, _ = await _register(client)
+    resp = await client.post(
+        "/api/transcriptions/upload-url",
+        headers=_h(token),
+        json={"url": "https://yandex.ru/video/preview/123"},
+    )
+    assert resp.status_code == 400
+    assert "источник" in resp.json()["detail"].lower()

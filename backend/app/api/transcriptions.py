@@ -286,8 +286,27 @@ async def upload_by_url(
     """
     from urllib.parse import urlparse
 
-    # 1. URL whitelist.
-    parsed = urlparse(str(data.url))
+    from app.services.yandex_video import is_yandex_preview_url, resolve_yandex_video
+
+    effective_url = str(data.url)
+
+    # 0. Яндекс.Видео (видеопоиск): preview-ссылка — не хостинг, а агрегатор.
+    # Резолвим её в ссылку на источник (VK/RuTube/YouTube/Дзен) прямо на сабмите,
+    # чтобы дать мгновенную понятную подсказку при неудаче (см. services/yandex_video).
+    if is_yandex_preview_url(effective_url):
+        resolved = await resolve_yandex_video(effective_url)
+        if resolved is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    "Это ссылка из видеопоиска Яндекса. Откройте видео и вставьте "
+                    "прямую ссылку на источник — VK, RuTube, YouTube или Дзен."
+                ),
+            )
+        effective_url = resolved
+
+    # 1. URL whitelist (для исходной либо уже зарезолвленной ссылки).
+    parsed = urlparse(effective_url)
     host = (parsed.hostname or "").lower()
     if not _is_allowed_url_host(host):
         raise HTTPException(
@@ -333,7 +352,7 @@ async def upload_by_url(
     # 5. Ставим в очередь URL-task.
     try:
         from app.tasks.transcribe_url import process_url_transcription
-        process_url_transcription.delay(str(transcription.id), str(data.url))
+        process_url_transcription.delay(str(transcription.id), effective_url)
     except (ImportError, ConnectionError, OSError) as exc:
         logging.getLogger(__name__).error(
             "Celery unavailable for URL ingest %s: %s", transcription.id, exc
