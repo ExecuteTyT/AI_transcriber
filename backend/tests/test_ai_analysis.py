@@ -103,8 +103,12 @@ async def _completed_transcription(client, db_session):
 
 
 @pytest.mark.asyncio
-async def test_length_change_regenerates_same_row_no_double_limit(client, db_session, monkeypatch):
-    """Смена уровня перегенерирует ТУ ЖЕ строку (лимит не задваивается)."""
+async def test_length_cached_per_level_no_token_waste(client, db_session, monkeypatch):
+    """Каждый уровень кэшируется отдельной строкой; повтор уровня — без генерации.
+
+    Защита от циклической перегенерации: один и тот же уровень больше не
+    генерируется повторно, а разные уровни одного анализа не тратят лимит дважды.
+    """
     from sqlalchemy import func as sa_func
     from sqlalchemy import select as sa_select
 
@@ -122,29 +126,30 @@ async def test_length_change_regenerates_same_row_no_double_limit(client, db_ses
 
     r1 = await client.get(f"/api/transcriptions/{t.id}/key-points", headers=_auth_headers(token))
     assert r1.status_code == 200 and r1.json()["length"] == "standard"
-    id1 = r1.json()["id"]
+    id_standard = r1.json()["id"]
 
     r2 = await client.get(
         f"/api/transcriptions/{t.id}/key-points?length=detailed", headers=_auth_headers(token)
     )
     assert r2.status_code == 200
     assert r2.json()["length"] == "detailed"
-    assert r2.json()["id"] == id1                 # та же строка
+    assert r2.json()["id"] != id_standard          # ОТДЕЛЬНАЯ строка на уровень
     assert r2.json()["content"] == "content-detailed"
 
-    # Повторный detailed → кэш, без новой генерации
-    r3 = await client.get(
-        f"/api/transcriptions/{t.id}/key-points?length=detailed", headers=_auth_headers(token)
-    )
-    assert r3.status_code == 200
-    assert calls["n"] == 2                          # standard + detailed; повтор из кэша
+    # Повтор detailed → кэш, без новой генерации.
+    await client.get(f"/api/transcriptions/{t.id}/key-points?length=detailed", headers=_auth_headers(token))
+    # Возврат к standard → тоже кэш (строка из r1), без новой генерации.
+    r4 = await client.get(f"/api/transcriptions/{t.id}/key-points", headers=_auth_headers(token))
+    assert r4.json()["id"] == id_standard
+
+    assert calls["n"] == 2                           # сгенерировано ровно дважды (standard + detailed)
 
     cnt = (await db_session.execute(
         sa_select(sa_func.count()).select_from(AiAnalysis).where(
             AiAnalysis.transcription_id == t.id, AiAnalysis.type == "key_points"
         )
     )).scalar()
-    assert cnt == 1                                 # одна строка → лимит не задвоен
+    assert cnt == 2                                  # две строки: по одной на уровень
 
 
 @pytest.mark.asyncio

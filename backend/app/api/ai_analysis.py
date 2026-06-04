@@ -36,12 +36,13 @@ async def _check_analysis_limits(
             detail="Action items доступны только на тарифе Про",
         )
 
-    # Лимит саммари для free: 3/мес (распространяется на summary и key_points)
+    # Лимит саммари для free (распространяется на summary и key_points).
+    # Считаем УНИКАЛЬНЫЕ (transcription_id, type), а не строки: разные уровни
+    # объёма одного анализа — это одна единица лимита, а не три.
     if plan.ai_summaries != -1 and analysis_type in ("summary", "key_points"):
         now = datetime.now(timezone.utc)
-        count_result = await db.execute(
-            select(func.count())
-            .select_from(AiAnalysis)
+        distinct_pairs = (
+            select(AiAnalysis.transcription_id, AiAnalysis.type)
             .join(Transcription, AiAnalysis.transcription_id == Transcription.id)
             .where(
                 Transcription.user_id == user.id,
@@ -49,8 +50,10 @@ async def _check_analysis_limits(
                 extract("month", AiAnalysis.created_at) == now.month,
                 extract("year", AiAnalysis.created_at) == now.year,
             )
+            .distinct()
+            .subquery()
         )
-        used = count_result.scalar() or 0
+        used = (await db.execute(select(func.count()).select_from(distinct_pairs))).scalar() or 0
         if used >= plan.ai_summaries:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -91,32 +94,34 @@ async def _get_or_create_analysis(
             detail="Транскрипция ещё не завершена",
         )
 
-    # Проверяем кэш
+    # Кэш именно этого уровня объёма (transcription, type, length).
     result = await db.execute(
         select(AiAnalysis).where(
             AiAnalysis.transcription_id == transcription_id,
             AiAnalysis.type == analysis_type,
+            AiAnalysis.length == length,
         )
     )
     cached = result.scalar_one_or_none()
-    if cached and cached.length == length:
-        return cached
+    if cached:
+        return cached  # уже сгенерировано на этом уровне — отдаём без новой генерации
 
-    if cached is None:
-        # Первая генерация для (transcription, type) — считается в лимит тарифа.
+    # Есть ли уже какой-нибудь уровень этого анализа? Если да — это просто ещё
+    # один уровень уже оплаченного анализа: лимит не тратим (и токены ограничены
+    # тремя уровнями — цикл перегенерации невозможен).
+    existing_any = (await db.execute(
+        select(AiAnalysis.id)
+        .where(
+            AiAnalysis.transcription_id == transcription_id,
+            AiAnalysis.type == analysis_type,
+        )
+        .limit(1)
+    )).scalar_one_or_none()
+
+    if existing_any is None:
         await _check_analysis_limits(user, analysis_type, db)
 
-    # Генерируем (или перегенерируем под новый объём).
     content, tokens = await generate_analysis(transcription.full_text, analysis_type, length)
-
-    if cached:
-        # Смена уровня: обновляем ту же строку — лимит не задваивается.
-        cached.content = content
-        cached.length = length
-        cached.tokens_used = tokens
-        await db.commit()
-        await db.refresh(cached)
-        return cached
 
     analysis = AiAnalysis(
         transcription_id=transcription_id,

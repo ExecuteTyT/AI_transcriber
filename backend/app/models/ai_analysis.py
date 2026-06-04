@@ -9,16 +9,17 @@ from app.models.base import Base, TimestampMixin, UUIDMixin
 class AiAnalysis(Base, UUIDMixin, TimestampMixin):
     """Результат AI-анализа транскрипции (саммари, тезисы, action items).
 
-    UNIQUE (transcription_id, type) — защита от race condition при параллельном
-    запросе одного и того же типа анализа из двух вкладок. Без этого создавались
-    дубликаты, юзер видел разный текст саммари в зависимости от того, какую
-    строку отдал first-row scalar_one_or_none.
+    UNIQUE (transcription_id, type, length) — отдельная строка на каждый уровень
+    объёма (short/standard/detailed), чтобы уже сгенерированный уровень отдавался
+    из кэша, а не перегенерировался (экономия токенов + защита от циклической
+    перегенерации). Также защищает от дублей при параллельном запросе.
     """
 
     __tablename__ = "ai_analyses"
     __table_args__ = (
         UniqueConstraint(
-            "transcription_id", "type", name="ux_ai_analyses_transcription_type"
+            "transcription_id", "type", "length",
+            name="ux_ai_analyses_transcription_type_length",
         ),
     )
 
