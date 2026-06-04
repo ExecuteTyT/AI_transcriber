@@ -157,9 +157,9 @@ async def test_crud_with_db_record(client: AsyncClient, db_session):
     assert "00:00:00,000" in resp.text
     assert "Привет мир" in resp.text
 
-    # Export DOCX — free тариф НЕ имеет docx (платная фича) → 403
+    # Export DOCX — доступен на всех тарифах (включая free) → 200
     resp = await client.get(f"/api/transcriptions/{t_id}/export/docx", headers=_auth_headers(token))
-    assert resp.status_code == 403
+    assert resp.status_code == 200
 
     # Export invalid format
     resp = await client.get(f"/api/transcriptions/{t_id}/export/pdf", headers=_auth_headers(token))
@@ -233,8 +233,8 @@ async def test_list_pagination(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_export_docx_gated_for_free(client: AsyncClient, db_session):
-    """Free тариф: txt разрешён, docx → 403 (платная фича)."""
+async def test_export_docx_available_for_free(client: AsyncClient, db_session):
+    """Free тариф: txt и docx доступны (DOCX открыт на всех тарифах)."""
     token = await _register_and_get_token(client)
     me = await client.get("/api/auth/me", headers=_auth_headers(token))
     user_id = me.json()["id"]
@@ -254,4 +254,5 @@ async def test_export_docx_gated_for_free(client: AsyncClient, db_session):
     assert txt.status_code == 200
 
     docx = await client.get(f"/api/transcriptions/{t_id}/export/docx", headers=_auth_headers(token))
-    assert docx.status_code == 403
+    assert docx.status_code == 200
+    assert "openxmlformats" in docx.headers.get("content-type", "")

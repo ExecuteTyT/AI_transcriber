@@ -526,13 +526,29 @@ export default function Transcription() {
     }
   };
 
-  const handleCopy = () => {
-    if (transcription?.full_text) {
-      navigator.clipboard.writeText(transcription.full_text);
-      setCopied(true);
-      toast.success("Текст скопирован");
-      setTimeout(() => setCopied(false), 2000);
+  // Транскрипт для копирования — из сегментов, по реплике на строку (с меткой
+  // спикера), чтобы переносы сохранялись. Fallback — full_text (одна строка).
+  const buildTranscriptText = (): string => {
+    const segs = transcription?.segments;
+    if (segs && segs.length > 0) {
+      return segs
+        .map((s) => (s.speaker ? `${s.speaker}: ${s.text ?? ""}` : s.text ?? "").trim())
+        .filter(Boolean)
+        .join("\n\n");
     }
+    return transcription?.full_text ?? "";
+  };
+
+  const handleCopy = () => {
+    // Контекстное копирование: на вкладке анализа копируем сам анализ (Markdown
+    // с заголовками/списками), на транскрипте — отформатированный транскрипт.
+    const isAnalysisTab = tab === "summary" || tab === "key_points" || tab === "action_items";
+    const text = isAnalysisTab ? (analysis?.content ?? "") : buildTranscriptText();
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success(isAnalysisTab ? "Текст анализа скопирован" : "Транскрипт скопирован");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleExport = async (format: "txt" | "srt" | "docx") => {
