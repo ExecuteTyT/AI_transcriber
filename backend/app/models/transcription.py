@@ -57,6 +57,18 @@ class Transcription(Base, UUIDMixin, TimestampMixin):
     )  # "auto-cron" | "user-manual" | "user-account-deleted"
 
     user = relationship("User", back_populates="transcriptions")
-    ai_analyses = relationship("AiAnalysis", back_populates="transcription", lazy="selectin")
-    embeddings = relationship("Embedding", back_populates="transcription", lazy="noload")
-    chat_messages = relationship("ChatMessage", back_populates="transcription", lazy="noload")
+    # cascade + passive_deletes: при удалении транскрипции дочерние строки удаляет
+    # сама БД (FK ondelete=CASCADE). Без этого ORM пытался обнулить transcription_id
+    # → NOT NULL violation → ночная очистка cleanup_expired падала каждую ночь.
+    ai_analyses = relationship(
+        "AiAnalysis", back_populates="transcription",
+        lazy="selectin", cascade="all, delete-orphan", passive_deletes=True,
+    )
+    embeddings = relationship(
+        "Embedding", back_populates="transcription",
+        lazy="noload", cascade="all, delete-orphan", passive_deletes=True,
+    )
+    chat_messages = relationship(
+        "ChatMessage", back_populates="transcription",
+        lazy="noload", cascade="all, delete-orphan", passive_deletes=True,
+    )
