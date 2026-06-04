@@ -5,6 +5,14 @@ import api from "@/api/client";
 import { useAuthStore } from "@/store/authStore";
 import Seo from "@/components/Seo";
 
+interface PeriodStats {
+  transcriptions: number;
+  minutes: number;
+  new_users: number;
+  active_users: number;
+  failed: number;
+}
+
 interface Stats {
   total_users: number;
   total_transcriptions: number;
@@ -14,6 +22,28 @@ interface Stats {
   transcriptions_by_status: Record<string, number>;
   users_today: number;
   transcriptions_today: number;
+  periods?: Record<string, PeriodStats>;
+  repeat_users?: number;
+}
+
+interface TimeseriesPoint {
+  date: string;
+  signups: number;
+  transcriptions: number;
+}
+
+interface Failure {
+  id: string;
+  user_email: string | null;
+  title: string;
+  error_message: string | null;
+  original_filename: string;
+  created_at: string | null;
+}
+
+interface FailuresData {
+  counts: Record<string, number>;
+  items: Failure[];
 }
 
 interface AdminUser {
@@ -41,7 +71,37 @@ interface AdminTranscription {
   created_at: string;
 }
 
-type Tab = "overview" | "users" | "transcriptions";
+type Tab = "overview" | "users" | "transcriptions" | "failures";
+
+const PERIOD_LABELS: [string, string][] = [
+  ["today", "Сегодня"],
+  ["yesterday", "Вчера"],
+  ["last_7d", "7 дней"],
+  ["last_30d", "30 дней"],
+  ["all", "Всё время"],
+];
+
+/** Компактный линейный график на инлайн-SVG (без внешних зависимостей). */
+function MiniTrendChart({ data }: { data: TimeseriesPoint[] }) {
+  if (data.length === 0) return null;
+  const W = 720;
+  const H = 160;
+  const pad = 8;
+  const maxVal = Math.max(1, ...data.map((d) => Math.max(d.signups, d.transcriptions)));
+  const x = (i: number) => pad + (i * (W - 2 * pad)) / Math.max(1, data.length - 1);
+  const y = (v: number) => H - pad - (v * (H - 2 * pad)) / maxVal;
+  const line = (key: "signups" | "transcriptions") =>
+    data.map((d, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`).join(" ");
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[480px]" preserveAspectRatio="none">
+        <path d={line("transcriptions")} fill="none" stroke="var(--accent)" strokeWidth="2" />
+        <path d={line("signups")} fill="none" stroke="#8b5cf6" strokeWidth="2" />
+      </svg>
+    </div>
+  );
+}
 
 const planNames: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
 const planColors: Record<string, string> = {
@@ -61,6 +121,8 @@ export default function Admin() {
   const { user } = useAuthStore();
   const [tab, setTab] = useState<Tab>("overview");
   const [stats, setStats] = useState<Stats | null>(null);
+  const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>([]);
+  const [failures, setFailures] = useState<FailuresData | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersTotal, setUsersTotal] = useState(0);
   const [transcriptions, setTranscriptions] = useState<AdminTranscription[]>([]);
@@ -75,6 +137,7 @@ export default function Admin() {
   useEffect(() => {
     if (tab === "users") loadUsers();
     if (tab === "transcriptions") loadTranscriptions();
+    if (tab === "failures") loadFailures();
   }, [tab]);
 
   const adminError = (action: string, err: unknown) => {
@@ -87,12 +150,25 @@ export default function Admin() {
   const loadStats = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/admin/stats");
-      setStats(data);
+      const [statsRes, tsRes] = await Promise.all([
+        api.get("/admin/stats"),
+        api.get("/admin/stats/timeseries", { params: { days: 30 } }),
+      ]);
+      setStats(statsRes.data);
+      setTimeseries(tsRes.data);
     } catch (err) {
       adminError("Не удалось загрузить статистику", err);
     }
     setLoading(false);
+  };
+
+  const loadFailures = async () => {
+    try {
+      const { data } = await api.get("/admin/failures", { params: { limit: 30 } });
+      setFailures(data);
+    } catch (err) {
+      adminError("Не удалось загрузить сбои", err);
+    }
   };
 
   const loadUsers = async () => {
@@ -199,7 +275,7 @@ export default function Admin() {
 
       {/* Tabs */}
       <div className="flex gap-1 mb-8 bg-[var(--bg-muted)] rounded-xl p-1 w-fit">
-        {([["overview", "Обзор"], ["users", "Пользователи"], ["transcriptions", "Транскрипции"]] as const).map(([key, label]) => (
+        {([["overview", "Обзор"], ["users", "Пользователи"], ["transcriptions", "Транскрипции"], ["failures", "Сбои"]] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -230,6 +306,66 @@ export default function Admin() {
               </div>
             ))}
           </div>
+
+          {/* KPI по периодам */}
+          {stats.periods && (
+            <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-5 md:p-6">
+              <div className="flex items-baseline justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[var(--fg)]">Показатели по периодам</h3>
+                {typeof stats.repeat_users === "number" && (
+                  <span className="text-xs text-[var(--fg-subtle)]">
+                    Повторных (≥2 записей): <span className="font-semibold text-[var(--fg-muted)]">{stats.repeat_users}</span>
+                  </span>
+                )}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[480px]">
+                  <thead>
+                    <tr className="text-[11px] uppercase tracking-wider text-[var(--fg-subtle)]">
+                      <th className="text-left py-2 pr-4 font-semibold">Период</th>
+                      <th className="text-right py-2 px-3 font-semibold">Транскрипции</th>
+                      <th className="text-right py-2 px-3 font-semibold">Минуты</th>
+                      <th className="text-right py-2 px-3 font-semibold">Новые</th>
+                      <th className="text-right py-2 px-3 font-semibold">Активные</th>
+                      <th className="text-right py-2 pl-3 font-semibold">Сбои</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {PERIOD_LABELS.map(([key, label]) => {
+                      const p = stats.periods?.[key];
+                      if (!p) return null;
+                      return (
+                        <tr key={key} className="border-t border-[var(--border)]">
+                          <td className="py-2 pr-4 text-[var(--fg-muted)]">{label}</td>
+                          <td className="py-2 px-3 text-right tabular-nums text-[var(--fg)] font-medium">{p.transcriptions}</td>
+                          <td className="py-2 px-3 text-right tabular-nums text-[var(--fg-muted)]">{p.minutes}</td>
+                          <td className="py-2 px-3 text-right tabular-nums text-[var(--fg-muted)]">{p.new_users}</td>
+                          <td className="py-2 px-3 text-right tabular-nums text-[var(--fg-muted)]">{p.active_users}</td>
+                          <td className={`py-2 pl-3 text-right tabular-nums font-medium ${p.failed > 0 ? "text-red-500" : "text-[var(--fg-subtle)]"}`}>{p.failed}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* График динамики за 30 дней */}
+          {timeseries.length > 0 && (
+            <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-5 md:p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <h3 className="text-sm font-semibold text-[var(--fg)]">Динамика, 30 дней</h3>
+                <span className="flex items-center gap-1.5 text-xs text-[var(--fg-subtle)]">
+                  <span className="inline-block w-3 h-0.5" style={{ background: "var(--accent)" }} /> транскрипции
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-[var(--fg-subtle)]">
+                  <span className="inline-block w-3 h-0.5" style={{ background: "#8b5cf6" }} /> регистрации
+                </span>
+              </div>
+              <MiniTrendChart data={timeseries} />
+            </div>
+          )}
 
           {/* Plan distribution */}
           <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-5 md:p-6">
@@ -277,6 +413,61 @@ export default function Admin() {
               <div className="h-8 bg-[var(--bg-muted)] rounded w-2/3" />
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Failures tab */}
+      {tab === "failures" && (
+        <div className="animate-fade-up space-y-6">
+          <div className="grid grid-cols-3 gap-3 md:gap-4">
+            {[
+              ["Сегодня", failures?.counts.today ?? 0],
+              ["7 дней", failures?.counts.last_7d ?? 0],
+              ["Всего", failures?.counts.total ?? 0],
+            ].map(([label, val]) => (
+              <div key={label} className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-4 md:p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fg-subtle)] mb-2">{label}</p>
+                <p className={`text-2xl md:text-3xl font-bold tabular-nums ${Number(val) > 0 ? "text-red-500" : "text-[var(--fg)]"}`}>{val}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border)] bg-[var(--bg-muted)]">
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Дата</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Пользователь</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Файл / запись</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Причина</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(failures?.items ?? []).map((f) => (
+                    <tr key={f.id} className="border-b border-[var(--border)] align-top">
+                      <td className="py-3 px-4 whitespace-nowrap text-[var(--fg-subtle)] text-xs">
+                        {f.created_at ? new Date(f.created_at).toLocaleString("ru-RU") : "—"}
+                      </td>
+                      <td className="py-3 px-4 text-[var(--fg-muted)] text-xs">{f.user_email || "—"}</td>
+                      <td className="py-3 px-4 text-[var(--fg-muted)]">{f.original_filename || f.title || "—"}</td>
+                      <td className="py-3 px-4 text-red-500">{f.error_message || "—"}</td>
+                    </tr>
+                  ))}
+                  {failures && failures.items.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-[var(--fg-subtle)] text-sm">
+                        Сбоев нет 🎉
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p className="text-xs text-[var(--fg-subtle)]">
+            Глубокая диагностика — см. <span className="font-mono">docs/ops-runbook.md</span> (какие логи смотреть при каком сбое).
+          </p>
         </div>
       )}
 

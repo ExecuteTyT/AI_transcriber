@@ -59,6 +59,72 @@ async def test_admin_stats_requires_auth(client: AsyncClient):
     assert resp.status_code in (401, 403)
 
 
+# ─── Бизнес-аналитика ───
+
+async def _make_user(db: AsyncSession, prefix: str) -> User:
+    u = User(
+        email=f"{prefix}-{uuid.uuid4().hex[:6]}@test.com",
+        password_hash=hash_password("x"), name=prefix,
+    )
+    db.add(u)
+    await db.commit()
+    await db.refresh(u)
+    return u
+
+
+@pytest.mark.asyncio
+async def test_stats_periods_and_repeat(client: AsyncClient, db_session: AsyncSession):
+    """В /stats есть KPI по периодам и повторные пользователи."""
+    token = await _get_admin_token(client, db_session)
+    u = await _make_user(db_session, "kpi")
+    db_session.add_all([
+        Transcription(user_id=u.id, title="a", file_key="k", status="completed", duration_sec=120),
+        Transcription(user_id=u.id, title="b", file_key="k", status="failed", error_message="boom"),
+    ])
+    await db_session.commit()
+
+    body = (await client.get("/api/admin/stats", headers=_h(token))).json()
+    assert "periods" in body and "today" in body["periods"] and "all" in body["periods"]
+    today = body["periods"]["today"]
+    assert today["transcriptions"] >= 2
+    assert today["minutes"] >= 2          # 120с completed → 2 мин
+    assert today["failed"] >= 1
+    assert today["active_users"] >= 1
+    assert body["repeat_users"] >= 1      # у u две транскрипции
+
+
+@pytest.mark.asyncio
+async def test_stats_timeseries_shape(client: AsyncClient, db_session: AsyncSession):
+    token = await _get_admin_token(client, db_session)
+    data = (await client.get("/api/admin/stats/timeseries?days=7", headers=_h(token))).json()
+    assert len(data) == 7
+    assert {"date", "signups", "transcriptions"} <= set(data[0].keys())
+
+
+@pytest.mark.asyncio
+async def test_failures_endpoint(client: AsyncClient, db_session: AsyncSession):
+    token = await _get_admin_token(client, db_session)
+    u = await _make_user(db_session, "fail")
+    db_session.add(Transcription(
+        user_id=u.id, title="vid", file_key="k", status="failed",
+        error_message="YouTube ограничил загрузку", original_filename="yt",
+    ))
+    await db_session.commit()
+
+    body = (await client.get("/api/admin/failures", headers=_h(token))).json()
+    assert body["counts"]["total"] >= 1
+    assert body["items"], "ожидался хотя бы один сбой"
+    assert body["items"][0]["user_email"]  # email подтянут join'ом
+    assert any("YouTube" in (i["error_message"] or "") for i in body["items"])
+
+
+@pytest.mark.asyncio
+async def test_failures_requires_admin(client: AsyncClient):
+    token = await _get_user_token(client)
+    resp = await client.get("/api/admin/failures", headers=_h(token))
+    assert resp.status_code == 403
+
+
 @pytest.mark.asyncio
 async def test_admin_users_requires_admin(client: AsyncClient):
     """Обычный пользователь не видит список юзеров."""
