@@ -159,3 +159,36 @@ async def test_unauthenticated_blocked(client: AsyncClient):
         json={"url": "https://www.youtube.com/watch?v=abc"},
     )
     assert resp.status_code in (401, 403)
+
+
+# ─── Обработка ошибок yt-dlp ───
+
+def test_youtube_bot_block_message_is_friendly():
+    """Бот-блок YouTube → понятное сообщение с предложением RU-источников."""
+    from app.tasks.transcribe_url import _translate_ytdlp_error
+
+    raw = "ERROR: [youtube] xyz: Sign in to confirm you're not a bot."
+    msg = _translate_ytdlp_error(raw)
+    assert "не удалось скачать" not in msg.lower()  # не generic
+    assert "rutube" in msg.lower() or "vk" in msg.lower() or "дзен" in msg.lower()
+
+
+def test_permanent_errors_not_retried():
+    """Бот-блок/приват/недоступно/неподдерж. — перманентны (не ретраим)."""
+    from app.tasks.transcribe_url import _is_permanent_ytdlp_error
+
+    for raw in (
+        "Sign in to confirm you're not a bot",
+        "Private video. Login required",
+        "Video unavailable",
+        "Unsupported URL: https://example.com/x",
+    ):
+        assert _is_permanent_ytdlp_error(raw) is True, raw
+
+
+def test_transient_errors_are_retried():
+    """Таймаут/сеть — транзиентные (ретраим)."""
+    from app.tasks.transcribe_url import _is_permanent_ytdlp_error
+
+    assert _is_permanent_ytdlp_error("Read timed out") is False
+    assert _is_permanent_ytdlp_error("Temporary failure in name resolution") is False

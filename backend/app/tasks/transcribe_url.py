@@ -136,6 +136,12 @@ def process_url_transcription(self, transcription_id: str, url: str):
             transcription.error_message = _translate_ytdlp_error(str(exc))
             db.commit()
             logger.exception("URL transcription %s failed: %s", transcription_id, exc)
+            # Перманентные ошибки (бот-блок YouTube, приват, удалено, гео, неподдерж.
+            # источник) повторной попыткой не лечатся — НЕ ретраим, иначе воркер
+            # 3× долбит источник и усугубляет IP-блок. Ретраим только транзиентное
+            # (таймаут/сеть). Возврат без raise = celery не запускает autoretry.
+            if _is_permanent_ytdlp_error(str(exc)):
+                return
             raise
         finally:
             # Очистка tmp-файла. S3-копия уже загружена.
@@ -154,6 +160,13 @@ def process_url_transcription(self, transcription_id: str, url: str):
 def _translate_ytdlp_error(msg: str) -> str:
     """Переводит распространённые технические ошибки yt-dlp в понятные пользователю."""
     m = msg.lower()
+    # Бот-защита YouTube для IP дата-центров («Sign in to confirm you're not a bot»).
+    # Лечится только cookies/прокси; пользователю предлагаем RU-источники.
+    if "not a bot" in m or "sign in to confirm" in m:
+        return (
+            "YouTube ограничил автоматическую загрузку этого видео с сервера. "
+            "Попробуйте ссылку с RuTube, VK или Дзена — либо скачайте файл и загрузите напрямую."
+        )
     if "private video" in m or "login required" in m:
         return "Видео приватное или требует авторизации"
     if "age" in m and ("restrict" in m or "confirm" in m):
@@ -167,3 +180,22 @@ def _translate_ytdlp_error(msg: str) -> str:
     if "timeout" in m or "timed out" in m:
         return "Сайт не ответил вовремя. Попробуйте ещё раз"
     return "Не удалось скачать видео. Проверьте ссылку и попробуйте снова."
+
+
+def _is_permanent_ytdlp_error(msg: str) -> bool:
+    """True для ошибок, которые повторная попытка НЕ исправит (не ретраить).
+
+    Транзиентные (таймаут/сеть/временный сбой) → False (ретраим). Всё остальное
+    из распознаваемых причин — перманентно для данной ссылки.
+    """
+    m = msg.lower()
+    if "timeout" in m or "timed out" in m or "temporary" in m:
+        return False
+    permanent_markers = (
+        "not a bot", "sign in to confirm",
+        "private video", "login required",
+        "age", "unavailable", "removed",
+        "live", "max_filesize", "too large",
+        "unsupported url", "is not a valid url",
+    )
+    return any(marker in m for marker in permanent_markers)
