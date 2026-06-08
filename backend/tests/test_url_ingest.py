@@ -173,6 +173,17 @@ def test_youtube_bot_block_message_is_friendly():
     assert "rutube" in msg.lower() or "vk" in msg.lower() or "дзен" in msg.lower()
 
 
+def test_video_not_available_message_is_friendly():
+    """«This video is not available» (реальная строка из прод-лога) → понятный текст,
+    а не generic «не удалось скачать»."""
+    from app.tasks.transcribe_url import _translate_ytdlp_error
+
+    raw = "ERROR: [youtube] Bm7a4Xtpr8g: This video is not available"
+    msg = _translate_ytdlp_error(raw)
+    assert "не удалось скачать" not in msg.lower()  # не generic
+    assert "недоступно" in msg.lower()
+
+
 def test_permanent_errors_not_retried():
     """Бот-блок/приват/недоступно/неподдерж. — перманентны (не ретраим)."""
     from app.tasks.transcribe_url import _is_permanent_ytdlp_error
@@ -181,6 +192,9 @@ def test_permanent_errors_not_retried():
         "Sign in to confirm you're not a bot",
         "Private video. Login required",
         "Video unavailable",
+        # реальная строка из прод-лога 2026-06-08 (ролик Bm7a4Xtpr8g): раньше
+        # не распознавалась («not available» с пробелом ≠ «unavailable») → 3× ретрай.
+        "ERROR: [youtube] Bm7a4Xtpr8g: This video is not available",
         "Unsupported URL: https://example.com/x",
     ):
         assert _is_permanent_ytdlp_error(raw) is True, raw

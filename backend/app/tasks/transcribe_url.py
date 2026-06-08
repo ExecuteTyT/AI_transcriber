@@ -171,8 +171,11 @@ def _translate_ytdlp_error(msg: str) -> str:
         return "Видео приватное или требует авторизации"
     if "age" in m and ("restrict" in m or "confirm" in m):
         return "Видео с возрастным ограничением — невозможно скачать"
-    if "unavailable" in m or "removed" in m:
-        return "Видео удалено или недоступно в вашем регионе"
+    # «Video unavailable» (одно слово) и «This video is not available» (с пробелом,
+    # для удалённых/регионально-заблокированных/недоступных с сервера) — разные
+    # формулировки yt-dlp, ловим обе.
+    if "unavailable" in m or "not available" in m or "removed" in m:
+        return "Видео недоступно: удалено или заблокировано в вашем регионе"
     if "live" in m:
         return "Нельзя распознать live-трансляцию"
     if "max_filesize" in m or "too large" in m:
@@ -194,7 +197,10 @@ def _is_permanent_ytdlp_error(msg: str) -> bool:
     permanent_markers = (
         "not a bot", "sign in to confirm",
         "private video", "login required",
-        "age", "unavailable", "removed",
+        # «unavailable» (Video unavailable) и «not available» (This video is not
+        # available) — обе перманентны: ретрай не вернёт удалённое/заблокированное
+        # видео, а 3× долбит источник зря (ухудшает репутацию IP).
+        "age", "unavailable", "not available", "removed",
         "live", "max_filesize", "too large",
         "unsupported url", "is not a valid url",
     )
