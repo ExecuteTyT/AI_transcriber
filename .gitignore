@@ -49,3 +49,6 @@ frontend/tsconfig.tsbuildinfo
 
 # Yandex Direct API config — содержит OAuth-токен, НИКОГДА не коммитить
 .claude/yandex-direct.json
+
+# nginx basic-auth для admin (секрет, создаётся на проде)
+.htpasswd
