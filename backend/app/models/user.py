@@ -64,5 +64,10 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Расходуется ПЕРЕД monthly-лимитом. reset_monthly_limits его НЕ трогает.
     bonus_minutes: Mapped[int] = mapped_column(Integer, default=180)
 
+    # Кошелёк: предоплаченные минуты (пополняются через YooKassa-пакеты).
+    # Третье «ведёрко» минут: расходуется ПОСЛЕ bonus_minutes и monthly-лимита.
+    # reset_monthly_limits его НЕ трогает (это предоплата, не подписочный лимит).
+    wallet_minutes: Mapped[int] = mapped_column(Integer, default=0)
+
     transcriptions = relationship("Transcription", back_populates="user", lazy="selectin")
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")
