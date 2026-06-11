@@ -50,3 +50,13 @@ def test_free_plan_proba_one_summary():
     """Free-проба: ровно 1 бесплатный разбор (ai_summaries=1)."""
     from app.services.plans import get_plan
     assert get_plan("free").ai_summaries == 1
+
+
+@pytest.mark.asyncio
+async def test_wallet_topup_model_exists(db_session: AsyncSession):
+    """Модель WalletTopup создаётся и пишется (идемпотентность по yookassa_id)."""
+    from app.models.wallet_topup import WalletTopup
+    t = WalletTopup(user_id=uuid.uuid4(), yookassa_id="pay_1", minutes=150, pack="w150")
+    db_session.add(t)
+    await db_session.commit()
+    assert t.id is not None

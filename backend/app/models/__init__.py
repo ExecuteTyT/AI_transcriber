@@ -7,6 +7,7 @@ from app.models.subscription import Subscription
 from app.models.transcription import Transcription
 from app.models.user import User
 from app.models.user_consent import UserConsent
+from app.models.wallet_topup import WalletTopup
 
 __all__ = [
     "Base",
@@ -18,4 +19,5 @@ __all__ = [
     "ChatMessage",
     "UserConsent",
     "RefreshToken",
+    "WalletTopup",
 ]
