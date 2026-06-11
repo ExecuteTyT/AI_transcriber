@@ -81,3 +81,40 @@ async def test_credit_wallet_adds_minutes_idempotent(db_session: AsyncSession):
     await credit_wallet(user.id, pack="w150", yookassa_id="pay_X", db=db_session)
     await db_session.refresh(user)
     assert user.wallet_minutes == 150
+
+
+@pytest.mark.asyncio
+async def test_wallet_topup_endpoint_rejects_bad_pack(client: AsyncClient):
+    """POST /api/payments/wallet с неизвестным пакетом → 400."""
+    token, _ = await _register(client)
+    resp = await client.post("/api/payments/wallet", headers=_h(token),
+                             json={"pack": "nonexistent"})
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_webhook_wallet_credits_minutes(client: AsyncClient, db_session: AsyncSession, monkeypatch):
+    """payment.succeeded с metadata.type=wallet начисляет минуты на кошелёк."""
+    import app.api.payments as payments_mod
+    _, email = await _register(client)
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+
+    async def fake_verify(pid):
+        return {"status": "succeeded",
+                "amount": {"value": "299.00"},
+                "metadata": {"type": "wallet", "user_id": str(user.id), "pack": "w150"}}
+
+    monkeypatch.setattr(payments_mod, "verify_payment_via_api", fake_verify)
+    monkeypatch.setattr(payments_mod, "is_yookassa_ip", lambda ip: True)
+
+    resp = await client.post(
+        "/api/payments/webhook",
+        json={"event": "payment.succeeded", "object": {"id": "pay_W1"}},
+        headers={"x-forwarded-for": "185.71.76.1"},
+    )
+    assert resp.status_code == 200
+    # credit_wallet коммитит в request-scoped сессии; сбрасываем снапшот db_session
+    # (отдельное SQLite-соединение), чтобы перечитать актуальное состояние.
+    await db_session.rollback()
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    assert user.wallet_minutes == 150

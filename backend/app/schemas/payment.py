@@ -30,6 +30,20 @@ class SubscriptionResponse(BaseModel):
     current_period_end: datetime | None = None
 
 
+class WalletTopupRequest(BaseModel):
+    """Запрос на пополнение кошелька."""
+
+    pack: str  # w150 / w400 / w1000
+
+
+class WalletTopupResponse(BaseModel):
+    """Ответ с URL для оплаты пополнения."""
+
+    payment_id: str
+    confirmation_url: str
+    status: str
+
+
 class WebhookEvent(BaseModel):
     """Событие вебхука ЮKassa (упрощённая схема)."""
 

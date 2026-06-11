@@ -15,6 +15,8 @@ from app.schemas.payment import (
     SubscribeRequest,
     SubscribeResponse,
     SubscriptionResponse,
+    WalletTopupRequest,
+    WalletTopupResponse,
     WebhookEvent,
 )
 from app.services.payment import (
@@ -22,9 +24,12 @@ from app.services.payment import (
     activate_subscription,
     cancel_subscription,
     create_payment,
+    create_wallet_payment,
+    credit_wallet,
     is_yookassa_ip,
     verify_payment_via_api,
 )
+from app.services.plans import WALLET_PACKS
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +68,33 @@ async def subscribe(
         )
 
     return SubscribeResponse(
+        payment_id=payment["id"],
+        confirmation_url=payment["confirmation"]["confirmation_url"],
+        status=payment["status"],
+    )
+
+
+@router.post("/wallet", response_model=WalletTopupResponse)
+async def topup_wallet(
+    req: WalletTopupRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Создание платежа для пополнения кошелька (пакет минут)."""
+    if req.pack not in WALLET_PACKS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Допустимые пакеты: {', '.join(WALLET_PACKS)}",
+        )
+    try:
+        payment = await create_wallet_payment(user.id, req.pack)
+    except Exception as e:
+        logger.exception("Wallet payment creation failed: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Ошибка при создании платежа. Попробуйте позже.",
+        )
+    return WalletTopupResponse(
         payment_id=payment["id"],
         confirmation_url=payment["confirmation"]["confirmation_url"],
         status=payment["status"],
@@ -177,6 +209,25 @@ async def yookassa_webhook(
         return {"status": "ok"}
 
     metadata = verified.get("metadata", {})
+
+    # Ветка кошелька: пополнение баланса (не подписка). Отделяем по metadata.type.
+    if metadata.get("type") == "wallet":
+        pack = metadata.get("pack")
+        wallet_user_id = metadata.get("user_id")
+        if not (pack and wallet_user_id):
+            logger.warning("Wallet webhook %s: missing pack/user_id", yookassa_id)
+            return {"status": "ok"}
+        expected = f"{WALLET_PACKS.get(pack, {}).get('price_rub', -1):.2f}"
+        actual = (verified.get("amount") or {}).get("value")
+        if pack not in WALLET_PACKS or actual != expected:
+            logger.error(
+                "Wallet webhook %s: amount mismatch expected=%s got=%s pack=%s",
+                yookassa_id, expected, actual, pack,
+            )
+            return {"status": "ok"}
+        await credit_wallet(uuid.UUID(wallet_user_id), pack, yookassa_id, db)
+        return {"status": "ok"}
+
     user_id_str = metadata.get("user_id")
     plan = metadata.get("plan")
 
