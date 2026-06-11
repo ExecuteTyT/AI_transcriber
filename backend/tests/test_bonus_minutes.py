@@ -23,11 +23,11 @@ def _h(token: str) -> dict:
 
 
 @pytest.mark.asyncio
-async def test_new_user_gets_180_bonus(client: AsyncClient):
-    """При регистрации начисляется 180 bonus_minutes."""
+async def test_new_user_gets_proba_bonus(client: AsyncClient):
+    """При регистрации начисляется проба bonus_minutes (30)."""
     token, _ = await _register(client)
     me = await client.get("/api/auth/me", headers=_h(token))
-    assert me.json()["bonus_minutes"] == 180
+    assert me.json()["bonus_minutes"] == 30
 
 
 @pytest.mark.asyncio

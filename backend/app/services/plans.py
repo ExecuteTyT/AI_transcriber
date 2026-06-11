@@ -38,7 +38,7 @@ PLANS: dict[str, PlanConfig] = {
         # исчерпания — только overage с баланса или переход на платный план.
         minutes_limit=0,
         max_file_duration_sec=15 * 60,             # 15 мин
-        ai_summaries=5,
+        ai_summaries=1,                            # проба: 1 бесплатный разбор, дальше пейволл
         speakers=True,
         max_speakers=3,
         rag_chat_limit=3,
@@ -118,3 +118,23 @@ PLANS: dict[str, PlanConfig] = {
 def get_plan(plan_name: str) -> PlanConfig:
     """Получить конфигурацию плана по имени. Неизвестный план → free."""
     return PLANS.get(plan_name, PLANS["free"])
+
+
+def has_paid_access(user) -> bool:
+    """Платный доступ к AI-разбору и чату.
+
+    True если у юзера активная платная подписка (plan != free) ИЛИ есть остаток
+    на кошельке (wallet_minutes > 0). Free-юзер без кошелька получает только
+    пробу (1 файл в рамках bonus + 1 разбор), дальше — пейволл.
+    """
+    return getattr(user, "plan", "free") != "free" or getattr(user, "wallet_minutes", 0) > 0
+
+
+# Пакеты пополнения кошелька: код → (цена ₽, минуты). Цена за минуту падает
+# с объёмом (299/150≈2.0, 690/400≈1.7, 1490/1000≈1.5). Pro (start, 500₽/600мин)
+# выгоднее по минуте — объёмных юзеров сетка толкает в подписку.
+WALLET_PACKS: dict[str, dict] = {
+    "w150": {"price_rub": 299, "minutes": 150},
+    "w400": {"price_rub": 690, "minutes": 400},
+    "w1000": {"price_rub": 1490, "minutes": 1000},
+}

@@ -14,8 +14,8 @@ class User(Base, UUIDMixin, TimestampMixin):
     name: Mapped[str] = mapped_column(String(255), default="")
     plan: Mapped[str] = mapped_column(String(20), default="free")  # free/start/pro
     minutes_used: Mapped[int] = mapped_column(Integer, default=0)
-    # Free план не получает ежемесячных минут — только bonus_minutes (180 при
-    # регистрации). Платные планы выставляют minutes_limit при активации
+    # Free план не получает ежемесячных минут — только bonus_minutes (проба, 30
+    # при регистрации). Платные планы выставляют minutes_limit при активации
     # подписки в payment.activate_subscription.
     minutes_limit: Mapped[int] = mapped_column(Integer, default=0)
 
@@ -62,7 +62,7 @@ class User(Base, UUIDMixin, TimestampMixin):
 
     # Welcome-бонус минут: начисляется one-time при регистрации.
     # Расходуется ПЕРЕД monthly-лимитом. reset_monthly_limits его НЕ трогает.
-    bonus_minutes: Mapped[int] = mapped_column(Integer, default=180)
+    bonus_minutes: Mapped[int] = mapped_column(Integer, default=30)
 
     # Кошелёк: предоплаченные минуты (пополняются через YooKassa-пакеты).
     # Третье «ведёрко» минут: расходуется ПОСЛЕ bonus_minutes и monthly-лимита.
