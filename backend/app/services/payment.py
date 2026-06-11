@@ -17,7 +17,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.models.subscription import Subscription
 from app.models.user import User
-from app.services.plans import PLANS, get_plan
+from app.models.wallet_topup import WalletTopup
+from app.services.plans import PLANS, WALLET_PACKS, get_plan
 
 logger = logging.getLogger(__name__)
 
@@ -225,6 +226,64 @@ async def cancel_subscription(
 
     logger.info("Subscription cancelled: id=%s", subscription_id)
     return subscription
+
+
+async def create_wallet_payment(user_id: uuid.UUID, pack: str) -> dict:
+    """Создание YooKassa-платежа для пополнения кошелька (пакет минут)."""
+    import httpx
+
+    if pack not in WALLET_PACKS:
+        raise ValueError(f"Недопустимый пакет: {pack}. Допустимые: {', '.join(WALLET_PACKS)}")
+
+    cfg = WALLET_PACKS[pack]
+    idempotency_key = str(uuid.uuid4())
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.yookassa.ru/v3/payments",
+            auth=(settings.YOOKASSA_SHOP_ID, settings.YOOKASSA_SECRET_KEY),
+            headers={"Idempotence-Key": idempotency_key},
+            json={
+                "amount": {"value": f"{cfg['price_rub']:.2f}", "currency": "RUB"},
+                "confirmation": {
+                    "type": "redirect",
+                    "return_url": f"{settings.APP_URL}/dashboard?wallet=success",
+                },
+                "capture": True,
+                "description": f"Dicto — пополнение кошелька ({cfg['minutes']} мин)",
+                "metadata": {"type": "wallet", "user_id": str(user_id), "pack": pack},
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        return response.json()
+
+
+async def credit_wallet(
+    user_id: uuid.UUID, pack: str, yookassa_id: str, db: AsyncSession
+) -> None:
+    """Начисление минут на кошелёк (идемпотентно по yookassa_id)."""
+    if pack not in WALLET_PACKS:
+        logger.error("credit_wallet: unknown pack=%s", pack)
+        return
+
+    # Идемпотентность: уже обрабатывали этот платёж?
+    existing = await db.execute(
+        select(WalletTopup).where(WalletTopup.yookassa_id == yookassa_id)
+    )
+    if existing.scalar_one_or_none() is not None:
+        logger.info("Дубль wallet-webhook, пропускаем: yookassa_id=%s", yookassa_id)
+        return
+
+    minutes = WALLET_PACKS[pack]["minutes"]
+    db.add(WalletTopup(user_id=user_id, yookassa_id=yookassa_id, minutes=minutes, pack=pack))
+
+    user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+    if user:
+        user.wallet_minutes += minutes
+
+    await db.commit()
+    logger.info("Wallet credited: user=%s pack=%s minutes=%s", user_id, pack, minutes)
 
 
 # verify_webhook_signature удалена: ЮKassa не подписывает webhook'и HMAC.

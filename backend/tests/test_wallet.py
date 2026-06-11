@@ -60,3 +60,24 @@ async def test_wallet_topup_model_exists(db_session: AsyncSession):
     db_session.add(t)
     await db_session.commit()
     assert t.id is not None
+
+
+@pytest.mark.asyncio
+async def test_credit_wallet_adds_minutes_idempotent(db_session: AsyncSession):
+    """credit_wallet начисляет минуты и не дублирует по тому же yookassa_id."""
+    from app.services.payment import credit_wallet
+
+    user = User(email=f"w-{uuid.uuid4().hex[:6]}@e.com", password_hash="x",
+                plan="free", wallet_minutes=0)
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    await credit_wallet(user.id, pack="w150", yookassa_id="pay_X", db=db_session)
+    await db_session.refresh(user)
+    assert user.wallet_minutes == 150
+
+    # повторный webhook тем же платежом — не начисляет второй раз
+    await credit_wallet(user.id, pack="w150", yookassa_id="pay_X", db=db_session)
+    await db_session.refresh(user)
+    assert user.wallet_minutes == 150
