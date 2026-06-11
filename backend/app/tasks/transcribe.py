@@ -17,6 +17,31 @@ from app.tasks.celery_app import celery_app
 
 logger = logging.getLogger(__name__)
 
+
+def consume_minutes(
+    bonus: int, used: int, limit: int, wallet: int, minutes: int
+) -> tuple[int, int, int]:
+    """Расход minutes по порядку bonus → monthly(до limit) → wallet.
+
+    Возвращает (new_bonus, new_used, new_wallet). Остаток сверх всех ведёрок
+    игнорируется (минуты «сгорают» — но upload-precheck это не пропустит).
+    """
+    if bonus > 0:
+        spent = min(bonus, minutes)
+        bonus -= spent
+        minutes -= spent
+    if minutes > 0 and limit > 0:
+        avail = max(0, limit - used)
+        spent = min(avail, minutes)
+        used += spent
+        minutes -= spent
+    if minutes > 0 and wallet > 0:
+        spent = min(wallet, minutes)
+        wallet -= spent
+        minutes -= spent
+    return bonus, used, wallet
+
+
 # Sync engine для Celery (Celery не поддерживает async)
 sync_url = settings.DATABASE_URL.replace("+asyncpg", "")
 sync_engine = create_engine(sync_url)
@@ -93,18 +118,15 @@ def process_transcription(self, transcription_id: str):
             transcription.status = "completed"
             transcription.completed_at = datetime.now(timezone.utc)
 
-            # Списание минут: сначала с bonus_minutes (welcome bonus),
-            # потом — с месячного лимита. Расход сверх обоих уйдёт в overage
-            # (будет реализован в PR#4). Пока — просто увеличиваем minutes_used.
+            # Списание минут по порядку: bonus (проба) → monthly-лимит (подписка)
+            # → wallet (предоплаченный кошелёк). См. consume_minutes.
             user = db.get(User, transcription.user_id)
             if user and result.duration_sec:
                 minutes = math.ceil(result.duration_sec / 60)
-                if user.bonus_minutes > 0:
-                    spent_from_bonus = min(user.bonus_minutes, minutes)
-                    user.bonus_minutes -= spent_from_bonus
-                    minutes -= spent_from_bonus
-                if minutes > 0:
-                    user.minutes_used += minutes
+                user.bonus_minutes, user.minutes_used, user.wallet_minutes = consume_minutes(
+                    user.bonus_minutes, user.minutes_used, user.minutes_limit,
+                    user.wallet_minutes, minutes,
+                )
 
             db.commit()
 

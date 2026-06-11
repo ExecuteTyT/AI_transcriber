@@ -118,3 +118,18 @@ async def test_webhook_wallet_credits_minutes(client: AsyncClient, db_session: A
     await db_session.rollback()
     user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
     assert user.wallet_minutes == 150
+
+
+def test_consume_order_bonus_monthly_wallet():
+    """Расход: сначала bonus, затем monthly (до лимита), затем wallet."""
+    from app.tasks.transcribe import consume_minutes
+
+    # bonus 30, лимита нет, кошелёк 150; файл 100 мин →
+    # 30 из bonus, 0 monthly, 70 из wallet → остаётся wallet 80.
+    assert consume_minutes(bonus=30, used=0, limit=0, wallet=150, minutes=100) == (0, 0, 80)
+
+    # bonus 0, monthly лимит 600 (used 0), wallet 150; файл 50 → всё из monthly.
+    assert consume_minutes(bonus=0, used=0, limit=600, wallet=150, minutes=50) == (0, 50, 150)
+
+    # bonus 0, monthly исчерпан (used==limit), wallet 150; файл 40 → из wallet.
+    assert consume_minutes(bonus=0, used=600, limit=600, wallet=150, minutes=40) == (0, 600, 110)
