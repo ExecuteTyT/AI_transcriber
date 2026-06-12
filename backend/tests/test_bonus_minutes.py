@@ -54,7 +54,7 @@ async def test_upload_allowed_when_only_bonus(client: AsyncClient, db_session: A
 
 @pytest.mark.asyncio
 async def test_upload_blocked_when_all_zero(client: AsyncClient, db_session: AsyncSession):
-    """monthly=0 И bonus=0 → 403 (Free-юзер исчерпал стартовый bonus)."""
+    """monthly=0 И bonus=0 (и wallet=0) → 402 пейволл (Free исчерпал пробу)."""
     token, email = await _register(client)
     result = await db_session.execute(select(User).where(User.email == email))
     user = result.scalar_one()
@@ -68,7 +68,7 @@ async def test_upload_blocked_when_all_zero(client: AsyncClient, db_session: Asy
         headers=_h(token),
         files={"file": ("test.mp3", b"fake", "audio/mpeg")},
     )
-    assert response.status_code == 403
+    assert response.status_code == 402
 
 
 def test_bonus_consumption_priority():

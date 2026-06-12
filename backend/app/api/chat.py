@@ -31,10 +31,11 @@ async def send_chat_message(
     """Отправить сообщение в RAG-чат по транскрипции."""
     plan = get_plan(user.plan)
 
-    if not user.is_admin and plan.rag_chat_limit == 0:
+    from app.services.plans import has_paid_access
+    if not user.is_admin and not has_paid_access(user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="RAG-чат недоступен на бесплатном тарифе. Перейдите на Старт или Про.",
+            detail="Чат по записи доступен на Pro или с кошелька. Пополните баланс или оформите Pro.",
         )
 
     result = await db.execute(

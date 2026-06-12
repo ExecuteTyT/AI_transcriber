@@ -27,6 +27,10 @@ async def _check_analysis_limits(
     if user.is_admin:
         return  # Админы без лимитов
 
+    from app.services.plans import has_paid_access
+    if has_paid_access(user):
+        return  # платный доступ (подписка или кошелёк) — без free-лимитов
+
     plan = get_plan(user.plan)
 
     # Action items только для pro

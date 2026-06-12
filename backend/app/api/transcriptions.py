@@ -165,11 +165,17 @@ async def upload_file(
     # Проверка лимитов (админы и безлимитные аккаунты без ограничений).
     # Учитываем бонусные минуты (welcome-bonus, one-time) + ежемесячный лимит.
     plan = get_plan(user.plan)
-    available_minutes = user.bonus_minutes + max(0, user.minutes_limit - user.minutes_used)
+    available_minutes = (
+        user.bonus_minutes + max(0, user.minutes_limit - user.minutes_used) + user.wallet_minutes
+    )
     if not user.is_admin and not user.is_unlimited and available_minutes <= 0:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Лимит минут исчерпан. Перейдите на более высокий тариф.",
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail={
+                "reason": "no_minutes",
+                "message": "Минуты закончились. Пополните кошелёк или оформите Pro.",
+                "paths": ["wallet", "pro"],
+            },
         )
 
     # Валидация типа файла
@@ -317,12 +323,18 @@ async def upload_by_url(
             ),
         )
 
-    # 2. Лимит минут (как у обычного upload — учитываем bonus + monthly).
-    available_minutes = user.bonus_minutes + max(0, user.minutes_limit - user.minutes_used)
+    # 2. Лимит минут (как у обычного upload — bonus + monthly + кошелёк).
+    available_minutes = (
+        user.bonus_minutes + max(0, user.minutes_limit - user.minutes_used) + user.wallet_minutes
+    )
     if not user.is_admin and not user.is_unlimited and available_minutes <= 0:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Лимит минут исчерпан. Перейдите на более высокий тариф.",
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail={
+                "reason": "no_minutes",
+                "message": "Минуты закончились. Пополните кошелёк или оформите Pro.",
+                "paths": ["wallet", "pro"],
+            },
         )
 
     # 3. expires_at (как в обычном upload).

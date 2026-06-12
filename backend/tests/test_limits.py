@@ -22,7 +22,7 @@ def _auth_headers(token: str) -> dict:
 
 @pytest.mark.asyncio
 async def test_upload_when_limit_exhausted(client: AsyncClient, db_session: AsyncSession):
-    """Загрузка при исчерпанных минутах (bonus=0, monthly=full) → 403."""
+    """Загрузка при исчерпанных минутах (bonus=0, monthly=full) → 402 пейволл."""
     token = await _register_and_get_token(client)
     me = await client.get("/api/auth/me", headers=_auth_headers(token))
     user_id = me.json()["id"]
@@ -40,8 +40,8 @@ async def test_upload_when_limit_exhausted(client: AsyncClient, db_session: Asyn
         headers=_auth_headers(token),
         files={"file": ("test.mp3", b"fake", "audio/mpeg")},
     )
-    assert response.status_code == 403
-    assert "Лимит минут исчерпан" in response.json()["detail"]
+    assert response.status_code == 402
+    assert response.json()["detail"]["paths"] == ["wallet", "pro"]
 
 
 @pytest.mark.asyncio
@@ -94,7 +94,7 @@ def test_plan_configs():
     assert free.minutes_limit == 0
     assert free.max_file_duration_sec == 15 * 60
     assert free.price_rub == 0
-    assert free.ai_summaries == 5
+    assert free.ai_summaries == 1
     assert free.action_items is False
 
     start = get_plan("start")

@@ -133,3 +133,85 @@ def test_consume_order_bonus_monthly_wallet():
 
     # bonus 0, monthly исчерпан (used==limit), wallet 150; файл 40 → из wallet.
     assert consume_minutes(bonus=0, used=600, limit=600, wallet=150, minutes=40) == (0, 600, 110)
+
+
+@pytest.mark.asyncio
+async def test_free_second_analysis_blocked(client: AsyncClient, db_session: AsyncSession):
+    """Free-юзер: 1-й разбор бесплатно, 2-й (другой тип) → 403 пейволл."""
+    from app.models.transcription import Transcription
+    from app.models.ai_analysis import AiAnalysis
+    _, email = await _register(client)
+    token_resp = await client.post(
+        "/api/auth/login", json={"email": email, "password": "password1"})
+    token = token_resp.json()["access_token"]
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    user.plan = "free"
+    user.wallet_minutes = 0
+    tr = Transcription(user_id=user.id, status="completed", full_text="привет это тест",
+                       file_key="k", original_filename="a.mp3")
+    db_session.add(tr)
+    await db_session.flush()
+    # уже есть 1 разбор (summary) — проба израсходована
+    db_session.add(AiAnalysis(transcription_id=tr.id, type="summary", content="x",
+                              length="standard", model_used="m", tokens_used=1))
+    await db_session.commit()
+    tr_id = tr.id
+
+    resp = await client.get(f"/api/transcriptions/{tr_id}/key-points", headers=_h(token))
+    assert resp.status_code == 403
+
+
+def test_wallet_user_has_paid_access():
+    """Юзер с кошельком (wallet>0) — платный доступ (разбор/чат без free-лимита)."""
+    from app.services.plans import has_paid_access
+
+    class U:
+        plan = "free"
+        wallet_minutes = 50
+
+    assert has_paid_access(U()) is True
+
+
+@pytest.mark.asyncio
+async def test_chat_blocked_for_free(client: AsyncClient, db_session: AsyncSession):
+    """Free без кошелька → чат закрыт (403)."""
+    from app.models.transcription import Transcription
+    _, email = await _register(client)
+    token_resp = await client.post(
+        "/api/auth/login", json={"email": email, "password": "password1"})
+    token = token_resp.json()["access_token"]
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    user.plan = "free"
+    user.wallet_minutes = 0
+    tr = Transcription(user_id=user.id, status="completed", full_text="t",
+                       file_key="k", original_filename="a.mp3")
+    db_session.add(tr)
+    await db_session.commit()
+    tr_id = tr.id
+    resp = await client.post(f"/api/transcriptions/{tr_id}/chat", headers=_h(token),
+                             json={"message": "о чём запись?"})
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_upload_no_minutes_returns_402_paywall(client: AsyncClient, db_session: AsyncSession):
+    """Free без минут (bonus+monthly+wallet=0) → 402 с путями [wallet, pro]."""
+    _, email = await _register(client)
+    token_resp = await client.post(
+        "/api/auth/login", json={"email": email, "password": "password1"})
+    token = token_resp.json()["access_token"]
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    user.plan = "free"
+    user.minutes_limit = 0
+    user.minutes_used = 0
+    user.bonus_minutes = 0
+    user.wallet_minutes = 0
+    await db_session.commit()
+
+    resp = await client.post(
+        "/api/transcriptions/upload", headers=_h(token),
+        files={"file": ("test.mp3", b"fake", "audio/mpeg")},
+    )
+    assert resp.status_code == 402
+    detail = resp.json()["detail"]
+    assert detail["paths"] == ["wallet", "pro"]

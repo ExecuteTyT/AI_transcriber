@@ -7,12 +7,12 @@ from app.services.plans import get_plan
 # ─── Plans ───
 
 def test_free_plan_limits():
-    """Free план: 0 мин/мес (только 180 bonus_minutes при регистрации),
-    5 саммари, без action items."""
+    """Free план: 0 мин/мес (только bonus_minutes-проба при регистрации),
+    1 пробный разбор, без action items."""
     plan = get_plan("free")
     assert plan.minutes_limit == 0
     assert plan.action_items is False
-    assert plan.ai_summaries == 5
+    assert plan.ai_summaries == 1
     assert plan.price_rub == 0
     assert plan.overage_rub_per_min == 4.0
 
