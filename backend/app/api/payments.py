@@ -59,7 +59,7 @@ async def subscribe(
         )
 
     try:
-        payment = await create_payment(user.id, req.plan)
+        payment = await create_payment(user.id, req.plan, user.email)
     except Exception as e:
         logger.exception("Payment creation failed: %s", e)
         raise HTTPException(
@@ -87,7 +87,7 @@ async def topup_wallet(
             detail=f"Допустимые пакеты: {', '.join(WALLET_PACKS)}",
         )
     try:
-        payment = await create_wallet_payment(user.id, req.pack)
+        payment = await create_wallet_payment(user.id, req.pack, user.email)
     except Exception as e:
         logger.exception("Wallet payment creation failed: %s", e)
         raise HTTPException(

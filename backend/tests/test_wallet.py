@@ -120,6 +120,18 @@ async def test_webhook_wallet_credits_minutes(client: AsyncClient, db_session: A
     assert user.wallet_minutes == 150
 
 
+def test_build_payment_description_includes_email():
+    """Описание платежа содержит email аккаунта (видно в кабинете ЮKassa)."""
+    from app.services.payment import build_payment_description
+
+    assert build_payment_description("Dicto — тариф Про", "oleg@e.com") == "Dicto — тариф Про · oleg@e.com"
+    # без email — только база
+    assert build_payment_description("Dicto — тариф Про", None) == "Dicto — тариф Про"
+    assert build_payment_description("Dicto — тариф Про", "") == "Dicto — тариф Про"
+    # лимит 128 символов
+    assert len(build_payment_description("X" * 200, "a@b.com")) == 128
+
+
 def test_consume_order_bonus_monthly_wallet():
     """Расход: сначала bonus, затем monthly (до лимита), затем wallet."""
     from app.tasks.transcribe import consume_minutes

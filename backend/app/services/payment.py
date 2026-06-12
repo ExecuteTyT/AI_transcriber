@@ -93,7 +93,19 @@ PLAN_DESCRIPTIONS: dict[str, str] = {
 }
 
 
-async def create_payment(user_id: uuid.UUID, plan: str) -> dict:
+def build_payment_description(base: str, email: str | None) -> str:
+    """Описание платежа для ЮKassa с указанием, кто оплатил.
+
+    ЮKassa показывает description в кабинете заказов. Добавляем email аккаунта,
+    чтобы было видно, за кого платёж. Лимит ЮKassa — 128 символов, режем с
+    запасом (email бывает длинным).
+    """
+    if not email:
+        return base[:128]
+    return f"{base} · {email}"[:128]
+
+
+async def create_payment(user_id: uuid.UUID, plan: str, email: str | None = None) -> dict:
     """Создание платежа через ЮKassa API."""
     import httpx
 
@@ -117,10 +129,11 @@ async def create_payment(user_id: uuid.UUID, plan: str) -> dict:
                     "return_url": f"{settings.APP_URL}/subscription?status=success",
                 },
                 "capture": True,
-                "description": PLAN_DESCRIPTIONS[plan],
+                "description": build_payment_description(PLAN_DESCRIPTIONS[plan], email),
                 "metadata": {
                     "user_id": str(user_id),
                     "plan": plan,
+                    "email": email or "",
                 },
             },
             timeout=30,
@@ -228,7 +241,7 @@ async def cancel_subscription(
     return subscription
 
 
-async def create_wallet_payment(user_id: uuid.UUID, pack: str) -> dict:
+async def create_wallet_payment(user_id: uuid.UUID, pack: str, email: str | None = None) -> dict:
     """Создание YooKassa-платежа для пополнения кошелька (пакет минут)."""
     import httpx
 
@@ -250,8 +263,15 @@ async def create_wallet_payment(user_id: uuid.UUID, pack: str) -> dict:
                     "return_url": f"{settings.APP_URL}/dashboard?wallet=success",
                 },
                 "capture": True,
-                "description": f"Dicto — пополнение кошелька ({cfg['minutes']} мин)",
-                "metadata": {"type": "wallet", "user_id": str(user_id), "pack": pack},
+                "description": build_payment_description(
+                    f"Dicto — пополнение кошелька ({cfg['minutes']} мин)", email
+                ),
+                "metadata": {
+                    "type": "wallet",
+                    "user_id": str(user_id),
+                    "pack": pack,
+                    "email": email or "",
+                },
             },
             timeout=30,
         )
