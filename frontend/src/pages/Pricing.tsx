@@ -69,7 +69,7 @@ const PLANS: Plan[] = [
         icon: Clock,
         title: "Минуты",
         items: [
-          { label: "180 минут при регистрации (разово)", included: true },
+          { label: "30 минут на пробу (разово)", included: true },
           { label: "Файлы до 15 минут", included: true },
         ],
       },
@@ -77,9 +77,9 @@ const PLANS: Plan[] = [
         icon: Sparkles,
         title: "AI-анализ",
         items: [
-          { label: "5 саммари в месяц", included: true },
+          { label: "1 AI-разбор (проба)", included: true },
           { label: "Разметка до 3 спикеров", included: true },
-          { label: "3 RAG-вопроса в месяц", included: true },
+          { label: "RAG-чат по записи", included: false },
           { label: "Задачи (action items)", included: false },
         ],
       },
@@ -491,7 +491,7 @@ export default function Pricing() {
               Готовы <em className="italic text-[var(--accent)]">сэкономить</em> часы?
             </h3>
             <p className="text-[15px] text-[var(--fg-muted)] leading-[1.55] mb-8 max-w-[44ch]">
-              180 минут на тест при регистрации. Без карты, без подписки на пробный период.
+              Бесплатная проба при регистрации: 30 минут и AI-разбор. Без карты, без подписки на пробный период.
             </p>
             <Link
               to={user ? "/upload" : "/register"}
@@ -511,7 +511,7 @@ export default function Pricing() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <Seo
         title="Тарифы Dicto — транскрибация от 500 ₽/мес"
-        description="Тарифы Dicto: Free (180 мин при регистрации), Старт (500 ₽/мес, 10 ч), Про (990 ₽, 30 ч), Эксперт (1 990 ₽, 70 ч), Премиум (3 490 ₽, 140 ч). AI-саммари, разметка спикеров, экспорт TXT/SRT/DOCX."
+        description="Тарифы Dicto: Free (30 мин на пробу), Старт (500 ₽/мес, 10 ч), Про (990 ₽, 30 ч), Эксперт (1 990 ₽, 70 ч), Премиум (3 490 ₽, 140 ч). AI-саммари, разметка спикеров, экспорт TXT/SRT/DOCX."
         canonical="https://dicto.pro/pricing"
         jsonLd={{
           "@context": "https://schema.org",

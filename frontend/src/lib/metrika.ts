@@ -7,7 +7,7 @@
  * в Метрике (Настройки → Цели → JavaScript-событие) с тем же именем.
  *
  * Воронка Dicto:
- *   registration   — пользователь завершил регистрацию (+180 мин). PRIMARY.
+ *   registration   — пользователь завершил регистрацию (+30 мин). PRIMARY.
  *   upload         — загрузил первый/любой файл (engagement, micro-goal).
  *   subscribe_click— нажал «Выбрать тариф», ушёл на оплату (intent).
  *   purchase       — вернулся с YooKassa с успешной оплатой. MACRO.

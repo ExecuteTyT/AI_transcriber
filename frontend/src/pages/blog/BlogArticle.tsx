@@ -229,7 +229,7 @@ export default function BlogArticle() {
             Попробуйте <em className="italic text-[var(--accent)]">Dicto</em> бесплатно
           </h3>
           <p className="text-[14px] text-[var(--fg-muted)] mb-6 max-w-[44ch]">
-            180 минут на тест при регистрации. AI-саммари, разметка спикеров — без карты.
+            Бесплатная проба при регистрации: 30 минут и AI-разбор. Разметка спикеров — без карты.
           </p>
           <Link to="/register" className="btn-accent">
             Начать бесплатно <span aria-hidden>→</span>

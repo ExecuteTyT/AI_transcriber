@@ -51,7 +51,7 @@ export default function Register() {
       play("confirm");
       // Цель Метрики — primary-конверсия для автостратегий Директа.
       reachGoal("registration");
-      toast.success("🎉 Добро пожаловать! +180 минут на тест", { duration: 5000 });
+      toast.success("🎉 Добро пожаловать! 30 минут + AI-разбор", { duration: 5000 });
       navigate("/dashboard");
     } catch (err) {
       const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
@@ -76,12 +76,12 @@ export default function Register() {
   return (
     <>
     <Seo
-      title="Регистрация — 180 минут бесплатно · Dicto"
-      description="Создайте аккаунт Dicto — 180 минут транскрибации бесплатно без карты. AI-саммари, разметка спикеров, экспорт."
+      title="Регистрация — бесплатная проба без карты · Dicto"
+      description="Создайте аккаунт Dicto — 30 минут транскрибации и первый AI-разбор бесплатно, без карты. Разметка спикеров, экспорт."
       canonical="https://dicto.pro/register"
     />
     <AuthLayout
-      eyebrow="180 минут бесплатно — без карты"
+      eyebrow="Бесплатная проба — без карты"
       title={<>Создайте <em className="italic text-[var(--accent)]">аккаунт</em>.</>}
       subtitle="Транскрибация, разметка спикеров, AI-саммари и тезисы. Бесплатно."
       footer={
@@ -225,7 +225,7 @@ export default function Register() {
         <div className="flex items-center justify-center gap-5 pt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
           <span>Без карты</span>
           <span>·</span>
-          <span>180 мин</span>
+          <span>30 мин + AI-разбор</span>
           <span>·</span>
           <span>Мгновенно</span>
         </div>

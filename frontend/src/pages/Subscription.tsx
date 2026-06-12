@@ -22,7 +22,7 @@ const PLAN_NAMES: Record<string, string> = {
 };
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  free: ["180 минут при регистрации (разово)", "5 AI-саммари", "Экспорт TXT / SRT", "Спикеры до 3"],
+  free: ["30 минут на пробу (разово)", "1 AI-разбор (проба)", "Экспорт TXT / SRT", "Спикеры до 3"],
   start: [
     "600 минут в месяц (10 часов)",
     "Разметка до 10 спикеров",
@@ -140,7 +140,7 @@ export default function Subscription() {
   const planFeatures = PLAN_FEATURES[sub.plan] || [];
   const isPopular = sub.plan === "pro";
   const low = usagePercent >= 80;
-  // Приветственный бонус (разовый, 180 мин при регистрации) живёт отдельно от
+  // Приветственный бонус (разовый, 30 мин на пробу при регистрации) живёт отдельно от
   // месячного лимита тарифа и расходуется ПЕРВЫМ. Показываем его явной строкой,
   // чтобы «0 / 600» на карточке не путало с реально доступным остатком.
   const bonusMinutes = user?.bonus_minutes ?? 0;

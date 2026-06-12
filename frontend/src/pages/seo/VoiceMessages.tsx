@@ -37,7 +37,7 @@ export default function VoiceMessages() {
         { q: "Dicto хранит мои голосовые?", a: "Нет, файлы автоматически удаляются из облака через 24 часа после обработки. Текст остаётся в вашем аккаунте." },
       ]}
       relatedLinks={[
-        { href: "/audio-v-tekst-besplatno", title: "Транскрибация бесплатно", desc: "180 минут при регистрации без карты" },
+        { href: "/audio-v-tekst-besplatno", title: "Транскрибация бесплатно", desc: "30 минут на пробу при регистрации без карты" },
         { href: "/rasshifrovka-audio", title: "Расшифровка аудио в текст", desc: "MP3, WAV, FLAC, OGG — любой формат" },
         { href: "/diktofon-v-tekst", title: "Диктофон в текст", desc: "Расшифровка записей с диктофона" },
         { href: "/bez-registracii", title: "Транскрибация без регистрации", desc: "Варианты использования без аккаунта" },

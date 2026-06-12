@@ -230,7 +230,7 @@ export default function Landing() {
     <div className="min-h-screen overflow-hidden bg-[var(--bg)] text-[var(--fg)]">
       <Seo
         title="Dicto — Транскрибация аудио и видео в текст онлайн | Нейросеть"
-        description="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. 180 бесплатных минут при регистрации, без карты. Тарифы от 500 ₽/мес."
+        description="Сервис транскрибации аудио и видео в текст с помощью нейросети. Разметка спикеров, AI-саммари, ключевые тезисы, action items. Бесплатная проба без карты: 30 минут и AI-разбор. Тарифы от 500 ₽/мес."
         canonical="https://dicto.pro/"
         jsonLd={{
           "@context": "https://schema.org",
@@ -291,7 +291,7 @@ export default function Landing() {
           </div>
 
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mt-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            Без карты · 180 минут бесплатно при регистрации
+            Без карты · бесплатная проба при регистрации
           </p>
 
           {/* Mic demo — signature interactive moment */}
@@ -453,8 +453,8 @@ export default function Landing() {
                 <p className="text-[13px] text-[var(--fg-muted)]">для знакомства</p>
               </div>
               <ul className="space-y-3 text-[14px] text-[var(--fg-muted)] mb-8">
-                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>180 минут при регистрации</li>
-                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>5 AI-саммари</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>30 минут на пробу при регистрации</li>
+                <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>1 AI-разбор (проба)</li>
                 <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>Спикеры до 3</li>
                 <li className="flex items-start gap-2.5"><span className="text-[var(--accent)] mt-0.5">✓</span>Экспорт TXT / SRT</li>
               </ul>
@@ -462,7 +462,7 @@ export default function Landing() {
                 Начать бесплатно
               </Link>
               <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
-                180 минут бесплатно · без карты
+                Бесплатная проба · без карты
               </p>
             </div>
 
@@ -557,7 +557,7 @@ export default function Landing() {
             Ваша следующая запись — <em className="italic text-[var(--accent)]">текст за две минуты</em>.
           </h2>
           <p className="text-[var(--fg-muted)] text-lg md:text-xl max-w-[40ch] mb-10 leading-[1.5]">
-            Зарегистрируйтесь бесплатно — 180 минут на тест без карты, и попробуйте на своей записи.
+            Зарегистрируйтесь бесплатно — проба без карты, и попробуйте на своей записи.
           </p>
           <Link
             to="/register"
@@ -592,8 +592,8 @@ export default function Landing() {
               через RAG — можно задать вопрос и получить цитату с точным таймкодом.
             </p>
             <p>
-              Перевод аудио в текст начинается бесплатно: 180 минут при регистрации без банковской
-              карты. Файлы хранятся в России в соответствии с 152-ФЗ и удаляются автоматически.
+              Перевод аудио в текст начинается бесплатно: 30 минут и первый AI-разбор при регистрации
+              без банковской карты. Файлы хранятся в России в соответствии с 152-ФЗ и удаляются автоматически.
             </p>
           </div>
         </div>

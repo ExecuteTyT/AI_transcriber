@@ -109,7 +109,7 @@ export default function SeoLanding({
           {cta} <span aria-hidden>→</span>
         </Link>
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] mt-5">
-          Без карты · 180 минут бесплатно при регистрации
+          Без карты · бесплатная проба при регистрации
         </p>
       </section>
 
@@ -164,7 +164,7 @@ export default function SeoLanding({
             <div className="p-7 border-b md:border-b-0 md:border-r border-[var(--border)] bg-[var(--bg)]">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-4">/free</p>
               <div className="font-display text-5xl text-[var(--fg)] leading-none mb-2">0&nbsp;₽</div>
-              <p className="text-[12px] text-[var(--fg-muted)]">180 минут при регистрации</p>
+              <p className="text-[12px] text-[var(--fg-muted)]">30 минут на пробу при регистрации</p>
             </div>
             <div className="p-7 bg-[var(--highlight-bg)] text-[var(--highlight-fg)]">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--highlight-fg-muted)] mb-4">/start</p>
