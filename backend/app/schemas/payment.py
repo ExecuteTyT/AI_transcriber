@@ -26,6 +26,7 @@ class SubscriptionResponse(BaseModel):
     status: str  # active / cancelled / expired / none
     minutes_used: int
     minutes_limit: int
+    wallet_minutes: int = 0
     current_period_start: datetime | None = None
     current_period_end: datetime | None = None
 

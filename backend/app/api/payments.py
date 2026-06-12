@@ -287,6 +287,7 @@ async def get_subscription(
             status=sub.status,
             minutes_used=user.minutes_used,
             minutes_limit=user.minutes_limit,
+            wallet_minutes=user.wallet_minutes,
             current_period_start=sub.current_period_start,
             current_period_end=sub.current_period_end,
         )
@@ -296,6 +297,7 @@ async def get_subscription(
         status="none",
         minutes_used=user.minutes_used,
         minutes_limit=user.minutes_limit,
+        wallet_minutes=user.wallet_minutes,
     )
 
 

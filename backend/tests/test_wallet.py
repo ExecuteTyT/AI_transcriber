@@ -215,3 +215,18 @@ async def test_upload_no_minutes_returns_402_paywall(client: AsyncClient, db_ses
     assert resp.status_code == 402
     detail = resp.json()["detail"]
     assert detail["paths"] == ["wallet", "pro"]
+
+
+@pytest.mark.asyncio
+async def test_subscription_response_includes_wallet(client: AsyncClient, db_session: AsyncSession):
+    """GET /api/payments/subscription возвращает wallet_minutes."""
+    _, email = await _register(client)
+    token_resp = await client.post(
+        "/api/auth/login", json={"email": email, "password": "password1"})
+    token = token_resp.json()["access_token"]
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    user.wallet_minutes = 150
+    await db_session.commit()
+    resp = await client.get("/api/payments/subscription", headers=_h(token))
+    assert resp.status_code == 200
+    assert resp.json()["wallet_minutes"] == 150
