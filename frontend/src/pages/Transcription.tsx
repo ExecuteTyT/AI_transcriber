@@ -1039,7 +1039,10 @@ export default function Transcription() {
                       >
                         {formatTime(seg.start)}
                       </button>
-                      {seg.speaker && style && (
+                      {/* Чип спикера — только при СМЕНЕ говорящего (группировка
+                          по ходам, как у конкурента). Цветная левая граница
+                          тянется по всем репликам хода и визуально их объединяет. */}
+                      {seg.speaker && style && seg.speaker !== filteredSegments[i - 1]?.speaker && (
                         <span
                           className={cn(
                             "inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1",
