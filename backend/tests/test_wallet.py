@@ -120,6 +120,27 @@ async def test_webhook_wallet_credits_minutes(client: AsyncClient, db_session: A
     assert user.wallet_minutes == 150
 
 
+def test_recommend_topup_smallest_covering_pack():
+    """recommend_topup: минимальный пакет, покрывающий нехватку минут."""
+    from app.services.plans import recommend_topup
+
+    # файл 60 мин, доступно 30 → нехватка 30 → w150 (150≥30), 299₽
+    r = recommend_topup(file_minutes=60, available_minutes=30)
+    assert r["shortfall_minutes"] == 30
+    assert r["pack"] == "w150"
+    assert r["price_rub"] == 299
+
+    # файл 200 мин, доступно 30 → нехватка 170 → w400 (400≥170)
+    assert recommend_topup(file_minutes=200, available_minutes=30)["pack"] == "w400"
+
+    # файл влезает в баланс → None (докидывать не нужно)
+    assert recommend_topup(file_minutes=20, available_minutes=30) is None
+    assert recommend_topup(file_minutes=30, available_minutes=30) is None
+
+    # нехватка больше самого большого пакета → fallback на максимальный (UI подскажет Pro)
+    assert recommend_topup(file_minutes=5000, available_minutes=0)["pack"] == "w1000"
+
+
 def test_build_payment_description_includes_email():
     """Описание платежа содержит email аккаунта (видно в кабинете ЮKassa)."""
     from app.services.payment import build_payment_description
@@ -227,6 +248,59 @@ async def test_upload_no_minutes_returns_402_paywall(client: AsyncClient, db_ses
     assert resp.status_code == 402
     detail = resp.json()["detail"]
     assert detail["paths"] == ["wallet", "pro"]
+
+
+@pytest.mark.asyncio
+async def test_upload_long_file_returns_402_with_topup(client: AsyncClient, db_session: AsyncSession, monkeypatch):
+    """Файл длиннее баланса → 402 file_exceeds_balance + сколько докинуть."""
+    import app.api.transcriptions as tr_api
+    _, email = await _register(client)
+    token_resp = await client.post(
+        "/api/auth/login", json={"email": email, "password": "password1"})
+    token = token_resp.json()["access_token"]
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    user.plan = "free"
+    user.minutes_limit = 0
+    user.minutes_used = 0
+    user.bonus_minutes = 30
+    user.wallet_minutes = 0
+    await db_session.commit()
+
+    # файл «на час» — probe вернёт 3600 сек
+    monkeypatch.setattr(tr_api, "probe_duration_sec", lambda data: 3600)
+
+    resp = await client.post(
+        "/api/transcriptions/upload", headers=_h(token),
+        files={"file": ("big.mp3", b"fake-but-long", "audio/mpeg")},
+    )
+    assert resp.status_code == 402
+    d = resp.json()["detail"]
+    assert d["reason"] == "file_exceeds_balance"
+    assert d["file_minutes"] == 60
+    assert d["available_minutes"] == 30
+    assert d["topup"]["pack"] == "w150"        # 30 мин нехватки → пакет 150 мин
+    assert d["topup"]["price_rub"] == 299
+
+
+@pytest.mark.asyncio
+async def test_upload_unprobeable_file_proceeds(client: AsyncClient, db_session: AsyncSession, monkeypatch):
+    """probe=None (длину не определить) → не блокируем, грузим как обычно."""
+    import app.api.transcriptions as tr_api
+    _, email = await _register(client)
+    token_resp = await client.post(
+        "/api/auth/login", json={"email": email, "password": "password1"})
+    token = token_resp.json()["access_token"]
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    user.bonus_minutes = 30
+    await db_session.commit()
+
+    monkeypatch.setattr(tr_api, "probe_duration_sec", lambda data: None)
+
+    resp = await client.post(
+        "/api/transcriptions/upload", headers=_h(token),
+        files={"file": ("x.mp3", b"fake", "audio/mpeg")},
+    )
+    assert resp.status_code == 201  # прошло (best-effort fallback)
 
 
 @pytest.mark.asyncio
