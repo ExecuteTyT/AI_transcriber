@@ -33,11 +33,15 @@ async def _check_analysis_limits(
 
     plan = get_plan(user.plan)
 
-    # Action items только для pro
+    # Action items только для платных (Pro / кошелёк)
     if analysis_type == "action_items" and not plan.action_items:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Action items доступны только на тарифе Про",
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail={
+                "reason": "analysis_locked",
+                "message": "Задачи (action items) доступны на Pro или с кошелька.",
+                "paths": ["wallet", "pro"],
+            },
         )
 
     # Лимит саммари для free (распространяется на summary и key_points).
@@ -60,9 +64,12 @@ async def _check_analysis_limits(
         used = (await db.execute(select(func.count()).select_from(distinct_pairs))).scalar() or 0
         if used >= plan.ai_summaries:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Лимит AI-анализа исчерпан ({used}/{plan.ai_summaries} в месяц). "
-                "Перейдите на расширенный тариф.",
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail={
+                    "reason": "analysis_locked",
+                    "message": "Бесплатный разбор использован. Больше разборов — на Pro или с кошелька.",
+                    "paths": ["wallet", "pro"],
+                },
             )
 
 

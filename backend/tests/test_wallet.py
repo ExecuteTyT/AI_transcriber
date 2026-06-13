@@ -191,7 +191,8 @@ async def test_free_second_analysis_blocked(client: AsyncClient, db_session: Asy
     tr_id = tr.id
 
     resp = await client.get(f"/api/transcriptions/{tr_id}/key-points", headers=_h(token))
-    assert resp.status_code == 403
+    assert resp.status_code == 402
+    assert resp.json()["detail"]["paths"] == ["wallet", "pro"]
 
 
 def test_wallet_user_has_paid_access():
@@ -223,7 +224,8 @@ async def test_chat_blocked_for_free(client: AsyncClient, db_session: AsyncSessi
     tr_id = tr.id
     resp = await client.post(f"/api/transcriptions/{tr_id}/chat", headers=_h(token),
                              json={"message": "о чём запись?"})
-    assert resp.status_code == 403
+    assert resp.status_code == 402
+    assert resp.json()["detail"]["paths"] == ["wallet", "pro"]
 
 
 @pytest.mark.asyncio

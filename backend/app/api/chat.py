@@ -34,8 +34,12 @@ async def send_chat_message(
     from app.services.plans import has_paid_access
     if not user.is_admin and not has_paid_access(user):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Чат по записи доступен на Pro или с кошелька. Пополните баланс или оформите Pro.",
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail={
+                "reason": "chat_locked",
+                "message": "Чат по записи доступен на Pro или с кошелька.",
+                "paths": ["wallet", "pro"],
+            },
         )
 
     result = await db.execute(

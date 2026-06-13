@@ -40,6 +40,22 @@ async function refreshTokens(): Promise<string> {
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    // 402 Payment Required — упор в лимит. Бэкенд кладёт структурированный
+    // payload в detail; глобально открываем пейволл-модалку, но НЕ глотаем
+    // ошибку — вызывающий код тоже получит reject и может обработать сам.
+    const data = error.response?.data as
+      | { detail?: { paths?: string[] } }
+      | undefined;
+    if (error.response?.status === 402 && data?.detail?.paths) {
+      const { usePaywallStore } = await import("../store/paywallStore");
+      usePaywallStore.getState().openPaywall(
+        data.detail as Parameters<
+          ReturnType<typeof usePaywallStore.getState>["openPaywall"]
+        >[0],
+      );
+      return Promise.reject(error);
+    }
+
     const originalRequest = error.config as
       | (InternalAxiosRequestConfig & { _retry?: boolean })
       | undefined;
