@@ -12,6 +12,7 @@ import { UsageCard } from "@/components/dashboard/UsageCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { TranscriptionRow } from "@/components/dashboard/TranscriptionListItem";
 import { EmptyState } from "@/components/states/EmptyState";
+import { ProbaNotice } from "@/components/ProbaNotice";
 import { LoadingRows } from "@/components/states/LoadingState";
 import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
@@ -140,6 +141,7 @@ export default function Dashboard() {
   return (
     <motion.div variants={staggerChildren(0.06)} initial="hidden" animate="visible" className="space-y-8 md:space-y-10">
       <Seo title="Мои транскрипции — Dicto" noindex />
+      <ProbaNotice plan={user?.plan} />
       <motion.header variants={fadeUp} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--fg-subtle)]">
