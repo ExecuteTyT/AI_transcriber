@@ -30,15 +30,18 @@ cd /opt/aivoice
 # 2. Подтянуть код
 git pull origin main
 
-# 3. Поднять БД (если не запущена) и применить миграцию ДО рестарта api
+# 3. СНАЧАЛА пересобрать образы (миграция-файл должен попасть в образ api!)
+#    ⚠️ Грабли 2026-06-14: если запускать alembic ДО build, `run --rm api` берёт
+#    СТАРЫЙ образ без новой миграции → no-op → api падает на отсутствующей колонке → 502.
 docker compose -f docker-compose.prod.yml up -d db
+docker compose -f docker-compose.prod.yml build api frontend
+
+# 4. Применить миграцию на УЖЕ пересобранном образе
 docker compose -f docker-compose.prod.yml run --rm api alembic upgrade head
-#   ожидаем: ... -> p6e8f9a0b1c2 (wallet_minutes + wallet_topups)
+#   ожидаем: Running upgrade ... -> p6e8f9a0b1c2 (wallet_minutes + wallet_topups)
 
-# 4. Пересобрать и поднять api + frontend
-docker compose -f docker-compose.prod.yml up -d --build api frontend
-
-# 5. Снять stale-кэш nginx (иначе 502)
+# 5. Поднять api + frontend, снять stale-кэш nginx (иначе 502)
+docker compose -f docker-compose.prod.yml up -d api frontend
 docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
 
 # 6. Health
