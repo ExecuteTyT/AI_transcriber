@@ -5,6 +5,7 @@
 (разные failure modes: geo-блок, age-restriction, 403 от origin).
 """
 import logging
+import math
 import os
 import tempfile
 import uuid
@@ -14,6 +15,8 @@ from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
 from app.models.transcription import Transcription
+from app.models.user import User
+from app.services.plans import recommend_topup
 from app.services.storage import s3_service
 from app.tasks.celery_app import celery_app
 
@@ -104,6 +107,37 @@ def process_url_transcription(self, transcription_id: str, url: str):
             file_size = os.path.getsize(tmp_path)
             if file_size == 0:
                 raise ValueError("Скачанный файл пуст")
+
+            # Duration-gate (зеркало upload): не запускаем платный Voxtral на видео
+            # длиннее, чем влезает в баланс. Длительность берём из yt-dlp metadata
+            # (download уже случился — экономим именно Voxtral, главную статью затрат).
+            dur = info.get("duration")
+            user = db.get(User, transcription.user_id)
+            if dur and user and not user.is_admin and not user.is_unlimited:
+                available = (
+                    user.bonus_minutes
+                    + max(0, user.minutes_limit - user.minutes_used)
+                    + user.wallet_minutes
+                )
+                file_min = math.ceil(dur / 60)
+                if file_min > available:
+                    tp = recommend_topup(file_min, available)
+                    transcription.duration_sec = int(dur)
+                    transcription.status = "failed"
+                    transcription.error_message = (
+                        f"Видео ~{file_min} мин, доступно {available} мин. "
+                        + (
+                            f"Пополните кошелёк (пакет {tp['pack_minutes']} мин — {tp['price_rub']} ₽) "
+                            "или оформите Pro, чтобы расшифровать целиком."
+                            if tp else "Пополните баланс, чтобы расшифровать целиком."
+                        )
+                    )
+                    db.commit()
+                    logger.info(
+                        "URL transcription %s gated: %d min > %d available",
+                        transcription_id, file_min, available,
+                    )
+                    return
 
             # 2. Upload в S3 под обычным file_key
             with open(tmp_path, "rb") as f:

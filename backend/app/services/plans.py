@@ -138,3 +138,28 @@ WALLET_PACKS: dict[str, dict] = {
     "w400": {"price_rub": 690, "minutes": 400},
     "w1000": {"price_rub": 1490, "minutes": 1000},
 }
+
+
+def recommend_topup(file_minutes: int, available_minutes: int) -> dict | None:
+    """Сколько докинуть, чтобы расшифровать файл ЦЕЛИКОМ.
+
+    Возвращает минимальный пакет кошелька, покрывающий нехватку
+    (file_minutes − available_minutes), либо None если файл уже влезает.
+    Если нехватка больше самого большого пакета — отдаём максимальный (UI
+    подскажет оформить Pro для очень больших файлов).
+
+    Клиентоориентированность: вместо «оплатите» показываем «докиньте N мин (X ₽)
+    и расшифруем целиком».
+    """
+    shortfall = file_minutes - available_minutes
+    if shortfall <= 0:
+        return None
+    packs = sorted(WALLET_PACKS.items(), key=lambda kv: kv[1]["minutes"])
+    code = next((c for c, cfg in packs if cfg["minutes"] >= shortfall), packs[-1][0])
+    cfg = WALLET_PACKS[code]
+    return {
+        "shortfall_minutes": shortfall,
+        "pack": code,
+        "pack_minutes": cfg["minutes"],
+        "price_rub": cfg["price_rub"],
+    }
