@@ -33,6 +33,7 @@ import RasshifrovkaVideo from "@/pages/seo/RasshifrovkaVideo";
 import RaspoznavanieRechi from "@/pages/seo/RaspoznavanieRechi";
 import ProtocolSoveshchaniya from "@/pages/seo/ProtocolSoveshchaniya";
 import RasshifrovkaIntervyu from "@/pages/seo/RasshifrovkaIntervyu";
+import DlyaKonsultacij from "@/pages/seo/DlyaKonsultacij";
 import YoutubeVTekst from "@/pages/seo/YoutubeVTekst";
 import Mp3VTekst from "@/pages/seo/Mp3VTekst";
 import DiktofonVTekst from "@/pages/seo/DiktofonVTekst";
@@ -156,6 +157,7 @@ export default function App() {
         <Route path="/raspoznavanie-rechi" element={<RaspoznavanieRechi />} />
         <Route path="/protokol-soveshchaniya" element={<ProtocolSoveshchaniya />} />
         <Route path="/rasshifrovka-intervyu" element={<RasshifrovkaIntervyu />} />
+        <Route path="/dlya-konsultacij" element={<DlyaKonsultacij />} />
         <Route path="/youtube-v-tekst" element={<YoutubeVTekst />} />
         <Route path="/mp3-v-tekst" element={<Mp3VTekst />} />
         <Route path="/diktofon-v-tekst" element={<DiktofonVTekst />} />

@@ -7,10 +7,13 @@
  * в Метрике (Настройки → Цели → JavaScript-событие) с тем же именем.
  *
  * Воронка Dicto:
- *   registration   — пользователь завершил регистрацию (+30 мин). PRIMARY.
- *   upload         — загрузил первый/любой файл (engagement, micro-goal).
- *   subscribe_click— нажал «Выбрать тариф», ушёл на оплату (intent).
- *   purchase       — вернулся с YooKassa с успешной оплатой. MACRO.
+ *   registration    — пользователь завершил регистрацию (+30 мин). PRIMARY.
+ *   upload          — загрузил первый/любой файл (engagement, micro-goal).
+ *   analysis_view   — открыл AI-разбор (дошёл до ценности) — для воронки теста.
+ *   paywall_hit     — увидел экран пейволла (упёрся в лимит/файл/чат).
+ *   checkout_started— нажал «оплатить» в пейволле (кошелёк или Pro).
+ *   subscribe_click — нажал «Выбрать тариф» на /pricing, ушёл на оплату (intent).
+ *   purchase        — вернулся с YooKassa с успешной оплатой. MACRO.
  */
 
 const COUNTER_ID = 109251574;
@@ -19,6 +22,9 @@ const COUNTER_ID = 109251574;
 export type MetrikaGoal =
   | "registration"
   | "upload"
+  | "analysis_view"
+  | "paywall_hit"
+  | "checkout_started"
   | "subscribe_click"
   | "purchase";
 

@@ -59,6 +59,7 @@ async function prerender() {
     "/raspoznavanie-rechi",
     "/protokol-soveshchaniya",
     "/rasshifrovka-intervyu",
+    "/dlya-konsultacij",
     "/youtube-v-tekst",
     "/mp3-v-tekst",
     "/diktofon-v-tekst",

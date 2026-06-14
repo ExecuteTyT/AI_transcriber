@@ -36,6 +36,7 @@ import { AudioPlayerBar } from "@/components/transcription/AudioPlayerBar";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { fadeUp, springTight } from "@/lib/motion";
 import { cn } from "@/lib/cn";
+import { reachGoal } from "@/lib/metrika";
 import Seo from "@/components/Seo";
 
 // Editorial dark speaker palette — мягкие тона на ink, хорошо читаются.
@@ -207,7 +208,10 @@ export default function Transcription() {
     const fetchAnalysis = fetchers[tab];
     if (!fetchAnalysis) return;
     fetchAnalysis(id, analysisLength)
-      .then(({ data }) => setAnalysis(data))
+      .then(({ data }) => {
+        setAnalysis(data);
+        reachGoal("analysis_view", { type: tab }); // дошёл до ценности (воронка теста)
+      })
       .catch((err: unknown) => {
         setAnalysis(null);
         const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };

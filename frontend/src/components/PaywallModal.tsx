@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Wallet, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -27,6 +27,11 @@ export default function PaywallModal() {
   // pending — код активного запроса оплаты (pack code / "pro"), для disabled+спиннера.
   const [pending, setPending] = useState<string | null>(null);
 
+  // Цель воронки теста: пользователь увидел пейволл (упёрся в лимит/файл/чат).
+  useEffect(() => {
+    if (open && detail) reachGoal("paywall_hit", { reason: detail.reason });
+  }, [open, detail]);
+
   const title = (detail && TITLE_BY_REASON[detail.reason]) || "Пополните, чтобы продолжить";
 
   /** Запускает создание платежа и редиректит на YooKassa. */
@@ -38,8 +43,8 @@ export default function PaywallModal() {
     setPending(key);
     try {
       const resp = await request();
-      // Intent на оплату перед уходом на YooKassa (та же цель, что и в Pricing).
-      reachGoal("subscribe_click", { source: "paywall", ...goalParams });
+      // Цель воронки теста: начал оплату из пейволла (кошелёк/Pro) перед уходом на YooKassa.
+      reachGoal("checkout_started", { source: "paywall", ...goalParams });
       window.location.href = resp.confirmation_url;
     } catch (err) {
       const axiosErr = err as {
