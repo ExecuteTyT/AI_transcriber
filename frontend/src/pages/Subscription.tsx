@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
-import { paymentsApi, type SubscriptionInfo } from "@/api/payments";
+import { paymentsApi, WALLET_PACKS, type SubscriptionInfo } from "@/api/payments";
 import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { ErrorState } from "@/components/states/ErrorState";
@@ -61,6 +61,26 @@ export default function Subscription() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState("");
+  const [walletPending, setWalletPending] = useState<string | null>(null);
+
+  const handleTopup = async (pack: string) => {
+    setWalletPending(pack);
+    play("tick");
+    try {
+      const resp = await paymentsApi.topupWallet(pack);
+      reachGoal("checkout_started", { source: "subscription", kind: "topup", pack });
+      window.location.href = resp.confirmation_url;
+    } catch (err) {
+      const axiosErr = err as {
+        response?: { data?: { detail?: string | { message?: string } } };
+        message?: string;
+      };
+      const raw = axiosErr.response?.data?.detail;
+      const msg = (typeof raw === "string" ? raw : raw?.message) || axiosErr.message || "Не удалось создать платёж";
+      toast.error(msg);
+      setWalletPending(null);
+    }
+  };
 
   // YooKassa возвращает на /subscription?status=success после оплаты.
   // Шлём macro-цель «purchase» один раз и чистим query, чтобы перезагрузка
@@ -354,6 +374,42 @@ export default function Subscription() {
                 {cancelling ? "Отмена…" : "Отменить подписку"}
               </button>
             )}
+          </div>
+        </div>
+      </motion.section>
+
+      {/* ── Кошелёк: постоянный баланс + разовое пополнение (без подписки) ── */}
+      <motion.section variants={fadeUp}>
+        <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 md:p-8">
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="font-display text-2xl md:text-3xl tracking-[-0.01em] text-[var(--fg)]">
+              Кошелёк
+            </h2>
+            <span className="font-mono text-[14px] tabular text-[var(--fg)]">
+              {sub.wallet_minutes} мин
+            </span>
+          </div>
+          <p className="mt-2 text-[13px] leading-[1.55] text-[var(--fg-muted)]">
+            Разовое пополнение минут без подписки. Не сгорают; тратятся после бонуса и месячного лимита.
+          </p>
+          <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
+            {WALLET_PACKS.map((pack) => (
+              <button
+                key={pack.code}
+                type="button"
+                disabled={walletPending !== null}
+                onClick={() => handleTopup(pack.code)}
+                className={cn(
+                  "flex flex-col items-center gap-1 rounded-2xl border border-[var(--border-strong)] px-4 py-4 transition-colors duration-base hover:bg-[var(--bg-muted)]",
+                  walletPending !== null && "opacity-60 cursor-wait"
+                )}
+              >
+                <span className="font-display text-xl text-[var(--fg)]">{pack.minutes} мин</span>
+                <span className="font-mono text-[13px] tabular text-[var(--fg-muted)]">
+                  {walletPending === pack.code ? "Перенаправление…" : `${pack.price} ₽`}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       </motion.section>

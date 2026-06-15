@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Clock, FileText, Mic, Plus, RotateCw, Search, Trash2 } from "lucide-react";
@@ -13,6 +13,7 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { TranscriptionRow } from "@/components/dashboard/TranscriptionListItem";
 import { EmptyState } from "@/components/states/EmptyState";
 import { ProbaNotice } from "@/components/ProbaNotice";
+import { reachGoal } from "@/lib/metrika";
 import { LoadingRows } from "@/components/states/LoadingState";
 import { fadeUp, staggerChildren, springTight } from "@/lib/motion";
 import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
@@ -42,6 +43,19 @@ export default function Dashboard() {
   const [actionItem, setActionItem] = useState<TranscriptionListItem | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<TranscriptionListItem | null>(null);
   const firstLoadRef = useRef(true);
+
+  // Возврат после оплаты кошелька (YooKassa → /dashboard?wallet=success).
+  // Считаем macro-цель purchase (путь wallet) один раз и чистим query.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("wallet") === "success") {
+      reachGoal("purchase", { path: "wallet" });
+      toast.success("Кошелёк пополнен — минуты зачислены");
+      params.delete("wallet");
+      const clean = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (clean ? `?${clean}` : ""));
+    }
+  }, []);
 
   const loadTranscriptions = useCallback(async (background = false) => {
     if (!background) setRefreshing(true);
