@@ -15,7 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { paymentsApi, WALLET_PACKS } from "@/api/payments";
+import { paymentsApi, WALLET_PACKS, WALLET_CUSTOM, customTopupPrice } from "@/api/payments";
 import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { ErrorState } from "@/components/states/ErrorState";
@@ -333,22 +333,42 @@ export default function Pricing() {
       reachGoal("checkout_started", { source: "pricing", kind: "topup", pack });
       window.location.href = result.confirmation_url;
     } catch (err) {
-      const axiosErr = err as {
-        response?: { status?: number; data?: { detail?: string } };
-        message?: string;
-      };
-      const status = axiosErr.response?.status;
-      const detail = axiosErr.response?.data?.detail;
-      const msg =
-        status === 502 || status === 503
-          ? "Платёжный сервис временно недоступен. Попробуйте позже."
-          : status === 500
-            ? "Ошибка сервера. Попробуйте позже."
-            : detail || axiosErr.message || "Не удалось создать платёж";
-      setError(msg);
-      toast.error(msg);
-      setWalletLoading(null);
+      handleTopupError(err);
     }
+  };
+
+  const handleTopupCustom = async (minutes: number) => {
+    if (!user) {
+      navigate("/register");
+      return;
+    }
+    setWalletLoading("custom");
+    setError("");
+    try {
+      const result = await paymentsApi.topupWalletCustom(minutes);
+      reachGoal("checkout_started", { source: "pricing", kind: "topup", pack: "custom", minutes });
+      window.location.href = result.confirmation_url;
+    } catch (err) {
+      handleTopupError(err);
+    }
+  };
+
+  const handleTopupError = (err: unknown) => {
+    const axiosErr = err as {
+      response?: { status?: number; data?: { detail?: string } };
+      message?: string;
+    };
+    const status = axiosErr.response?.status;
+    const detail = axiosErr.response?.data?.detail;
+    const msg =
+      status === 502 || status === 503
+        ? "Платёжный сервис временно недоступен. Попробуйте позже."
+        : status === 500
+          ? "Ошибка сервера. Попробуйте позже."
+          : detail || axiosErr.message || "Не удалось создать платёж";
+    setError(msg);
+    toast.error(msg);
+    setWalletLoading(null);
   };
 
   const handleSubscribe = async (planId: string) => {
@@ -465,6 +485,7 @@ export default function Pricing() {
           loading={walletLoading}
           disabled={walletLoading !== null}
           onSelect={handleTopup}
+          onSelectCustom={handleTopupCustom}
         />
       </motion.div>
 
@@ -874,22 +895,28 @@ function WalletPacksBlock({
   loading,
   disabled,
   onSelect,
+  onSelectCustom,
 }: {
   loading: string | null;
   disabled: boolean;
   onSelect: (pack: string) => void;
+  onSelectCustom: (minutes: number) => void;
 }) {
+  const [customMinutes, setCustomMinutes] = useState(WALLET_CUSTOM.min * 4); // 120 мин по умолчанию
+  const customPrice = customTopupPrice(customMinutes);
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] px-6 py-8 md:px-10 md:py-10">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between md:gap-10 mb-7">
         <div className="max-w-[52ch]">
           <p className="eyebrow mb-3">Кошелёк</p>
           <h3 className="font-display text-2xl md:text-[28px] leading-[1.1] tracking-[-0.015em] text-[var(--fg)]">
-            Не нужна подписка? <em className="italic text-[var(--accent)]">Докупите минуты</em>
+            Нет регулярной нагрузки? <em className="italic text-[var(--accent)]">Докупите минуты</em>
           </h3>
           <p className="mt-3 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
-            Разовая оплата без ежемесячных списаний. Минуты из кошелька не сгорают и
-            тратятся после бонуса и тарифных минут.
+            Разовая оплата без подписки: минуты не сгорают и тратятся после бонуса и
+            тарифных. Удобно для разовых задач или когда упёрлись в лимит.{" "}
+            <span className="text-[var(--fg)]">Нужно регулярно — подписка выгоднее в&nbsp;2–4&nbsp;раза за минуту.</span>
           </p>
         </div>
       </div>
@@ -928,6 +955,50 @@ function WalletPacksBlock({
             </button>
           );
         })}
+      </div>
+
+      {/* Слайдер — произвольное число минут */}
+      <div className="mt-4 rounded-2xl border border-[var(--border-strong)] bg-[var(--bg)] p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+            Своё количество
+          </p>
+          <p className="text-[13px] text-[var(--fg-muted)]">
+            <span className="font-display text-2xl tabular text-[var(--fg)]">{customMinutes}</span> мин ·{" "}
+            <span className="font-semibold text-[var(--fg)] tabular">{customPrice.toLocaleString("ru-RU")} ₽</span>
+            <span className="ml-1.5 font-mono text-[11px] text-[var(--fg-subtle)]">
+              ({WALLET_CUSTOM.ratePerMin.toFixed(2)} ₽/мин)
+            </span>
+          </p>
+        </div>
+        <input
+          type="range"
+          min={WALLET_CUSTOM.min}
+          max={WALLET_CUSTOM.max}
+          step={WALLET_CUSTOM.step}
+          value={customMinutes}
+          onChange={(e) => setCustomMinutes(Number(e.target.value))}
+          disabled={disabled}
+          aria-label="Количество минут для докупки"
+          className="mt-4 w-full accent-[var(--accent)] cursor-pointer disabled:cursor-wait"
+        />
+        <div className="mt-1 flex justify-between font-mono text-[10px] text-[var(--fg-subtle)] tabular">
+          <span>{WALLET_CUSTOM.min} мин</span>
+          <span>{WALLET_CUSTOM.max} мин</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onSelectCustom(customMinutes)}
+          disabled={disabled}
+          className={cn(
+            "mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 py-3 text-[13px] font-semibold text-[var(--accent-fg)] transition-colors duration-base hover:bg-[var(--accent-hover)]",
+            disabled && "opacity-60 cursor-wait"
+          )}
+        >
+          {loading === "custom"
+            ? "Перенаправление…"
+            : `Докупить ${customMinutes} мин — ${customPrice.toLocaleString("ru-RU")} ₽`}
+        </button>
       </div>
     </div>
   );

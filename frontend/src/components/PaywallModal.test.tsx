@@ -10,9 +10,9 @@ const { topupWallet, subscribe, reachGoal } = vi.hoisted(() => ({
 vi.mock("@/api/payments", () => ({
   paymentsApi: { topupWallet, subscribe },
   WALLET_PACKS: [
-    { code: "w150", minutes: 150, price: 299 },
-    { code: "w400", minutes: 400, price: 690 },
-    { code: "w1000", minutes: 1000, price: 1490 },
+    { code: "w60", minutes: 60, price: 119 },
+    { code: "w150", minutes: 150, price: 269 },
+    { code: "w300", minutes: 300, price: 499 },
   ],
 }));
 vi.mock("@/lib/metrika", () => ({ reachGoal }));
@@ -67,9 +67,9 @@ describe("PaywallModal", () => {
   it("без topup (no_minutes) показывает все 3 пакета кошелька + Pro", () => {
     render(<PaywallModal />);
     open({ reason: "no_minutes", message: "Минуты закончились", paths: ["wallet", "pro"] });
+    expect(screen.getByRole("button", { name: /60 мин/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /150 мин/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /400 мин/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /1000 мин/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /300 мин/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Оформить Pro/ })).toBeInTheDocument();
   });
 

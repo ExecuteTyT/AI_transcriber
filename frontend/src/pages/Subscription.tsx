@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
-import { paymentsApi, WALLET_PACKS, type SubscriptionInfo } from "@/api/payments";
+import { paymentsApi, WALLET_PACKS, WALLET_CUSTOM, customTopupPrice, type SubscriptionInfo } from "@/api/payments";
 import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { ErrorState } from "@/components/states/ErrorState";
@@ -62,6 +62,18 @@ export default function Subscription() {
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState("");
   const [walletPending, setWalletPending] = useState<string | null>(null);
+  const [customMinutes, setCustomMinutes] = useState(WALLET_CUSTOM.min * 4);
+
+  const topupError = (err: unknown) => {
+    const axiosErr = err as {
+      response?: { data?: { detail?: string | { message?: string } } };
+      message?: string;
+    };
+    const raw = axiosErr.response?.data?.detail;
+    const msg = (typeof raw === "string" ? raw : raw?.message) || axiosErr.message || "Не удалось создать платёж";
+    toast.error(msg);
+    setWalletPending(null);
+  };
 
   const handleTopup = async (pack: string) => {
     setWalletPending(pack);
@@ -71,14 +83,19 @@ export default function Subscription() {
       reachGoal("checkout_started", { source: "subscription", kind: "topup", pack });
       window.location.href = resp.confirmation_url;
     } catch (err) {
-      const axiosErr = err as {
-        response?: { data?: { detail?: string | { message?: string } } };
-        message?: string;
-      };
-      const raw = axiosErr.response?.data?.detail;
-      const msg = (typeof raw === "string" ? raw : raw?.message) || axiosErr.message || "Не удалось создать платёж";
-      toast.error(msg);
-      setWalletPending(null);
+      topupError(err);
+    }
+  };
+
+  const handleTopupCustom = async () => {
+    setWalletPending("custom");
+    play("tick");
+    try {
+      const resp = await paymentsApi.topupWalletCustom(customMinutes);
+      reachGoal("checkout_started", { source: "subscription", kind: "topup", pack: "custom", minutes: customMinutes });
+      window.location.href = resp.confirmation_url;
+    } catch (err) {
+      topupError(err);
     }
   };
 
@@ -417,7 +434,8 @@ export default function Subscription() {
             </span>
           </div>
           <p className="mt-2 text-[13px] leading-[1.55] text-[var(--fg-muted)]">
-            Разовое пополнение минут без подписки. Не сгорают; тратятся после бонуса и месячного лимита.
+            Разовое пополнение без подписки — для нерегулярных задач или когда упёрлись в лимит.
+            Не сгорают; тратятся после бонуса и месячного лимита. Регулярно? Подписка выгоднее за минуту.
           </p>
           <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
             {WALLET_PACKS.map((pack) => (
@@ -437,6 +455,41 @@ export default function Subscription() {
                 </span>
               </button>
             ))}
+          </div>
+
+          {/* Слайдер — произвольное количество минут */}
+          <div className="mt-3 rounded-2xl border border-[var(--border-strong)] p-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+                Своё количество
+              </span>
+              <span className="text-[13px] text-[var(--fg-muted)]">
+                <span className="font-display text-xl tabular text-[var(--fg)]">{customMinutes}</span> мин ·{" "}
+                <span className="font-semibold text-[var(--fg)] tabular">{customTopupPrice(customMinutes)} ₽</span>
+              </span>
+            </div>
+            <input
+              type="range"
+              min={WALLET_CUSTOM.min}
+              max={WALLET_CUSTOM.max}
+              step={WALLET_CUSTOM.step}
+              value={customMinutes}
+              onChange={(e) => setCustomMinutes(Number(e.target.value))}
+              disabled={walletPending !== null}
+              aria-label="Количество минут для докупки"
+              className="mt-3 w-full accent-[var(--accent)] cursor-pointer disabled:cursor-wait"
+            />
+            <button
+              type="button"
+              onClick={handleTopupCustom}
+              disabled={walletPending !== null}
+              className={cn(
+                "mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--accent)] px-5 py-2.5 text-[13px] font-semibold text-[var(--accent-fg)] transition-colors duration-base hover:bg-[var(--accent-hover)]",
+                walletPending !== null && "opacity-60 cursor-wait"
+              )}
+            >
+              {walletPending === "custom" ? "Перенаправление…" : `Докупить ${customMinutes} мин — ${customTopupPrice(customMinutes)} ₽`}
+            </button>
           </div>
         </div>
       </motion.section>

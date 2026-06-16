@@ -247,14 +247,37 @@ async def cancel_subscription(
     return subscription
 
 
-async def create_wallet_payment(user_id: uuid.UUID, pack: str, email: str | None = None) -> dict:
-    """Создание YooKassa-платежа для пополнения кошелька (пакет минут)."""
+async def create_wallet_payment(
+    user_id: uuid.UUID,
+    pack: str | None = None,
+    minutes: int | None = None,
+    email: str | None = None,
+) -> dict:
+    """Создание YooKassa-платежа для пополнения кошелька.
+
+    Либо пресет (`pack`: w60/w150/w300), либо кастомная докупка (`minutes`,
+    слайдер). Минуты и тип кладутся в metadata — webhook перепроверяет сумму
+    независимо через verify_payment_via_api.
+    """
     import httpx
 
-    if pack not in WALLET_PACKS:
-        raise ValueError(f"Недопустимый пакет: {pack}. Допустимые: {', '.join(WALLET_PACKS)}")
+    from app.services.plans import custom_topup_price, is_valid_custom_minutes
 
-    cfg = WALLET_PACKS[pack]
+    if pack is not None:
+        if pack not in WALLET_PACKS:
+            raise ValueError(f"Недопустимый пакет: {pack}. Допустимые: {', '.join(WALLET_PACKS)}")
+        topup_minutes = WALLET_PACKS[pack]["minutes"]
+        price_rub = WALLET_PACKS[pack]["price_rub"]
+        pack_code = pack
+    elif minutes is not None:
+        if not is_valid_custom_minutes(minutes):
+            raise ValueError(f"Недопустимое число минут: {minutes}")
+        topup_minutes = minutes
+        price_rub = custom_topup_price(minutes)
+        pack_code = "custom"
+    else:
+        raise ValueError("Укажите pack или minutes")
+
     idempotency_key = str(uuid.uuid4())
 
     async with httpx.AsyncClient() as client:
@@ -263,19 +286,20 @@ async def create_wallet_payment(user_id: uuid.UUID, pack: str, email: str | None
             auth=(settings.YOOKASSA_SHOP_ID, settings.YOOKASSA_SECRET_KEY),
             headers={"Idempotence-Key": idempotency_key},
             json={
-                "amount": {"value": f"{cfg['price_rub']:.2f}", "currency": "RUB"},
+                "amount": {"value": f"{price_rub:.2f}", "currency": "RUB"},
                 "confirmation": {
                     "type": "redirect",
                     "return_url": f"{settings.APP_URL}/dashboard?wallet=success",
                 },
                 "capture": True,
                 "description": build_payment_description(
-                    f"Dicto — пополнение кошелька ({cfg['minutes']} мин)", email
+                    f"Dicto — пополнение кошелька ({topup_minutes} мин)", email
                 ),
                 "metadata": {
                     "type": "wallet",
                     "user_id": str(user_id),
-                    "pack": pack,
+                    "pack": pack_code,
+                    "minutes": str(topup_minutes),
                     "email": email or "",
                 },
             },
@@ -288,13 +312,21 @@ async def create_wallet_payment(user_id: uuid.UUID, pack: str, email: str | None
 async def credit_wallet(
     user_id: uuid.UUID, pack: str, yookassa_id: str, db: AsyncSession,
     amount_rub: int | None = None,
+    minutes: int | None = None,
 ) -> None:
     """Начисление минут на кошелёк (идемпотентно по yookassa_id).
 
-    amount_rub — фактически оплаченная сумма из YooKassa; по умолчанию цена пакета.
+    minutes — для кастомной докупки (pack="custom") задаём явно; для пресета
+    берём из WALLET_PACKS[pack]. amount_rub — фактически оплаченная сумма из
+    YooKassa; по умолчанию цена пакета.
     """
-    if pack not in WALLET_PACKS:
+    if pack != "custom" and pack not in WALLET_PACKS:
         logger.error("credit_wallet: unknown pack=%s", pack)
+        return
+
+    topup_minutes = minutes if minutes is not None else WALLET_PACKS[pack]["minutes"]
+    if topup_minutes is None or topup_minutes <= 0:
+        logger.error("credit_wallet: invalid minutes for pack=%s", pack)
         return
 
     # Идемпотентность: уже обрабатывали этот платёж?
@@ -305,18 +337,18 @@ async def credit_wallet(
         logger.info("Дубль wallet-webhook, пропускаем: yookassa_id=%s", yookassa_id)
         return
 
-    minutes = WALLET_PACKS[pack]["minutes"]
+    default_amount = WALLET_PACKS[pack]["price_rub"] if pack in WALLET_PACKS else None
     db.add(WalletTopup(
-        user_id=user_id, yookassa_id=yookassa_id, minutes=minutes, pack=pack,
-        amount_rub=amount_rub if amount_rub is not None else WALLET_PACKS[pack]["price_rub"],
+        user_id=user_id, yookassa_id=yookassa_id, minutes=topup_minutes, pack=pack,
+        amount_rub=amount_rub if amount_rub is not None else default_amount,
     ))
 
     user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if user:
-        user.wallet_minutes += minutes
+        user.wallet_minutes += topup_minutes
 
     await db.commit()
-    logger.info("Wallet credited: user=%s pack=%s minutes=%s", user_id, pack, minutes)
+    logger.info("Wallet credited: user=%s pack=%s minutes=%s", user_id, pack, topup_minutes)
 
 
 # verify_webhook_signature удалена: ЮKassa не подписывает webhook'и HMAC.

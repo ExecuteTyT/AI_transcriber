@@ -17,12 +17,25 @@ export interface SubscribeResponse {
   status: string;
 }
 
-/** Пакеты пополнения кошелька (минуты вне тарифа, не сгорают). */
+/** Пресет-пакеты пополнения кошелька (минуты вне тарифа, не сгорают). */
 export const WALLET_PACKS = [
-  { code: "w150", minutes: 150, price: 299 },
-  { code: "w400", minutes: 400, price: 690 },
-  { code: "w1000", minutes: 1000, price: 1490 },
+  { code: "w60", minutes: 60, price: 119 },
+  { code: "w150", minutes: 150, price: 269 },
+  { code: "w300", minutes: 300, price: 499 },
 ];
+
+/** Кастомная докупка (слайдер). Должно совпадать с backend app/services/plans.py. */
+export const WALLET_CUSTOM = {
+  ratePerMin: 2.0,
+  min: 30,
+  max: 480,
+  step: 30,
+};
+
+/** Цена кастомной докупки N минут в целых ₽ (синхронно с бэком). */
+export function customTopupPrice(minutes: number): number {
+  return Math.round(minutes * WALLET_CUSTOM.ratePerMin);
+}
 
 export const paymentsApi = {
   async getSubscription(): Promise<SubscriptionInfo> {
@@ -45,6 +58,13 @@ export const paymentsApi = {
   async topupWallet(pack: string): Promise<SubscribeResponse> {
     const { data } = await api.post<SubscribeResponse>("/payments/wallet", {
       pack,
+    });
+    return data;
+  },
+
+  async topupWalletCustom(minutes: number): Promise<SubscribeResponse> {
+    const { data } = await api.post<SubscribeResponse>("/payments/wallet", {
+      minutes,
     });
     return data;
   },

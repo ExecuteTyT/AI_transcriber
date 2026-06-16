@@ -101,7 +101,7 @@ async def test_webhook_wallet_credits_minutes(client: AsyncClient, db_session: A
 
     async def fake_verify(pid):
         return {"status": "succeeded",
-                "amount": {"value": "299.00"},
+                "amount": {"value": "269.00"},
                 "metadata": {"type": "wallet", "user_id": str(user.id), "pack": "w150"}}
 
     monkeypatch.setattr(payments_mod, "verify_payment_via_api", fake_verify)
@@ -124,21 +124,140 @@ def test_recommend_topup_smallest_covering_pack():
     """recommend_topup: минимальный пакет, покрывающий нехватку минут."""
     from app.services.plans import recommend_topup
 
-    # файл 60 мин, доступно 30 → нехватка 30 → w150 (150≥30), 299₽
+    # файл 60 мин, доступно 30 → нехватка 30 → w60 (60≥30), 119₽
     r = recommend_topup(file_minutes=60, available_minutes=30)
     assert r["shortfall_minutes"] == 30
-    assert r["pack"] == "w150"
-    assert r["price_rub"] == 299
+    assert r["pack"] == "w60"
+    assert r["price_rub"] == 119
 
-    # файл 200 мин, доступно 30 → нехватка 170 → w400 (400≥170)
-    assert recommend_topup(file_minutes=200, available_minutes=30)["pack"] == "w400"
+    # файл 200 мин, доступно 30 → нехватка 170 → w300 (300≥170)
+    assert recommend_topup(file_minutes=200, available_minutes=30)["pack"] == "w300"
 
     # файл влезает в баланс → None (докидывать не нужно)
     assert recommend_topup(file_minutes=20, available_minutes=30) is None
     assert recommend_topup(file_minutes=30, available_minutes=30) is None
 
     # нехватка больше самого большого пакета → fallback на максимальный (UI подскажет Pro)
-    assert recommend_topup(file_minutes=5000, available_minutes=0)["pack"] == "w1000"
+    assert recommend_topup(file_minutes=5000, available_minutes=0)["pack"] == "w300"
+
+
+def test_custom_topup_price_and_validation():
+    """Кастомная докупка: цена = minutes × ставка; валидация диапазона/шага."""
+    from app.services.plans import (
+        WALLET_CUSTOM_MAX,
+        WALLET_CUSTOM_MIN,
+        custom_topup_price,
+        is_valid_custom_minutes,
+    )
+
+    assert custom_topup_price(30) == 60       # 30 × 2.0
+    assert custom_topup_price(240) == 480
+    assert custom_topup_price(WALLET_CUSTOM_MAX) == 960
+
+    assert is_valid_custom_minutes(30) is True
+    assert is_valid_custom_minutes(240) is True
+    assert is_valid_custom_minutes(WALLET_CUSTOM_MAX) is True
+    assert is_valid_custom_minutes(WALLET_CUSTOM_MIN - 30) is False  # ниже минимума
+    assert is_valid_custom_minutes(WALLET_CUSTOM_MAX + 30) is False  # выше максимума
+    assert is_valid_custom_minutes(45) is False                     # не кратно шагу
+
+
+def test_gate_recommends_small_pack_for_short_shortfall():
+    """Мелкая нехватка → мелкий пакет w60 (а не крупный)."""
+    from app.services.plans import gate_by_duration
+
+    g = gate_by_duration(45 * 60, 30)   # файл 45 мин, баланс 30 → нехватка 15
+    assert g["topup"]["pack"] == "w60"
+    assert g["topup"]["price_rub"] == 119
+
+
+@pytest.mark.asyncio
+async def test_wallet_topup_endpoint_rejects_both_pack_and_minutes(client: AsyncClient):
+    """POST /wallet и с pack, и с minutes → 400 (нужно ровно одно)."""
+    token, _ = await _register(client)
+    resp = await client.post("/api/payments/wallet", headers=_h(token),
+                             json={"pack": "w150", "minutes": 120})
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_wallet_topup_endpoint_rejects_bad_minutes(client: AsyncClient):
+    """POST /wallet с невалидным числом минут (не кратно шагу) → 400."""
+    token, _ = await _register(client)
+    resp = await client.post("/api/payments/wallet", headers=_h(token),
+                             json={"minutes": 45})
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_credit_wallet_custom_minutes(db_session: AsyncSession):
+    """credit_wallet с pack='custom' и явными минутами начисляет их."""
+    from app.services.payment import credit_wallet
+
+    user = User(email=f"wc-{uuid.uuid4().hex[:6]}@e.com", password_hash="x",
+                plan="free", wallet_minutes=0)
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    await credit_wallet(user.id, pack="custom", yookassa_id="pay_C1", db=db_session,
+                        amount_rub=480, minutes=240)
+    await db_session.refresh(user)
+    assert user.wallet_minutes == 240
+
+
+@pytest.mark.asyncio
+async def test_webhook_wallet_custom_credits_minutes(client: AsyncClient, db_session: AsyncSession, monkeypatch):
+    """Кастомный платёж (pack=custom, minutes в metadata) начисляет минуты после сверки суммы."""
+    import app.api.payments as payments_mod
+    _, email = await _register(client)
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+
+    async def fake_verify(pid):
+        # 180 мин × 2.0 = 360.00 ₽
+        return {"status": "succeeded",
+                "amount": {"value": "360.00"},
+                "metadata": {"type": "wallet", "user_id": str(user.id), "pack": "custom", "minutes": "180"}}
+
+    monkeypatch.setattr(payments_mod, "verify_payment_via_api", fake_verify)
+    monkeypatch.setattr(payments_mod, "is_yookassa_ip", lambda ip: True)
+
+    resp = await client.post(
+        "/api/payments/webhook",
+        json={"event": "payment.succeeded", "object": {"id": "pay_C2"}},
+        headers={"x-forwarded-for": "185.71.76.1"},
+    )
+    assert resp.status_code == 200
+    await db_session.rollback()
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    assert user.wallet_minutes == 180
+
+
+@pytest.mark.asyncio
+async def test_webhook_wallet_custom_amount_mismatch_rejected(client: AsyncClient, db_session: AsyncSession, monkeypatch):
+    """Кастомный платёж с заниженной суммой не начисляет минуты (защита от подмены)."""
+    import app.api.payments as payments_mod
+    _, email = await _register(client)
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+
+    async def fake_verify(pid):
+        # заявлено 180 мин (=360₽), а оплачено 60₽ → mismatch
+        return {"status": "succeeded",
+                "amount": {"value": "60.00"},
+                "metadata": {"type": "wallet", "user_id": str(user.id), "pack": "custom", "minutes": "180"}}
+
+    monkeypatch.setattr(payments_mod, "verify_payment_via_api", fake_verify)
+    monkeypatch.setattr(payments_mod, "is_yookassa_ip", lambda ip: True)
+
+    resp = await client.post(
+        "/api/payments/webhook",
+        json={"event": "payment.succeeded", "object": {"id": "pay_C3"}},
+        headers={"x-forwarded-for": "185.71.76.1"},
+    )
+    assert resp.status_code == 200
+    await db_session.rollback()
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    assert user.wallet_minutes == 0  # не начислили
 
 
 def test_gate_by_duration():
@@ -154,7 +273,7 @@ def test_gate_by_duration():
     assert g["reason"] == "file_exceeds_balance"
     assert g["file_minutes"] == 60
     assert g["available_minutes"] == 30
-    assert g["topup"]["pack"] == "w150"
+    assert g["topup"]["pack"] == "w60"   # нехватка 30 → мелкий пакет 60 мин
     assert g["paths"] == ["wallet", "pro"]
 
     # длительность неизвестна → None (best-effort, не блокируем)
@@ -305,8 +424,8 @@ async def test_upload_long_file_returns_402_with_topup(client: AsyncClient, db_s
     assert d["reason"] == "file_exceeds_balance"
     assert d["file_minutes"] == 60
     assert d["available_minutes"] == 30
-    assert d["topup"]["pack"] == "w150"        # 30 мин нехватки → пакет 150 мин
-    assert d["topup"]["price_rub"] == 299
+    assert d["topup"]["pack"] == "w60"         # 30 мин нехватки → мелкий пакет 60 мин
+    assert d["topup"]["price_rub"] == 119
 
 
 @pytest.mark.asyncio
