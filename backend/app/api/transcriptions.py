@@ -1,5 +1,4 @@
 import logging
-import math
 import os
 import uuid
 
@@ -23,7 +22,7 @@ from app.schemas.transcription import (
     UrlIngestRequest,
 )
 from app.services.media import probe_duration_sec
-from app.services.plans import get_plan, recommend_topup
+from app.services.plans import gate_by_duration, get_plan
 from app.services.storage import s3_service
 
 router = APIRouter(prefix="/api/transcriptions", tags=["transcriptions"])
@@ -198,27 +197,12 @@ async def upload_file(
 
     # Duration-gate: не запускаем платный Voxtral на файле длиннее, чем влезает
     # в баланс (защита от абьюза «один большой файл бесплатно»). ffprobe
-    # best-effort: если длину определить не удалось (dur=None) — пропускаем,
-    # чтобы не ломать загрузку из-за сбоя ffprobe (остаток списания просто сгорит).
+    # best-effort: dur=None → gate_by_duration вернёт None (пропускаем), чтобы
+    # сбой ffprobe не ломал загрузку (остаток списания просто сгорит).
     if not user.is_admin and not user.is_unlimited:
-        dur = probe_duration_sec(file_data)
-        if dur is not None:
-            file_minutes = math.ceil(dur / 60)
-            if file_minutes > available_minutes:
-                raise HTTPException(
-                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                    detail={
-                        "reason": "file_exceeds_balance",
-                        "message": (
-                            f"Файл ~{file_minutes} мин, доступно {available_minutes} мин. "
-                            "Докиньте на кошелёк или оформите Pro — расшифруем целиком."
-                        ),
-                        "file_minutes": file_minutes,
-                        "available_minutes": available_minutes,
-                        "topup": recommend_topup(file_minutes, available_minutes),
-                        "paths": ["wallet", "pro"],
-                    },
-                )
+        gate = gate_by_duration(probe_duration_sec(file_data), available_minutes)
+        if gate:
+            raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail=gate)
 
     # Загрузка в S3
     if s3_service is None:

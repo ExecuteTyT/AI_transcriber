@@ -141,6 +141,31 @@ def test_recommend_topup_smallest_covering_pack():
     assert recommend_topup(file_minutes=5000, available_minutes=0)["pack"] == "w1000"
 
 
+def test_gate_by_duration():
+    """gate_by_duration — общее решение duration-gate для upload и URL-ingest."""
+    from app.services.plans import gate_by_duration
+
+    # файл влезает в баланс → None (можно расшифровывать)
+    assert gate_by_duration(20 * 60, 30) is None
+    assert gate_by_duration(30 * 60, 30) is None  # ровно по балансу
+
+    # файл длиннее баланса → payload пейволла с topup
+    g = gate_by_duration(60 * 60, 30)  # 60 мин > 30
+    assert g["reason"] == "file_exceeds_balance"
+    assert g["file_minutes"] == 60
+    assert g["available_minutes"] == 30
+    assert g["topup"]["pack"] == "w150"
+    assert g["paths"] == ["wallet", "pro"]
+
+    # длительность неизвестна → None (best-effort, не блокируем)
+    assert gate_by_duration(None, 30) is None
+    assert gate_by_duration(0, 30) is None
+
+    # админ / безлимит → None (без гейта)
+    assert gate_by_duration(999 * 60, 0, is_admin=True) is None
+    assert gate_by_duration(999 * 60, 0, is_unlimited=True) is None
+
+
 def test_build_payment_description_includes_email():
     """Описание платежа содержит email аккаунта (видно в кабинете ЮKassa)."""
     from app.services.payment import build_payment_description

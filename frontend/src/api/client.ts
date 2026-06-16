@@ -1,4 +1,19 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { usePaywallStore, type PaywallDetail } from "../store/paywallStore";
+
+/**
+ * Если ошибка — 402 со структурированным пейволл-payload (detail.paths),
+ * открывает глобальную пейволл-модалку. Возвращает true, если открыл.
+ * Цикла импорта нет: paywallStore не импортирует client.
+ */
+export function maybeOpenPaywall(error: AxiosError): boolean {
+  const data = error.response?.data as { detail?: PaywallDetail } | undefined;
+  if (error.response?.status === 402 && data?.detail?.paths) {
+    usePaywallStore.getState().openPaywall(data.detail);
+    return true;
+  }
+  return false;
+}
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
@@ -43,16 +58,7 @@ api.interceptors.response.use(
     // 402 Payment Required — упор в лимит. Бэкенд кладёт структурированный
     // payload в detail; глобально открываем пейволл-модалку, но НЕ глотаем
     // ошибку — вызывающий код тоже получит reject и может обработать сам.
-    const data = error.response?.data as
-      | { detail?: { paths?: string[] } }
-      | undefined;
-    if (error.response?.status === 402 && data?.detail?.paths) {
-      const { usePaywallStore } = await import("../store/paywallStore");
-      usePaywallStore.getState().openPaywall(
-        data.detail as Parameters<
-          ReturnType<typeof usePaywallStore.getState>["openPaywall"]
-        >[0],
-      );
+    if (maybeOpenPaywall(error)) {
       return Promise.reject(error);
     }
 

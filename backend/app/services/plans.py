@@ -11,6 +11,7 @@
 тарифам ≥ 75%.
 """
 
+import math
 from dataclasses import dataclass
 
 
@@ -162,4 +163,36 @@ def recommend_topup(file_minutes: int, available_minutes: int) -> dict | None:
         "pack": code,
         "pack_minutes": cfg["minutes"],
         "price_rub": cfg["price_rub"],
+    }
+
+
+def gate_by_duration(
+    duration_sec: float | None,
+    available_minutes: int,
+    *,
+    is_admin: bool = False,
+    is_unlimited: bool = False,
+) -> dict | None:
+    """Решение duration-gate (общее для upload и URL-ingest).
+
+    Возвращает payload пейволла (reason=file_exceeds_balance + topup), если файл
+    длиннее доступного баланса, иначе None (можно расшифровывать).
+    None также если: админ/безлимит, или длительность неизвестна (best-effort —
+    не блокируем из-за сбоя ffprobe/метаданных).
+    """
+    if is_admin or is_unlimited or not duration_sec:
+        return None
+    file_min = math.ceil(duration_sec / 60)
+    if file_min <= available_minutes:
+        return None
+    return {
+        "reason": "file_exceeds_balance",
+        "message": (
+            f"Файл ~{file_min} мин, доступно {available_minutes} мин. "
+            "Докиньте на кошелёк или оформите Pro — расшифруем целиком."
+        ),
+        "file_minutes": file_min,
+        "available_minutes": available_minutes,
+        "topup": recommend_topup(file_min, available_minutes),
+        "paths": ["wallet", "pro"],
     }
