@@ -26,7 +26,8 @@ export type MetrikaGoal =
   | "paywall_hit"
   | "checkout_started"
   | "subscribe_click"
-  | "purchase";
+  | "purchase"
+  | "telegram_bot_click";  // клик по ссылке/кнопке Telegram-бота
 
 type YmFunction = (
   counterId: number,

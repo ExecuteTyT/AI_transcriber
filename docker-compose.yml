@@ -65,6 +65,39 @@ services:
       - ./backend:/app
     command: celery -A app.tasks.celery_app beat --loglevel=info
 
+  # Self-hosted Telegram Bot API server (--local) — снимает лимит загрузки
+  # файлов 20МБ → до 2000МБ. Файлы кладёт в общий том tg-bot-api-data,
+  # откуда их читает telegram-bot.
+  telegram-bot-api:
+    image: aiogram/telegram-bot-api:latest
+    env_file: .env
+    environment:
+      TELEGRAM_API_ID: ${TELEGRAM_API_ID}
+      TELEGRAM_API_HASH: ${TELEGRAM_API_HASH}
+      TELEGRAM_LOCAL: "true"
+    volumes:
+      - tg-bot-api-data:/var/lib/telegram-bot-api
+    restart: unless-stopped
+
+  # Telegram-бот (aiogram, тот же образ что api/celery). Long-polling.
+  telegram-bot:
+    build: ./backend
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+      telegram-bot-api:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+      - tg-bot-api-data:/var/lib/telegram-bot-api
+    command: python -m app.bot.main
+    restart: unless-stopped
+
   frontend:
     build: ./frontend
     expose:
@@ -87,3 +120,4 @@ services:
 
 volumes:
   pgdata:
+  tg-bot-api-data:

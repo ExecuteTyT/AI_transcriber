@@ -72,6 +72,16 @@ class Settings(BaseSettings):
     # В dev пусто = "" → проверка отключена. На проде должен быть https://admin.dicto.pro.
     ADMIN_APP_URL: str = ""
 
+    # Telegram-бот. Все поля объявлены явно — Settings отвергает незаявленные
+    # env-переменные (иначе падение старта, как было с OPENROUTER_API_KEY).
+    TELEGRAM_BOT_TOKEN: str = ""              # токен от @BotFather
+    TELEGRAM_API_ID: str = ""                 # my.telegram.org — для self-hosted Bot API server
+    TELEGRAM_API_HASH: str = ""               # my.telegram.org
+    TELEGRAM_BOT_API_URL: str = "http://telegram-bot-api:8081"  # self-hosted Bot API server (--local)
+    BOT_USERNAME: str = ""                     # без @, для deep-link t.me/<username>?start=
+    BOT_INTERNAL_SECRET: str = ""              # секрет для /api/integrations/telegram/auth (bot-only)
+    INTERNAL_API_URL: str = "http://api:8000"  # как бот ходит в API (compose-сеть)
+
     # 152-ФЗ: версия текста политики конфиденциальности.
     # Меняется когда мы существенно правим политику и должны заново собрать
     # согласия (или хотя бы зафиксировать что юзер видел новую версию).

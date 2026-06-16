@@ -8,6 +8,7 @@ import {
   FileAudio,
   Languages,
   Mail,
+  Send,
   Shield,
   ShieldCheck,
   Sparkles,
@@ -16,11 +17,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { authApi, type Consent } from "@/api/auth";
+import { integrationsApi } from "@/api/integrations";
 import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { fadeUp, staggerChildren } from "@/lib/motion";
 import { LanguageSelect } from "@/components/ui/LanguageSelect";
 import { useSound } from "@/lib/sound";
+import { reachGoal } from "@/lib/metrika";
 import Seo from "@/components/Seo";
 
 const PLAN_NAMES: Record<string, string> = {
@@ -60,6 +63,20 @@ export default function Profile() {
   const [retentionLoading, setRetentionLoading] = useState(false);
   const [audioRetentionLoading, setAudioRetentionLoading] = useState(false);
   const [langLoading, setLangLoading] = useState(false);
+  const [tgLoading, setTgLoading] = useState(false);
+
+  const handleConnectTelegram = async () => {
+    setTgLoading(true);
+    try {
+      const { deep_link } = await integrationsApi.telegramLinkToken();
+      reachGoal("telegram_bot_click", { source: "profile_link" });
+      window.open(deep_link, "_blank", "noopener,noreferrer");
+    } catch {
+      toast.error("Не удалось создать ссылку привязки. Попробуйте позже.");
+    } finally {
+      setTgLoading(false);
+    }
+  };
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -342,6 +359,25 @@ export default function Profile() {
             className="btn-accent mt-5 w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {langLoading ? "Сохранение…" : "Сохранить"}
+          </button>
+        </Card>
+      </motion.section>
+
+      {/* ── Telegram ── */}
+      <motion.section variants={fadeUp}>
+        <Card title="Telegram-бот" icon={Send}>
+          <p className="mb-5 text-[13px] text-[var(--fg-muted)] leading-[1.55]">
+            Подключите Telegram — и расшифровывайте записи прямо в мессенджере.
+            Баланс, кошелёк и подписка останутся общими с сайтом.
+          </p>
+          <button
+            type="button"
+            onClick={handleConnectTelegram}
+            disabled={tgLoading}
+            className="btn-accent w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+          >
+            <Icon icon={Send} size={16} strokeWidth={2} />
+            {tgLoading ? "Создаём ссылку…" : "Подключить Telegram"}
           </button>
         </Card>
       </motion.section>
