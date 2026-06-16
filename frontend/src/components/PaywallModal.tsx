@@ -4,6 +4,7 @@ import { X, Wallet, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { paymentsApi, WALLET_PACKS } from "@/api/payments";
 import { usePaywallStore } from "@/store/paywallStore";
+import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { reachGoal } from "@/lib/metrika";
 import { cn } from "@/lib/cn";
@@ -24,6 +25,7 @@ const TITLE_BY_REASON: Record<string, string> = {
  */
 export default function PaywallModal() {
   const { open, detail, closePaywall } = usePaywallStore();
+  const user = useAuthStore((s) => s.user);
   // pending — код активного запроса оплаты (pack code / "pro"), для disabled+спиннера.
   const [pending, setPending] = useState<string | null>(null);
 
@@ -121,6 +123,27 @@ export default function PaywallModal() {
             <p className="mt-2.5 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
               {detail.message}
             </p>
+
+            {/* Текущий остаток пользователя — прозрачность перед оплатой. */}
+            {user && (
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-[var(--bg-muted)] px-3.5 py-2.5 font-mono text-[12px] tabular text-[var(--fg-muted)]">
+                <span>
+                  Осталось всего{" "}
+                  <span className="font-semibold text-[var(--fg)]">
+                    {(user.bonus_minutes ?? 0) +
+                      Math.max(0, user.minutes_limit - user.minutes_used) +
+                      (user.wallet_minutes ?? 0)}
+                  </span>{" "}
+                  мин
+                </span>
+                {(user.wallet_minutes ?? 0) > 0 && (
+                  <span>
+                    в кошельке{" "}
+                    <span className="font-semibold text-[var(--fg)]">{user.wallet_minutes}</span> мин
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Кейс file_exceeds_balance — баланс + единственная рекомендованная докупка. */}
             {topup && (

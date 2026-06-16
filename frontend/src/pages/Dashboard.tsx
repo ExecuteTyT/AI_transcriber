@@ -185,6 +185,7 @@ export default function Dashboard() {
           minutesUsed={user.minutes_used}
           minutesLimit={user.minutes_limit}
           bonusMinutes={user.bonus_minutes ?? 0}
+          walletMinutes={user.wallet_minutes ?? 0}
           planName={PLAN_NAMES[user.plan] || user.plan}
           totalRecords={total}
         />

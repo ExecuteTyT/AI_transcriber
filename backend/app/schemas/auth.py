@@ -71,6 +71,7 @@ class UserResponse(BaseModel):
     default_audio_retention_days: int = 7
     default_language: str = "auto"
     bonus_minutes: int = 0
+    wallet_minutes: int = 0
     created_at: datetime | None = None
 
     model_config = {"from_attributes": True}

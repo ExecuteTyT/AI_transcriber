@@ -49,11 +49,20 @@ beforeEach(() => {
 describe("Subscription — кошелёк", () => {
   it("показывает баланс кошелька и 3 пакета", async () => {
     renderSub();
-    expect(await screen.findByText("Кошелёк")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Кошелёк" })).toBeInTheDocument();
     expect(screen.getByText("250 мин")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /150 мин/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /400 мин/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /1000 мин/ })).toBeInTheDocument();
+  });
+
+  it("показывает единый баланс ресурсов (бонус + тариф + кошелёк)", async () => {
+    renderSub();
+    // bonus 30 + тариф 0 + кошелёк 250 = 280 осталось
+    expect(await screen.findByRole("heading", { name: "Ваши минуты" })).toBeInTheDocument();
+    expect(screen.getByText("280")).toBeInTheDocument();
+    expect(screen.getByText("Бонус")).toBeInTheDocument();
+    expect(screen.getByText("По тарифу")).toBeInTheDocument();
   });
 
   it("клик по пакету вызывает topupWallet", async () => {

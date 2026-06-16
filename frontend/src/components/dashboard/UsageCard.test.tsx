@@ -10,6 +10,7 @@ function renderCard(overrides: Partial<React.ComponentProps<typeof UsageCard>> =
         minutesUsed={0}
         minutesLimit={30}
         bonusMinutes={180}
+        walletMinutes={0}
         planName="Free"
         totalRecords={0}
         {...overrides}
@@ -21,13 +22,13 @@ function renderCard(overrides: Partial<React.ComponentProps<typeof UsageCard>> =
 describe("UsageCard", () => {
   it("shows bonus chip when bonusMinutes > 0", () => {
     renderCard({ bonusMinutes: 180 });
-    expect(screen.getByText(/Бонус/)).toBeInTheDocument();
+    // "тратится первым" уникально для чипа бонуса (label «Бонус» теперь есть и в micro-stat)
     expect(screen.getByText(/тратится первым/)).toBeInTheDocument();
   });
 
   it("hides bonus chip when bonusMinutes = 0", () => {
     renderCard({ bonusMinutes: 0 });
-    expect(screen.queryByText(/Бонус/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/тратится первым/)).not.toBeInTheDocument();
   });
 
   it("shows plan name", () => {
@@ -42,8 +43,8 @@ describe("UsageCard", () => {
     expect(link.closest("a")).toHaveAttribute("href", "/app/pricing");
   });
 
-  it("shows upgrade CTA when usage >= 80% and no bonus", () => {
-    renderCard({ bonusMinutes: 0, minutesUsed: 28, minutesLimit: 30 });
+  it("shows upgrade CTA when usage >= 80% and no bonus/wallet", () => {
+    renderCard({ bonusMinutes: 0, walletMinutes: 0, minutesUsed: 28, minutesLimit: 30 });
     // "Минуты подходят к концу" разбито italic em на «Минуты подходят» + «к концу»
     expect(screen.getByText(/Минуты подходят/)).toBeInTheDocument();
     expect(screen.getByText(/Апгрейдить план/)).toBeInTheDocument();
@@ -53,5 +54,17 @@ describe("UsageCard", () => {
     renderCard({ bonusMinutes: 100, minutesUsed: 28, minutesLimit: 30 });
     // "У вас всё под контролем" разбито на «У вас всё» + «под контролем»
     expect(screen.getAllByText(/У вас всё/).length).toBeGreaterThan(0);
+  });
+
+  it("shows wallet chip when walletMinutes > 0", () => {
+    renderCard({ bonusMinutes: 0, walletMinutes: 150, minutesUsed: 10, minutesLimit: 30 });
+    expect(screen.getByText(/не сгорает/)).toBeInTheDocument();
+    // «150» встречается в чипе кошелька и в micro-stat «Кошелёк»
+    expect(screen.getAllByText("150").length).toBeGreaterThan(0);
+  });
+
+  it("hides wallet chip when walletMinutes = 0", () => {
+    renderCard({ walletMinutes: 0 });
+    expect(screen.queryByText(/не сгорает/)).not.toBeInTheDocument();
   });
 });

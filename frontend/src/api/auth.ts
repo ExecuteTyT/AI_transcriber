@@ -19,6 +19,7 @@ export interface User {
   default_audio_retention_days: number;
   default_language: string;
   bonus_minutes: number;
+  wallet_minutes: number;
   created_at: string | null;
 }
 

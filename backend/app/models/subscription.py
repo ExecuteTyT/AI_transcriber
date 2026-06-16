@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, Uuid
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -17,6 +17,9 @@ class Subscription(Base, UUIDMixin, TimestampMixin):
     )
     plan: Mapped[str] = mapped_column(String(20))  # start/pro
     yookassa_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # Фактически оплаченная сумма (целые ₽), захватывается из YooKassa-webhook.
+    # nullable: старые записи до фичи + бэкфилл из PLANS[plan].price_rub.
+    amount_rub: Mapped[int | None] = mapped_column(Integer, nullable=True)
     status: Mapped[str] = mapped_column(
         String(20), default="active"
     )  # active/cancelled/expired

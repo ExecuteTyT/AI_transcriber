@@ -21,3 +21,6 @@ class WalletTopup(Base, UUIDMixin, TimestampMixin):
     yookassa_id: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     minutes: Mapped[int] = mapped_column(Integer)
     pack: Mapped[str] = mapped_column(String(20))
+    # Фактически оплаченная сумма (целые ₽) из YooKassa-webhook. nullable: бэкфилл
+    # из WALLET_PACKS[pack].price_rub для записей до фичи.
+    amount_rub: Mapped[int | None] = mapped_column(Integer, nullable=True)

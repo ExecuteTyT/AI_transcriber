@@ -225,7 +225,10 @@ async def yookassa_webhook(
                 yookassa_id, expected, actual, pack,
             )
             return {"status": "ok"}
-        await credit_wallet(uuid.UUID(wallet_user_id), pack, yookassa_id, db)
+        await credit_wallet(
+            uuid.UUID(wallet_user_id), pack, yookassa_id, db,
+            amount_rub=int(float(actual)),
+        )
         return {"status": "ok"}
 
     user_id_str = metadata.get("user_id")
@@ -252,6 +255,7 @@ async def yookassa_webhook(
             plan=plan,
             yookassa_id=yookassa_id,
             db=db,
+            amount_rub=int(float(actual_amount)),
         )
     except Exception as e:
         logger.exception("Subscription activation failed: %s", e)
