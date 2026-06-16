@@ -45,9 +45,11 @@ export default function Upload() {
   const navigate = useNavigate();
 
   const bonusMinutes = user?.bonus_minutes ?? 0;
+  const walletMinutes = user?.wallet_minutes ?? 0;
   const monthlyRemaining = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
-  const totalAvailable = bonusMinutes + monthlyRemaining;
-  const totalCapacity = bonusMinutes + (user?.minutes_limit ?? 0);
+  const totalAvailable = bonusMinutes + monthlyRemaining + walletMinutes;
+  const totalCapacity = bonusMinutes + (user?.minutes_limit ?? 0) + walletMinutes;
+  const halfHours = Math.floor(totalAvailable / 30);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
@@ -414,7 +416,11 @@ export default function Upload() {
                 <span className="text-[var(--fg-muted)]">из {totalCapacity}&nbsp;мин доступно</span>
               </p>
               <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
-                Хватит на ~{Math.max(0, Math.floor(totalAvailable / 30))} получасовых встреч
+                {halfHours >= 1
+                  ? `Хватит на ~${halfHours} ${pluralizeMeetings(halfHours)}`
+                  : totalAvailable > 0
+                    ? "Меньше получаса записи"
+                    : "Минуты закончились"}
               </p>
             </div>
           </div>
@@ -437,4 +443,14 @@ export default function Upload() {
       )}
     </motion.div>
   );
+}
+
+/** Склонение «получасовая встреча» в винительном падеже («Хватит на N …»). */
+function pluralizeMeetings(n: number): string {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) return "получасовых встреч";
+  if (b === 1) return "получасовую встречу";
+  if (b > 1 && b < 5) return "получасовые встречи";
+  return "получасовых встреч";
 }
