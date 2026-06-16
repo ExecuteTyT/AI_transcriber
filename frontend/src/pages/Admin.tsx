@@ -119,19 +119,98 @@ const PERIOD_LABELS: [string, string][] = [
 function MiniTrendChart({ data }: { data: TimeseriesPoint[] }) {
   if (data.length === 0) return null;
   const W = 720;
-  const H = 160;
-  const pad = 8;
-  const maxVal = Math.max(1, ...data.map((d) => Math.max(d.signups, d.transcriptions)));
-  const x = (i: number) => pad + (i * (W - 2 * pad)) / Math.max(1, data.length - 1);
-  const y = (v: number) => H - pad - (v * (H - 2 * pad)) / maxVal;
-  const line = (key: "signups" | "transcriptions") =>
-    data.map((d, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`).join(" ");
+  const H = 200;
+  const padX = 40;          // место под Y-подписи слева
+  const padTop = 16;
+  const padBottom = 24;     // место под подписи дат
+  const VIOLET = "#a78bfa";
+  const maxRaw = Math.max(1, ...data.map((d) => Math.max(d.signups, d.transcriptions)));
+  // округляем верх шкалы до «красивого» числа, чтобы линии сетки были читабельны
+  const niceMax = (() => {
+    const step = Math.pow(10, Math.floor(Math.log10(maxRaw)));
+    return Math.ceil(maxRaw / step) * step;
+  })();
+  const x = (i: number) => padX + (i * (W - padX - 10)) / Math.max(1, data.length - 1);
+  const y = (v: number) => padTop + (1 - v / niceMax) * (H - padTop - padBottom);
+
+  // сглаженный путь (Catmull-Rom → Bézier) для плавных линий
+  const smooth = (key: "signups" | "transcriptions") => {
+    const pts = data.map((d, i) => [x(i), y(d[key])] as const);
+    if (pts.length < 2) return `M${pts[0]?.[0] ?? 0},${pts[0]?.[1] ?? 0}`;
+    let path = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+      const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+      const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+      const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+      const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+      path += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+    }
+    return path;
+  };
+  const areaPath = (key: "signups" | "transcriptions") =>
+    `${smooth(key)} L${x(data.length - 1).toFixed(1)},${(H - padBottom).toFixed(1)} L${padX},${(H - padBottom).toFixed(1)} Z`;
+
+  const baseline = H - padBottom;
+  const gridVals = [0, niceMax / 2, niceMax];
+  const last = data[data.length - 1];
+  const fmtDate = (s: string) => {
+    const d = new Date(s);
+    return `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+  };
+  // 5 равномерных подписей дат по оси X
+  const tickIdx = Array.from({ length: 5 }, (_, k) => Math.round((k * (data.length - 1)) / 4));
 
   return (
     <div className="w-full overflow-x-auto">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[480px]" preserveAspectRatio="none">
-        <path d={line("transcriptions")} fill="none" stroke="var(--accent)" strokeWidth="2" />
-        <path d={line("signups")} fill="none" stroke="#8b5cf6" strokeWidth="2" />
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[480px]" role="img"
+        aria-label={`Динамика за ${data.length} дней: транскрипции и регистрации`}>
+        <defs>
+          <linearGradient id="trendAccent" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="trendViolet" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={VIOLET} stopOpacity="0.18" />
+            <stop offset="100%" stopColor={VIOLET} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Сетка + Y-подписи */}
+        {gridVals.map((v) => (
+          <g key={v}>
+            <line x1={padX} y1={y(v)} x2={W - 10} y2={y(v)} stroke="var(--border)" strokeWidth="1" strokeDasharray="3 4" opacity="0.6" />
+            <text x={padX - 8} y={y(v) + 3.5} textAnchor="end" fontSize="10" fill="var(--fg-subtle)" className="tabular-nums">
+              {Math.round(v)}
+            </text>
+          </g>
+        ))}
+
+        {/* Заливка под линиями */}
+        <path d={areaPath("transcriptions")} fill="url(#trendAccent)" />
+        <path d={areaPath("signups")} fill="url(#trendViolet)" />
+
+        {/* Линии: транскрипции — сплошная accent; регистрации — пунктир violet (различимы без цвета) */}
+        <path d={smooth("transcriptions")} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={smooth("signups")} fill="none" stroke={VIOLET} strokeWidth="2" strokeDasharray="5 4" strokeLinejoin="round" strokeLinecap="round" />
+
+        {/* Точки на последнем дне + значения */}
+        {last && (
+          <>
+            <circle cx={x(data.length - 1)} cy={y(last.transcriptions)} r="3.5" fill="var(--accent)" stroke="var(--bg-elevated)" strokeWidth="1.5" />
+            <circle cx={x(data.length - 1)} cy={y(last.signups)} r="3.5" fill={VIOLET} stroke="var(--bg-elevated)" strokeWidth="1.5" />
+          </>
+        )}
+
+        {/* Подписи дат по X */}
+        {tickIdx.map((i) => (
+          <text key={i} x={x(i)} y={baseline + 15} textAnchor="middle" fontSize="9.5" fill="var(--fg-subtle)" className="tabular-nums">
+            {fmtDate(data[i].date)}
+          </text>
+        ))}
       </svg>
     </div>
   );
@@ -167,12 +246,75 @@ function RevenueChart({ data }: { data: RevenuePoint[] }) {
   );
 }
 
-const planNames: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
-const planColors: Record<string, string> = {
-  free: "bg-[var(--bg-muted)] text-[var(--fg-muted)]",
-  start: "bg-primary-50 text-primary-700",
-  pro: "bg-gradient-to-r from-primary-500 to-accent-500 text-white",
+const planNames: Record<string, string> = {
+  free: "Free", start: "Старт", pro: "Про", expert: "Эксперт", premium: "Премиум",
 };
+// Заливки сегментов для распределения по тарифам (порядок = воронка: free → платные).
+const PLAN_FILL: Record<string, string> = {
+  free: "var(--fg-subtle)",
+  start: "#38bdf8",
+  pro: "var(--accent)",
+  expert: "#a78bfa",
+  premium: "#f59e0b",
+};
+const PLAN_ORDER = ["free", "start", "pro", "expert", "premium"];
+
+/** Распределение юзеров по тарифам: 100%-стопочный бар + легенда с точными числами.
+ *  Читаемо даже когда один тариф доминирует (Free 99%) — слив-сегменты не теряются,
+ *  т.к. точные значения вынесены в легенду, плюс отдельная метрика конверсии в платный. */
+function PlanDistribution({ byPlan, total }: { byPlan: Record<string, number>; total: number }) {
+  const entries = PLAN_ORDER
+    .filter((p) => byPlan[p] != null)
+    .map((p) => [p, byPlan[p]] as const)
+    .concat(Object.entries(byPlan).filter(([p]) => !PLAN_ORDER.includes(p)));
+  const sum = Math.max(1, total);
+  const paid = entries.reduce((acc, [p, c]) => acc + (p === "free" ? 0 : c), 0);
+  const paidPct = total > 0 ? (paid / total) * 100 : 0;
+
+  return (
+    <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-5 md:p-6">
+      <div className="flex items-baseline justify-between gap-4 mb-4">
+        <h3 className="text-sm font-semibold text-[var(--fg)]">Распределение по тарифам</h3>
+        <span className="text-xs text-[var(--fg-subtle)]">
+          Конверсия в платный:{" "}
+          <span className="font-semibold text-[var(--fg-muted)] tabular-nums">{paidPct.toFixed(1)}%</span>
+          {" "}· {paid} из {total}
+        </span>
+      </div>
+
+      {/* Стопочный бар пропорций */}
+      <div className="flex h-3 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
+        {entries.map(([plan, count]) => {
+          const pct = (count / sum) * 100;
+          if (pct <= 0) return null;
+          return (
+            <div
+              key={plan}
+              className="h-full first:rounded-l-full last:rounded-r-full transition-all duration-500"
+              style={{ width: `${pct}%`, minWidth: count > 0 ? 3 : 0, background: PLAN_FILL[plan] || "var(--fg-subtle)" }}
+              title={`${planNames[plan] || plan}: ${count} (${pct.toFixed(1)}%)`}
+            />
+          );
+        })}
+      </div>
+
+      {/* Легенда с точными числами */}
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2.5">
+        {entries.map(([plan, count]) => {
+          const pct = total > 0 ? (count / total) * 100 : 0;
+          return (
+            <div key={plan} className="flex items-center gap-2 min-w-0">
+              <span className="h-2.5 w-2.5 rounded-sm flex-shrink-0" style={{ background: PLAN_FILL[plan] || "var(--fg-subtle)" }} aria-hidden />
+              <span className="text-[13px] text-[var(--fg-muted)] truncate">{planNames[plan] || plan}</span>
+              <span className="ml-auto text-[13px] font-medium text-[var(--fg)] tabular-nums">{count}</span>
+              <span className="w-12 text-right text-xs text-[var(--fg-subtle)] tabular-nums">{pct.toFixed(1)}%</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 const statusColors: Record<string, string> = {
   queued: "bg-amber-50 text-amber-600",
@@ -488,26 +630,8 @@ export default function Admin() {
             </div>
           )}
 
-          {/* Plan distribution */}
-          <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-5 md:p-6">
-            <h3 className="text-sm font-semibold text-[var(--fg)] mb-4">Распределение по тарифам</h3>
-            <div className="space-y-3">
-              {Object.entries(stats.users_by_plan).map(([plan, count]) => {
-                const percent = stats.total_users > 0 ? Math.round((count / stats.total_users) * 100) : 0;
-                return (
-                  <div key={plan} className="flex items-center gap-3">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${planColors[plan] || "bg-[var(--bg-muted)] text-[var(--fg-muted)]"}`}>
-                      {planNames[plan] || plan}
-                    </span>
-                    <div className="flex-1 bg-[var(--bg-muted)] rounded-full h-2">
-                      <div className="bg-primary-500 h-2 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
-                    </div>
-                    <span className="text-sm font-medium text-[var(--fg-muted)] tabular-nums w-16 text-right">{count} ({percent}%)</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          {/* Plan distribution — стопочный бар пропорций + легенда (читаемо, когда один тариф доминирует) */}
+          <PlanDistribution byPlan={stats.users_by_plan} total={stats.total_users} />
 
           {/* Status distribution */}
           <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-5 md:p-6">
