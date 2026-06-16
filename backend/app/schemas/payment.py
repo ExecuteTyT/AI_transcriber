@@ -32,9 +32,14 @@ class SubscriptionResponse(BaseModel):
 
 
 class WalletTopupRequest(BaseModel):
-    """Запрос на пополнение кошелька."""
+    """Запрос на пополнение кошелька.
 
-    pack: str  # w150 / w400 / w1000
+    Либо пресет-пакет (`pack`: w60/w150/w300), либо произвольное число минут
+    (`minutes`, слайдер). Ровно одно из полей — проверяется в эндпоинте.
+    """
+
+    pack: str | None = None
+    minutes: int | None = None
 
 
 class WalletTopupResponse(BaseModel):

@@ -29,7 +29,11 @@ from app.services.payment import (
     is_yookassa_ip,
     verify_payment_via_api,
 )
-from app.services.plans import WALLET_PACKS
+from app.services.plans import (
+    WALLET_PACKS,
+    custom_topup_price,
+    is_valid_custom_minutes,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -80,14 +84,27 @@ async def topup_wallet(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Создание платежа для пополнения кошелька (пакет минут)."""
-    if req.pack not in WALLET_PACKS:
+    """Создание платежа для пополнения кошелька (пресет или слайдер)."""
+    # Ровно одно из полей: пресет-пакет ИЛИ кастомное число минут.
+    if (req.pack is None) == (req.minutes is None):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Укажите либо пакет, либо количество минут",
+        )
+    if req.pack is not None and req.pack not in WALLET_PACKS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Допустимые пакеты: {', '.join(WALLET_PACKS)}",
         )
+    if req.minutes is not None and not is_valid_custom_minutes(req.minutes):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Минут должно быть от 30 до 480, шаг 30",
+        )
     try:
-        payment = await create_wallet_payment(user.id, req.pack, user.email)
+        payment = await create_wallet_payment(
+            user.id, pack=req.pack, minutes=req.minutes, email=user.email
+        )
     except Exception as e:
         logger.exception("Wallet payment creation failed: %s", e)
         raise HTTPException(
@@ -217,8 +234,33 @@ async def yookassa_webhook(
         if not (pack and wallet_user_id):
             logger.warning("Wallet webhook %s: missing pack/user_id", yookassa_id)
             return {"status": "ok"}
-        expected = f"{WALLET_PACKS.get(pack, {}).get('price_rub', -1):.2f}"
         actual = (verified.get("amount") or {}).get("value")
+
+        # Кастомная докупка (слайдер): минуты из metadata, цену пересчитываем
+        # независимо по нашей ставке и сверяем с фактически оплаченной суммой.
+        if pack == "custom":
+            try:
+                custom_minutes = int(metadata.get("minutes", "0"))
+            except (TypeError, ValueError):
+                custom_minutes = 0
+            if not is_valid_custom_minutes(custom_minutes):
+                logger.error("Wallet webhook %s: invalid custom minutes=%s", yookassa_id, metadata.get("minutes"))
+                return {"status": "ok"}
+            expected = f"{custom_topup_price(custom_minutes):.2f}"
+            if actual != expected:
+                logger.error(
+                    "Wallet webhook %s: custom amount mismatch expected=%s got=%s minutes=%s",
+                    yookassa_id, expected, actual, custom_minutes,
+                )
+                return {"status": "ok"}
+            await credit_wallet(
+                uuid.UUID(wallet_user_id), "custom", yookassa_id, db,
+                amount_rub=int(float(actual)), minutes=custom_minutes,
+            )
+            return {"status": "ok"}
+
+        # Пресет-пакет: сверяем сумму с прайсом пакета.
+        expected = f"{WALLET_PACKS.get(pack, {}).get('price_rub', -1):.2f}"
         if pack not in WALLET_PACKS or actual != expected:
             logger.error(
                 "Wallet webhook %s: amount mismatch expected=%s got=%s pack=%s",

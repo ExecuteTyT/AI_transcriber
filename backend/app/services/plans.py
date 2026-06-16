@@ -131,14 +131,37 @@ def has_paid_access(user) -> bool:
     return getattr(user, "plan", "free") != "free" or getattr(user, "wallet_minutes", 0) > 0
 
 
-# Пакеты пополнения кошелька: код → (цена ₽, минуты). Цена за минуту падает
-# с объёмом (299/150≈2.0, 690/400≈1.7, 1490/1000≈1.5). Pro (start, 500₽/600мин)
-# выгоднее по минуте — объёмных юзеров сетка толкает в подписку.
+# Кошелёк — мелкие топ-апы для НЕрегулярной нагрузки и «добить лимит на разовом
+# файле». Регулярным объёмам выгоднее подписка (Старт 0.83 ₽/мин против 1.66-1.98
+# у кошелька) — премия за гибкость (разово, без подписки, минуты не сгорают).
+# Пакеты намеренно мелкие (≤300 мин): большие объёмы → подписка, иначе кошелёк
+# каннибализирует MRR. Кастомная докупка (слайдер) — по базовой ставке, пресеты
+# чуть дешевле за «готовый бандл».
 WALLET_PACKS: dict[str, dict] = {
-    "w150": {"price_rub": 299, "minutes": 150},
-    "w400": {"price_rub": 690, "minutes": 400},
-    "w1000": {"price_rub": 1490, "minutes": 1000},
+    "w60": {"price_rub": 119, "minutes": 60},     # 1.98 ₽/мин
+    "w150": {"price_rub": 269, "minutes": 150},   # 1.79 ₽/мин
+    "w300": {"price_rub": 499, "minutes": 300},   # 1.66 ₽/мин
 }
+
+# Кастомная докупка произвольного числа минут (слайдер).
+WALLET_RATE_RUB_PER_MIN = 2.0     # базовая ставка; цена = minutes × rate (целые ₽)
+WALLET_CUSTOM_MIN = 30            # минимум минут
+WALLET_CUSTOM_MAX = 480           # выше — выгоднее подписка, не продаём кошельком
+WALLET_CUSTOM_STEP = 30           # шаг слайдера
+
+
+def custom_topup_price(minutes: int) -> int:
+    """Цена кастомной докупки N минут в целых ₽ (ставка WALLET_RATE_RUB_PER_MIN)."""
+    return int(round(minutes * WALLET_RATE_RUB_PER_MIN))
+
+
+def is_valid_custom_minutes(minutes: int) -> bool:
+    """Валидна ли кастомная докупка: в диапазоне [MIN, MAX] и кратна шагу."""
+    return (
+        isinstance(minutes, int)
+        and WALLET_CUSTOM_MIN <= minutes <= WALLET_CUSTOM_MAX
+        and minutes % WALLET_CUSTOM_STEP == 0
+    )
 
 
 def recommend_topup(file_minutes: int, available_minutes: int) -> dict | None:

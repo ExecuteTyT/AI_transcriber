@@ -9,12 +9,14 @@ const { getSubscription, topupWallet } = vi.hoisted(() => ({
 }));
 
 vi.mock("@/api/payments", () => ({
-  paymentsApi: { getSubscription, topupWallet, cancel: vi.fn() },
+  paymentsApi: { getSubscription, topupWallet, topupWalletCustom: vi.fn(), cancel: vi.fn() },
   WALLET_PACKS: [
-    { code: "w150", minutes: 150, price: 299 },
-    { code: "w400", minutes: 400, price: 690 },
-    { code: "w1000", minutes: 1000, price: 1490 },
+    { code: "w60", minutes: 60, price: 119 },
+    { code: "w150", minutes: 150, price: 269 },
+    { code: "w300", minutes: 300, price: 499 },
   ],
+  WALLET_CUSTOM: { ratePerMin: 2.0, min: 30, max: 480, step: 30 },
+  customTopupPrice: (m: number) => Math.round(m * 2.0),
 }));
 vi.mock("@/store/authStore", () => ({
   useAuthStore: () => ({ user: { plan: "free", bonus_minutes: 30 } }),
@@ -51,9 +53,9 @@ describe("Subscription — кошелёк", () => {
     renderSub();
     expect(await screen.findByRole("heading", { name: "Кошелёк" })).toBeInTheDocument();
     expect(screen.getByText("250 мин")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /150 мин/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /400 мин/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /1000 мин/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /60 мин/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^150 мин/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /300 мин/ })).toBeInTheDocument();
   });
 
   it("показывает единый баланс ресурсов (бонус + тариф + кошелёк)", async () => {
@@ -67,8 +69,8 @@ describe("Subscription — кошелёк", () => {
 
   it("клик по пакету вызывает topupWallet", async () => {
     renderSub();
-    const btn = await screen.findByRole("button", { name: /400 мин/ });
+    const btn = await screen.findByRole("button", { name: /300 мин/ });
     fireEvent.click(btn);
-    await waitFor(() => expect(topupWallet).toHaveBeenCalledWith("w400"));
+    await waitFor(() => expect(topupWallet).toHaveBeenCalledWith("w300"));
   });
 });
