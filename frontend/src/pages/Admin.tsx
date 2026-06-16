@@ -54,10 +54,44 @@ interface AdminUser {
   minutes_used: number;
   minutes_limit: number;
   bonus_minutes: number;
+  wallet_minutes: number;
   is_admin: boolean;
   is_unlimited: boolean;
   created_at: string;
   transcription_count: number;
+}
+
+interface FinanceOverview {
+  mrr_rub: number;
+  paying_users: number;
+  arpu_rub: number;
+  churn_pct: number;
+  revenue: Record<string, { subscriptions: number; wallet: number; total: number }>;
+}
+
+interface RevenuePoint {
+  date: string;
+  subscriptions_rub: number;
+  wallet_rub: number;
+}
+
+interface PaymentItem {
+  date: string | null;
+  email: string;
+  type: string;
+  item: string;
+  amount_rub: number;
+  status: string;
+  yookassa_id: string | null;
+}
+
+interface WalletBalanceItem {
+  email: string;
+  wallet_minutes: number;
+  topup_count: number;
+  total_topped_up_min: number;
+  total_paid_rub: number;
+  last_topup: string | null;
 }
 
 interface AdminTranscription {
@@ -71,7 +105,7 @@ interface AdminTranscription {
   created_at: string;
 }
 
-type Tab = "overview" | "users" | "transcriptions" | "failures";
+type Tab = "overview" | "finance" | "users" | "transcriptions" | "failures";
 
 const PERIOD_LABELS: [string, string][] = [
   ["today", "Сегодня"],
@@ -103,6 +137,36 @@ function MiniTrendChart({ data }: { data: TimeseriesPoint[] }) {
   );
 }
 
+/** График выручки по дням: подписки + кошелёк (stacked bars на инлайн-SVG). */
+function RevenueChart({ data }: { data: RevenuePoint[] }) {
+  if (data.length === 0) return null;
+  const W = 720;
+  const H = 160;
+  const pad = 8;
+  const maxVal = Math.max(1, ...data.map((d) => d.subscriptions_rub + d.wallet_rub));
+  const bw = (W - 2 * pad) / data.length;
+  const h = (v: number) => (v * (H - 2 * pad)) / maxVal;
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[480px]" preserveAspectRatio="none">
+        {data.map((d, i) => {
+          const x = pad + i * bw + bw * 0.15;
+          const w = bw * 0.7;
+          const subH = h(d.subscriptions_rub);
+          const walH = h(d.wallet_rub);
+          return (
+            <g key={d.date}>
+              <rect x={x} y={H - pad - subH} width={w} height={subH} fill="var(--accent)" />
+              <rect x={x} y={H - pad - subH - walH} width={w} height={walH} fill="#8b5cf6" />
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 const planNames: Record<string, string> = { free: "Free", start: "Старт", pro: "Про" };
 const planColors: Record<string, string> = {
   free: "bg-[var(--bg-muted)] text-[var(--fg-muted)]",
@@ -129,12 +193,20 @@ export default function Admin() {
   const [transTotal, setTransTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [finance, setFinance] = useState<FinanceOverview | null>(null);
+  const [revenueTs, setRevenueTs] = useState<RevenuePoint[]>([]);
+  const [payments, setPayments] = useState<PaymentItem[]>([]);
+  const [paymentsTotal, setPaymentsTotal] = useState(0);
+  const [paySearch, setPaySearch] = useState("");
+  const [payType, setPayType] = useState("");
+  const [wallets, setWallets] = useState<WalletBalanceItem[]>([]);
 
   useEffect(() => {
     loadStats();
   }, []);
 
   useEffect(() => {
+    if (tab === "finance") loadFinance();
     if (tab === "users") loadUsers();
     if (tab === "transcriptions") loadTranscriptions();
     if (tab === "failures") loadFailures();
@@ -160,6 +232,55 @@ export default function Admin() {
       adminError("Не удалось загрузить статистику", err);
     }
     setLoading(false);
+  };
+
+  const loadFinance = async () => {
+    try {
+      const [ovRes, tsRes, payRes, wRes] = await Promise.all([
+        api.get("/admin/finance/overview"),
+        api.get("/admin/finance/timeseries", { params: { days: 30 } }),
+        api.get("/admin/finance/payments", { params: { per_page: 50, type: payType, search: paySearch } }),
+        api.get("/admin/finance/wallets"),
+      ]);
+      setFinance(ovRes.data);
+      setRevenueTs(tsRes.data);
+      setPayments(payRes.data.items);
+      setPaymentsTotal(payRes.data.total);
+      setWallets(wRes.data);
+    } catch (err) {
+      adminError("Не удалось загрузить финансы", err);
+    }
+  };
+
+  const loadPayments = async () => {
+    try {
+      const { data } = await api.get("/admin/finance/payments", {
+        params: { per_page: 50, type: payType, search: paySearch },
+      });
+      setPayments(data.items);
+      setPaymentsTotal(data.total);
+    } catch (err) {
+      adminError("Не удалось загрузить платежи", err);
+    }
+  };
+
+  const exportCsv = async (kind: "payments" | "wallets") => {
+    try {
+      const { data } = await api.get("/admin/finance/export.csv", {
+        params: { type: kind },
+        responseType: "blob",
+      });
+      const url = URL.createObjectURL(data as Blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${kind}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      adminError("Не удалось выгрузить CSV", err);
+    }
   };
 
   const loadFailures = async () => {
@@ -275,7 +396,7 @@ export default function Admin() {
 
       {/* Tabs */}
       <div className="flex gap-1 mb-8 bg-[var(--bg-muted)] rounded-xl p-1 w-fit">
-        {([["overview", "Обзор"], ["users", "Пользователи"], ["transcriptions", "Транскрипции"], ["failures", "Сбои"]] as const).map(([key, label]) => (
+        {([["overview", "Обзор"], ["finance", "Финансы"], ["users", "Пользователи"], ["transcriptions", "Транскрипции"], ["failures", "Сбои"]] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -416,6 +537,164 @@ export default function Admin() {
         </div>
       )}
 
+      {/* Finance tab */}
+      {tab === "finance" && (
+        <div className="animate-fade-up space-y-6">
+          {/* KPI cards */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+            {[
+              { label: "MRR", value: finance ? `${finance.mrr_rub.toLocaleString("ru-RU")} ₽` : "—", sub: "активные подписки" },
+              { label: "Выручка 30д", value: finance ? `${finance.revenue.last_30d.total.toLocaleString("ru-RU")} ₽` : "—", sub: finance ? `подписки ${finance.revenue.last_30d.subscriptions} · кошелёк ${finance.revenue.last_30d.wallet}` : "" },
+              { label: "ARPU", value: finance ? `${finance.arpu_rub.toLocaleString("ru-RU")} ₽` : "—", sub: "на платящего" },
+              { label: "Платящих", value: finance ? finance.paying_users.toString() : "—", sub: "" },
+              { label: "Churn", value: finance ? `${finance.churn_pct}%` : "—", sub: "отменённые/всего" },
+            ].map((stat) => (
+              <div key={stat.label} className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-4 md:p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fg-subtle)] mb-2">{stat.label}</p>
+                <p className="text-xl md:text-2xl font-bold text-[var(--fg)] tabular-nums">{stat.value}</p>
+                {stat.sub && <p className="text-[11px] text-[var(--fg-subtle)] mt-1">{stat.sub}</p>}
+              </div>
+            ))}
+          </div>
+
+          {/* Выручка all-time */}
+          {finance && (
+            <div className="grid grid-cols-3 gap-3 md:gap-4">
+              {[
+                ["Всего выручка", finance.revenue.all.total],
+                ["Подписки", finance.revenue.all.subscriptions],
+                ["Кошелёк", finance.revenue.all.wallet],
+              ].map(([label, val]) => (
+                <div key={label as string} className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fg-subtle)] mb-2">{label}</p>
+                  <p className="text-lg md:text-2xl font-bold text-[var(--fg)] tabular-nums">{Number(val).toLocaleString("ru-RU")} ₽</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* График выручки */}
+          {revenueTs.length > 0 && (
+            <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-5 md:p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <h3 className="text-sm font-semibold text-[var(--fg)]">Выручка, 30 дней</h3>
+                <span className="flex items-center gap-1.5 text-xs text-[var(--fg-subtle)]">
+                  <span className="inline-block w-3 h-2" style={{ background: "var(--accent)" }} /> подписки
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-[var(--fg-subtle)]">
+                  <span className="inline-block w-3 h-2" style={{ background: "#8b5cf6" }} /> кошелёк
+                </span>
+              </div>
+              <RevenueChart data={revenueTs} />
+            </div>
+          )}
+
+          {/* Лента платежей */}
+          <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] overflow-hidden">
+            <div className="flex flex-wrap items-center gap-3 p-4 border-b border-[var(--border)]">
+              <h3 className="text-sm font-semibold text-[var(--fg)] mr-auto">Платежи · {paymentsTotal}</h3>
+              <input
+                type="text"
+                placeholder="Поиск email / yookassa_id…"
+                value={paySearch}
+                onChange={(e) => setPaySearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && loadPayments()}
+                className="input-field !py-2 text-sm max-w-[220px]"
+              />
+              <select
+                value={payType}
+                onChange={(e) => setPayType(e.target.value)}
+                className="text-xs border border-[var(--border-strong)] rounded-lg px-2 py-2 bg-[var(--bg-elevated)] text-[var(--fg)]"
+              >
+                <option value="">Все типы</option>
+                <option value="subscription">Подписки</option>
+                <option value="wallet">Кошелёк</option>
+              </select>
+              <button onClick={loadPayments} className="btn-secondary !py-2 text-sm">Найти</button>
+              <button onClick={() => exportCsv("payments")} className="btn-secondary !py-2 text-sm">Экспорт CSV</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border)] bg-[var(--bg-muted)]">
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Дата</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Email</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Тип</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Позиция</th>
+                    <th className="text-right py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Сумма</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Статус</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((p, i) => (
+                    <tr key={`${p.yookassa_id}-${i}`} className="border-b border-[var(--border)]">
+                      <td className="py-3 px-4 whitespace-nowrap text-[var(--fg-subtle)] text-xs">
+                        {p.date ? new Date(p.date).toLocaleString("ru-RU") : "—"}
+                      </td>
+                      <td className="py-3 px-4 text-[var(--fg-muted)] text-xs">{p.email || "—"}</td>
+                      <td className="py-3 px-4">
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${p.type === "subscription" ? "bg-primary-50 text-primary-700" : "bg-violet-50 text-violet-600"}`}>
+                          {p.type === "subscription" ? "Подписка" : "Кошелёк"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-[var(--fg-muted)]">{p.item}</td>
+                      <td className="py-3 px-4 text-right tabular-nums font-medium text-[var(--fg)]">{p.amount_rub.toLocaleString("ru-RU")} ₽</td>
+                      <td className="py-3 px-4 text-xs text-[var(--fg-subtle)]">{p.status}</td>
+                    </tr>
+                  ))}
+                  {payments.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-[var(--fg-subtle)] text-sm">Платежей пока нет</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Балансы кошельков */}
+          <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] overflow-hidden">
+            <div className="flex items-center gap-3 p-4 border-b border-[var(--border)]">
+              <h3 className="text-sm font-semibold text-[var(--fg)] mr-auto">Балансы кошельков · {wallets.length}</h3>
+              <button onClick={() => exportCsv("wallets")} className="btn-secondary !py-2 text-sm">Экспорт CSV</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border)] bg-[var(--bg-muted)]">
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Email</th>
+                    <th className="text-right py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Баланс, мин</th>
+                    <th className="text-right py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Пополнений</th>
+                    <th className="text-right py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Всего мин</th>
+                    <th className="text-right py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Оплачено, ₽</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[var(--fg-subtle)] text-xs uppercase tracking-wider">Последнее</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wallets.map((w) => (
+                    <tr key={w.email} className="border-b border-[var(--border)]">
+                      <td className="py-3 px-4 text-[var(--fg-muted)] text-xs">{w.email}</td>
+                      <td className="py-3 px-4 text-right tabular-nums font-medium text-[var(--fg)]">{w.wallet_minutes}</td>
+                      <td className="py-3 px-4 text-right tabular-nums text-[var(--fg-muted)]">{w.topup_count}</td>
+                      <td className="py-3 px-4 text-right tabular-nums text-[var(--fg-muted)]">{w.total_topped_up_min}</td>
+                      <td className="py-3 px-4 text-right tabular-nums text-[var(--fg-muted)]">{w.total_paid_rub.toLocaleString("ru-RU")}</td>
+                      <td className="py-3 px-4 text-xs text-[var(--fg-subtle)]">
+                        {w.last_topup ? new Date(w.last_topup).toLocaleDateString("ru-RU") : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                  {wallets.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-[var(--fg-subtle)] text-sm">Пополнений пока нет</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Failures tab */}
       {tab === "failures" && (
         <div className="animate-fade-up space-y-6">
@@ -541,6 +820,9 @@ export default function Admin() {
                             {u.minutes_used} / {u.minutes_limit} мин
                             {u.bonus_minutes > 0 && (
                               <span className="text-[var(--accent)]"> · +{u.bonus_minutes} бонус</span>
+                            )}
+                            {u.wallet_minutes > 0 && (
+                              <span className="text-violet-500"> · +{u.wallet_minutes} кошелёк</span>
                             )}
                           </span>
                         )}

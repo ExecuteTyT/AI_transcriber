@@ -378,6 +378,33 @@ export default function Subscription() {
         </div>
       </motion.section>
 
+      {/* ── Единый баланс ресурсов: бонус + тариф + кошелёк ── */}
+      <motion.section variants={fadeUp}>
+        <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 md:p-8">
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="font-display text-2xl md:text-3xl tracking-[-0.01em] text-[var(--fg)]">
+              Ваши минуты
+            </h2>
+            <span className="font-sans font-semibold text-2xl tabular text-[var(--fg)]">
+              {bonusMinutes + Math.max(0, sub.minutes_limit - sub.minutes_used) + sub.wallet_minutes}
+              <span className="ml-1.5 font-mono text-[12px] font-normal text-[var(--fg-muted)]">осталось</span>
+            </span>
+          </div>
+          <p className="mt-2 text-[13px] leading-[1.55] text-[var(--fg-muted)]">
+            Списываются по порядку: сначала бонус, затем минуты тарифа, потом кошелёк.
+          </p>
+          <div className="mt-5 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--border)]">
+            <ResourceCell label="Бонус" value={bonusMinutes} note="тратится 1-м" />
+            <ResourceCell
+              label="По тарифу"
+              value={Math.max(0, sub.minutes_limit - sub.minutes_used)}
+              note={sub.minutes_limit > 0 ? `из ${sub.minutes_limit}` : "нет тарифа"}
+            />
+            <ResourceCell label="Кошелёк" value={sub.wallet_minutes} note="не сгорает" />
+          </div>
+        </div>
+      </motion.section>
+
       {/* ── Кошелёк: постоянный баланс + разовое пополнение (без подписки) ── */}
       <motion.section variants={fadeUp}>
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 md:p-8">
@@ -414,5 +441,18 @@ export default function Subscription() {
         </div>
       </motion.section>
     </motion.div>
+  );
+}
+
+function ResourceCell({ label, value, note }: { label: string; value: number; note: string }) {
+  return (
+    <div className="bg-[var(--bg-elevated)] p-4">
+      <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--fg-subtle)]">{label}</p>
+      <p className="mt-1.5 font-sans font-semibold text-2xl leading-none tabular text-[var(--fg)]">
+        {value}
+        <span className="ml-1 font-mono text-[10px] font-normal text-[var(--fg-subtle)]">мин</span>
+      </p>
+      <p className="mt-1.5 font-mono text-[10px] tracking-[0.04em] text-[var(--fg-subtle)]">{note}</p>
+    </div>
   );
 }

@@ -33,16 +33,18 @@ export default function DesktopSidebar() {
     return location.pathname === item.to;
   };
 
-  // Остаток = bonus + (лимит − использовано). Для Free: лимит 0, весь ресурс в bonus.
+  // Остаток = bonus + (лимит − использовано) + кошелёк. Порядок списания:
+  // бонус → тариф → кошелёк. Для Free: лимит 0, ресурс в bonus + кошельке.
   const bonusMinutes = user?.bonus_minutes ?? 0;
+  const walletMinutes = user?.wallet_minutes ?? 0;
   const monthlyRemaining = user ? Math.max(0, user.minutes_limit - user.minutes_used) : 0;
-  const totalAvailable = bonusMinutes + monthlyRemaining;
-  const totalCapacity = bonusMinutes + (user?.minutes_limit ?? 0);
+  const totalAvailable = bonusMinutes + monthlyRemaining + walletMinutes;
+  const totalCapacity = bonusMinutes + (user?.minutes_limit ?? 0) + walletMinutes;
   const usagePercent = totalCapacity > 0
     ? Math.min(100, Math.round(((totalCapacity - totalAvailable) / totalCapacity) * 100))
     : 0;
   const lowUsage = totalAvailable <= Math.max(10, Math.round(totalCapacity * 0.2));
-  const isBonusOnly = user?.minutes_limit === 0 && bonusMinutes > 0;
+  const isBonusOnly = user?.minutes_limit === 0 && bonusMinutes > 0 && walletMinutes === 0;
 
   const radius = 22;
   const circumference = 2 * Math.PI * radius;
@@ -154,6 +156,11 @@ export default function DesktopSidebar() {
                 <p className="text-[13px] text-[var(--fg)] leading-tight">
                   {totalAvailable} из {totalCapacity}&nbsp;мин
                 </p>
+                {walletMinutes > 0 && (
+                  <p className="mt-0.5 font-mono text-[10px] tracking-[0.04em] text-[var(--fg-subtle)]">
+                    +{walletMinutes} в кошельке
+                  </p>
+                )}
                 <p className={`mt-1 text-[11px] ${lowUsage ? "text-red-400" : "text-[var(--fg-subtle)]"} group-hover:text-[var(--accent)] transition-colors`}>
                   {lowUsage ? "Пополнить →" : "Посмотреть тарифы →"}
                 </p>

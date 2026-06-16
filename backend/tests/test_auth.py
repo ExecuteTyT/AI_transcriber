@@ -97,6 +97,9 @@ async def test_me_authorized(client: AsyncClient):
     assert data["name"] == "Вася"
     assert data["plan"] == "free"
     assert data["minutes_limit"] == 0  # free: лимит 0, минуты идут из bonus_minutes (180)
+    # Экономика: профиль отдаёт и бонус, и баланс кошелька (для UI «сколько осталось»).
+    assert data["bonus_minutes"] == 30
+    assert data["wallet_minutes"] == 0
 
 
 @pytest.mark.asyncio

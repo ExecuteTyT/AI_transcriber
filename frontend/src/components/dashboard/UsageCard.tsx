@@ -7,6 +7,7 @@ interface UsageCardProps {
   minutesUsed: number;
   minutesLimit: number;
   bonusMinutes: number;
+  walletMinutes: number;
   planName: string;
   totalRecords: number;
 }
@@ -34,11 +35,12 @@ function useCountUp(target: number, duration = 900, trigger = true) {
   return value;
 }
 
-export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, totalRecords }: UsageCardProps) {
+export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, walletMinutes, planName, totalRecords }: UsageCardProps) {
   const monthlyRemaining = Math.max(0, minutesLimit - minutesUsed);
-  const totalAvailable = bonusMinutes + monthlyRemaining;
-  const totalCapacity = bonusMinutes + minutesLimit;
-  const isBonusOnly = minutesLimit === 0 && bonusMinutes > 0;
+  // Единый остаток по трём ведёркам, в порядке списания: бонус → тариф → кошелёк.
+  const totalAvailable = bonusMinutes + monthlyRemaining + walletMinutes;
+  const totalCapacity = bonusMinutes + minutesLimit + walletMinutes;
+  const isBonusOnly = minutesLimit === 0 && bonusMinutes > 0 && walletMinutes === 0;
   const usedPercent = totalCapacity > 0
     ? Math.min(100, ((totalCapacity - totalAvailable) / totalCapacity) * 100)
     : 0;
@@ -146,16 +148,40 @@ export function UsageCard({ minutesUsed, minutesLimit, bonusMinutes, planName, t
             </div>
           )}
 
-          {/* Micro-stats row */}
+          {/* Wallet chip — докупленные минуты, тратятся последними и не сгорают */}
+          {walletMinutes > 0 && (
+            <div
+              className="mt-3 flex items-center gap-2 rounded-xl border px-3 py-2"
+              style={{
+                borderColor: "color-mix(in srgb, var(--fg) 14%, transparent)",
+                background: "color-mix(in srgb, var(--fg) 5%, transparent)",
+              }}
+            >
+              <span className="block w-1.5 h-1.5 rounded-full bg-[var(--fg-muted)]" aria-hidden />
+              <span className="text-[12px] text-[var(--fg)]">
+                Кошелёк <span className="tabular font-medium">{walletMinutes}</span> мин
+              </span>
+              <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
+                не сгорает
+              </span>
+            </div>
+          )}
+
+          {/* Micro-stats row — разбивка остатка по источникам */}
           <div className="mt-5 grid grid-cols-3 gap-px rounded-xl border border-[var(--border)] overflow-hidden bg-[var(--border)]">
-            <MicroStat label="Записей" value={totalRecords.toString()} />
-            <MicroStat label="Потрачено" value={`${minutesUsed}`} unit="мин" />
+            <MicroStat label="Бонус" value={`${bonusMinutes}`} unit="мин" />
             {isBonusOnly ? (
-              <MicroStat label="Бонус" value={`${bonusMinutes}`} unit="мин" />
+              <MicroStat label="Потрачено" value={`${minutesUsed}`} unit="мин" />
             ) : (
-              <MicroStat label="Лимит" value={`${minutesLimit}`} unit="мин" />
+              <MicroStat label="По тарифу" value={`${monthlyRemaining}`} unit="мин" />
             )}
+            <MicroStat label="Кошелёк" value={`${walletMinutes}`} unit="мин" />
           </div>
+
+          <p className="mt-3 font-mono text-[10px] tracking-[0.04em] text-[var(--fg-subtle)]">
+            Записей: <span className="tabular text-[var(--fg-muted)]">{totalRecords}</span> · потрачено{" "}
+            <span className="tabular text-[var(--fg-muted)]">{minutesUsed}</span> мин
+          </p>
 
           <Link
             to="/app/pricing"

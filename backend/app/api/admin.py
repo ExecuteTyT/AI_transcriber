@@ -1,7 +1,10 @@
+import csv
+import io
 import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +14,9 @@ from app.models.ai_analysis import AiAnalysis
 from app.models.subscription import Subscription
 from app.models.transcription import Transcription
 from app.models.user import User
+from app.models.wallet_topup import WalletTopup
 from app.services.audit_log import audit
+from app.services.plans import PLANS, WALLET_PACKS
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -37,11 +42,18 @@ class AdminUserResponse(BaseModel):
     # СНАЧАЛА отсюда, и только после исчерпания растёт minutes_used — поэтому без
     # этого поля админка показывала «0 / 0» даже у активно расходующих free.
     bonus_minutes: int = 0
+    wallet_minutes: int = 0
     is_admin: bool
     is_unlimited: bool
     is_email_verified: bool
     created_at: datetime | None
     transcription_count: int = 0
+    # Финансы по юзеру (заполняются в детальном эндпоинте).
+    subscription_plan: str | None = None
+    subscription_status: str | None = None
+    current_period_end: datetime | None = None
+    total_paid_rub: int = 0
+    last_payment_date: datetime | None = None
 
     model_config = {"from_attributes": True}
 
@@ -362,6 +374,7 @@ async def list_users(
             "minutes_used": u.minutes_used,
             "minutes_limit": u.minutes_limit,
             "bonus_minutes": u.bonus_minutes,
+            "wallet_minutes": u.wallet_minutes,
             "is_admin": u.is_admin,
             "is_unlimited": u.is_unlimited,
             "is_email_verified": u.is_email_verified,
@@ -388,13 +401,44 @@ async def get_user(
         select(func.count(Transcription.id)).where(Transcription.user_id == user_id)
     )).scalar() or 0
 
+    # Активная подписка (последняя).
+    sub = (await db.execute(
+        select(Subscription).where(
+            Subscription.user_id == user_id, Subscription.status == "active",
+        ).order_by(Subscription.created_at.desc()).limit(1)
+    )).scalar_one_or_none()
+
+    # LTV = сумма всех платежей (подписки + пополнения кошелька).
+    paid_sub = (await db.execute(
+        select(func.coalesce(func.sum(Subscription.amount_rub), 0)).where(
+            Subscription.user_id == user_id
+        )
+    )).scalar() or 0
+    paid_wallet = (await db.execute(
+        select(func.coalesce(func.sum(WalletTopup.amount_rub), 0)).where(
+            WalletTopup.user_id == user_id
+        )
+    )).scalar() or 0
+    last_sub = (await db.execute(
+        select(func.max(Subscription.created_at)).where(Subscription.user_id == user_id)
+    )).scalar()
+    last_topup = (await db.execute(
+        select(func.max(WalletTopup.created_at)).where(WalletTopup.user_id == user_id)
+    )).scalar()
+    last_payment = max([d for d in (last_sub, last_topup) if d], default=None)
+
     return AdminUserResponse(
         id=user.id, email=user.email, name=user.name, plan=user.plan,
         minutes_used=user.minutes_used, minutes_limit=user.minutes_limit,
-        bonus_minutes=user.bonus_minutes,
+        bonus_minutes=user.bonus_minutes, wallet_minutes=user.wallet_minutes,
         is_admin=user.is_admin, is_unlimited=user.is_unlimited,
         is_email_verified=user.is_email_verified,
         created_at=user.created_at, transcription_count=t_count,
+        subscription_plan=sub.plan if sub else None,
+        subscription_status=sub.status if sub else None,
+        current_period_end=sub.current_period_end if sub else None,
+        total_paid_rub=int(paid_sub) + int(paid_wallet),
+        last_payment_date=last_payment,
     )
 
 
@@ -560,3 +604,246 @@ async def delete_transcription(
         target_user_id=str(owner_user_id),
     )
     return {"message": "Транскрипция удалена"}
+
+
+# ─── Finance / Analytics ───
+# Выручка считается из сохранённой суммы платежа (Subscription.amount_rub /
+# WalletTopup.amount_rub), захваченной из YooKassa-webhook. Бонусные минуты и
+# is_unlimited не дают выручки. Цены-фолбэк — PLANS / WALLET_PACKS.
+
+class FinanceOverview(BaseModel):
+    mrr_rub: int = 0
+    paying_users: int = 0
+    arpu_rub: float = 0.0
+    churn_pct: float = 0.0
+    # окна today/last_7d/last_30d/all → {subscriptions, wallet, total}
+    revenue: dict[str, dict[str, int]] = {}
+
+
+class RevenuePoint(BaseModel):
+    date: str
+    subscriptions_rub: int = 0
+    wallet_rub: int = 0
+
+
+class PaymentItem(BaseModel):
+    date: datetime | None = None
+    email: str = ""
+    type: str = ""          # subscription / wallet
+    item: str = ""          # план / пакет
+    amount_rub: int = 0
+    status: str = ""
+    yookassa_id: str | None = None
+
+
+class WalletBalanceItem(BaseModel):
+    email: str
+    wallet_minutes: int = 0
+    topup_count: int = 0
+    total_topped_up_min: int = 0
+    total_paid_rub: int = 0
+    last_topup: datetime | None = None
+
+
+async def _revenue_window(db: AsyncSession, start: datetime | None) -> tuple[int, int]:
+    """(выручка_подписок, выручка_кошелька) за окно [start, now); start=None → всё."""
+    cs = [Subscription.created_at >= start] if start else []
+    cw = [WalletTopup.created_at >= start] if start else []
+    sub = (await db.execute(
+        select(func.coalesce(func.sum(Subscription.amount_rub), 0)).where(*cs)
+    )).scalar() or 0
+    wal = (await db.execute(
+        select(func.coalesce(func.sum(WalletTopup.amount_rub), 0)).where(*cw)
+    )).scalar() or 0
+    return int(sub), int(wal)
+
+
+async def _all_payments(db: AsyncSession, type_filter: str, search: str) -> list[PaymentItem]:
+    """Единая лента платежей (подписки + кошелёк) с email, сортировка по дате desc."""
+    rows: list[PaymentItem] = []
+    if type_filter in ("", "subscription"):
+        q = select(Subscription, User.email).join(User, User.id == Subscription.user_id)
+        if search:
+            q = q.where(User.email.ilike(f"%{search}%") | Subscription.yookassa_id.ilike(f"%{search}%"))
+        for s, email in (await db.execute(q)).all():
+            rows.append(PaymentItem(
+                date=s.created_at, email=email, type="subscription", item=s.plan,
+                amount_rub=int(s.amount_rub or 0), status=s.status, yookassa_id=s.yookassa_id,
+            ))
+    if type_filter in ("", "wallet"):
+        q = select(WalletTopup, User.email).join(User, User.id == WalletTopup.user_id)
+        if search:
+            q = q.where(User.email.ilike(f"%{search}%") | WalletTopup.yookassa_id.ilike(f"%{search}%"))
+        for w, email in (await db.execute(q)).all():
+            rows.append(PaymentItem(
+                date=w.created_at, email=email, type="wallet",
+                item=f"{w.pack} ({w.minutes} мин)", amount_rub=int(w.amount_rub or 0),
+                status="succeeded", yookassa_id=w.yookassa_id,
+            ))
+    rows.sort(key=lambda r: r.date or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+    return rows
+
+
+@router.get("/finance/overview", response_model=FinanceOverview)
+async def finance_overview(
+    admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db),
+):
+    """MRR, выручка по окнам, ARPU, churn."""
+    now = datetime.now(timezone.utc)
+    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    mrr = (await db.execute(
+        select(func.coalesce(func.sum(Subscription.amount_rub), 0)).where(Subscription.status == "active")
+    )).scalar() or 0
+    paying = (await db.execute(
+        select(func.count(func.distinct(Subscription.user_id))).where(Subscription.status == "active")
+    )).scalar() or 0
+    total_subs = (await db.execute(select(func.count(Subscription.id)))).scalar() or 0
+    churned = (await db.execute(
+        select(func.count(Subscription.id)).where(Subscription.status.in_(["cancelled", "expired"]))
+    )).scalar() or 0
+
+    windows = {
+        "today": today, "last_7d": now - timedelta(days=7),
+        "last_30d": now - timedelta(days=30), "all": None,
+    }
+    revenue: dict[str, dict[str, int]] = {}
+    for key, start in windows.items():
+        s, w = await _revenue_window(db, start)
+        revenue[key] = {"subscriptions": s, "wallet": w, "total": s + w}
+
+    return FinanceOverview(
+        mrr_rub=int(mrr),
+        paying_users=int(paying),
+        arpu_rub=round(int(mrr) / paying, 1) if paying else 0.0,
+        churn_pct=round(churned * 100 / total_subs, 1) if total_subs else 0.0,
+        revenue=revenue,
+    )
+
+
+@router.get("/finance/timeseries", response_model=list[RevenuePoint])
+async def finance_timeseries(
+    days: int = Query(30, ge=1, le=365),
+    admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db),
+):
+    """Выручка по дням (подписки + кошелёк). Агрегация в Python — кросс-СУБД."""
+    now = datetime.now(timezone.utc)
+    start = (now - timedelta(days=days - 1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    buckets: dict[str, dict[str, int]] = {}
+    for created, amt in (await db.execute(
+        select(Subscription.created_at, Subscription.amount_rub).where(Subscription.created_at >= start)
+    )).all():
+        if created:
+            buckets.setdefault(created.date().isoformat(), {"s": 0, "w": 0})["s"] += int(amt or 0)
+    for created, amt in (await db.execute(
+        select(WalletTopup.created_at, WalletTopup.amount_rub).where(WalletTopup.created_at >= start)
+    )).all():
+        if created:
+            buckets.setdefault(created.date().isoformat(), {"s": 0, "w": 0})["w"] += int(amt or 0)
+    out: list[RevenuePoint] = []
+    for i in range(days):
+        d = (start + timedelta(days=i)).date().isoformat()
+        b = buckets.get(d, {"s": 0, "w": 0})
+        out.append(RevenuePoint(date=d, subscriptions_rub=b["s"], wallet_rub=b["w"]))
+    return out
+
+
+@router.get("/finance/payments")
+async def finance_payments(
+    type: str = Query(""), search: str = Query(""),
+    page: int = Query(1, ge=1), per_page: int = Query(50, ge=1, le=200),
+    admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db),
+):
+    """Единая лента платежей (кто/что/когда/сколько) с фильтром и поиском."""
+    type_filter = type if type in ("subscription", "wallet") else ""
+    rows = await _all_payments(db, type_filter, search)
+    start = (page - 1) * per_page
+    return {"items": rows[start:start + per_page], "total": len(rows), "page": page, "per_page": per_page}
+
+
+@router.get("/finance/wallets", response_model=list[WalletBalanceItem])
+async def finance_wallets(
+    admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db),
+):
+    """Балансы кошельков по юзерам (с историей пополнений)."""
+    rows = (await db.execute(
+        select(
+            User.email, User.wallet_minutes, func.count(WalletTopup.id),
+            func.coalesce(func.sum(WalletTopup.minutes), 0),
+            func.coalesce(func.sum(WalletTopup.amount_rub), 0),
+            func.max(WalletTopup.created_at),
+        )
+        .join(WalletTopup, WalletTopup.user_id == User.id)
+        .group_by(User.id, User.email, User.wallet_minutes)
+        .order_by(User.wallet_minutes.desc())
+    )).all()
+    return [
+        WalletBalanceItem(
+            email=e, wallet_minutes=wm, topup_count=cnt,
+            total_topped_up_min=int(tot or 0), total_paid_rub=int(paid or 0), last_topup=last,
+        )
+        for e, wm, cnt, tot, paid, last in rows
+    ]
+
+
+@router.get("/users/{user_id}/payments", response_model=list[PaymentItem])
+async def user_payments(
+    user_id: uuid.UUID,
+    admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db),
+):
+    """История платежей конкретного юзера (для drawer в админке)."""
+    rows: list[PaymentItem] = []
+    for s in (await db.execute(
+        select(Subscription).where(Subscription.user_id == user_id)
+    )).scalars().all():
+        rows.append(PaymentItem(
+            date=s.created_at, type="subscription", item=s.plan,
+            amount_rub=int(s.amount_rub or 0), status=s.status, yookassa_id=s.yookassa_id,
+        ))
+    for w in (await db.execute(
+        select(WalletTopup).where(WalletTopup.user_id == user_id)
+    )).scalars().all():
+        rows.append(PaymentItem(
+            date=w.created_at, type="wallet", item=f"{w.pack} ({w.minutes} мин)",
+            amount_rub=int(w.amount_rub or 0), status="succeeded", yookassa_id=w.yookassa_id,
+        ))
+    rows.sort(key=lambda r: r.date or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+    return rows
+
+
+@router.get("/finance/export.csv")
+async def finance_export(
+    type: str = Query("payments"),
+    admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db),
+):
+    """CSV-экспорт платежей или балансов кошельков (для бухгалтерии)."""
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    if type == "wallets":
+        writer.writerow(["email", "wallet_minutes", "topup_count", "total_topped_up_min", "total_paid_rub", "last_topup"])
+        rows = (await db.execute(
+            select(
+                User.email, User.wallet_minutes, func.count(WalletTopup.id),
+                func.coalesce(func.sum(WalletTopup.minutes), 0),
+                func.coalesce(func.sum(WalletTopup.amount_rub), 0),
+                func.max(WalletTopup.created_at),
+            )
+            .join(WalletTopup, WalletTopup.user_id == User.id)
+            .group_by(User.id, User.email, User.wallet_minutes)
+        )).all()
+        for e, wm, cnt, tot, paid, last in rows:
+            writer.writerow([e, wm, cnt, int(tot or 0), int(paid or 0), last.isoformat() if last else ""])
+        fname = "wallets.csv"
+    else:
+        writer.writerow(["date", "email", "type", "item", "amount_rub", "status", "yookassa_id"])
+        for r in await _all_payments(db, "", ""):
+            writer.writerow([
+                r.date.isoformat() if r.date else "", r.email, r.type, r.item,
+                r.amount_rub, r.status, r.yookassa_id or "",
+            ])
+        fname = "payments.csv"
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]), media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={fname}"},
+    )

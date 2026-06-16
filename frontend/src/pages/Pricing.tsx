@@ -15,7 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { paymentsApi } from "@/api/payments";
+import { paymentsApi, WALLET_PACKS } from "@/api/payments";
 import { useAuthStore } from "@/store/authStore";
 import { Icon } from "@/components/Icon";
 import { ErrorState } from "@/components/states/ErrorState";
@@ -317,8 +317,39 @@ export default function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [loading, setLoading] = useState<string | null>(null);
+  const [walletLoading, setWalletLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  const handleTopup = async (pack: string) => {
+    if (!user) {
+      navigate("/register");
+      return;
+    }
+    setWalletLoading(pack);
+    setError("");
+    try {
+      const result = await paymentsApi.topupWallet(pack);
+      reachGoal("checkout_started", { source: "pricing", kind: "topup", pack });
+      window.location.href = result.confirmation_url;
+    } catch (err) {
+      const axiosErr = err as {
+        response?: { status?: number; data?: { detail?: string } };
+        message?: string;
+      };
+      const status = axiosErr.response?.status;
+      const detail = axiosErr.response?.data?.detail;
+      const msg =
+        status === 502 || status === 503
+          ? "Платёжный сервис временно недоступен. Попробуйте позже."
+          : status === 500
+            ? "Ошибка сервера. Попробуйте позже."
+            : detail || axiosErr.message || "Не удалось создать платёж";
+      setError(msg);
+      toast.error(msg);
+      setWalletLoading(null);
+    }
+  };
 
   const handleSubscribe = async (planId: string) => {
     if (!user) {
@@ -427,6 +458,14 @@ export default function Pricing() {
             onSelect={() => handleSubscribe(plan.id)}
           />
         ))}
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+        <WalletPacksBlock
+          loading={walletLoading}
+          disabled={walletLoading !== null}
+          onSelect={handleTopup}
+        />
       </motion.div>
 
       <motion.div variants={fadeUp}>
@@ -827,6 +866,69 @@ function FaqRow({
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function WalletPacksBlock({
+  loading,
+  disabled,
+  onSelect,
+}: {
+  loading: string | null;
+  disabled: boolean;
+  onSelect: (pack: string) => void;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-elevated)] px-6 py-8 md:px-10 md:py-10">
+      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between md:gap-10 mb-7">
+        <div className="max-w-[52ch]">
+          <p className="eyebrow mb-3">Кошелёк</p>
+          <h3 className="font-display text-2xl md:text-[28px] leading-[1.1] tracking-[-0.015em] text-[var(--fg)]">
+            Не нужна подписка? <em className="italic text-[var(--accent)]">Докупите минуты</em>
+          </h3>
+          <p className="mt-3 text-[14px] leading-[1.55] text-[var(--fg-muted)]">
+            Разовая оплата без ежемесячных списаний. Минуты из кошелька не сгорают и
+            тратятся после бонуса и тарифных минут.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        {WALLET_PACKS.map((pack) => {
+          const perMin = pack.price / pack.minutes;
+          return (
+            <button
+              key={pack.code}
+              type="button"
+              onClick={() => onSelect(pack.code)}
+              disabled={disabled}
+              className={cn(
+                "group flex flex-col items-start rounded-2xl border border-[var(--border-strong)] bg-[var(--bg)] p-5 text-left transition-colors duration-base hover:border-[var(--accent)]/40 hover:bg-[var(--bg-muted)]",
+                disabled && "opacity-60 cursor-wait"
+              )}
+            >
+              <span className="font-display text-3xl leading-none tabular text-[var(--fg)]">
+                {pack.minutes}
+                <span className="ml-1.5 font-mono text-[12px] text-[var(--fg-muted)]">мин</span>
+              </span>
+              <span className="mt-3 flex items-baseline gap-1.5">
+                <span className="font-sans font-semibold text-xl text-[var(--fg)] tabular">
+                  {pack.price.toLocaleString("ru-RU")}
+                </span>
+                <span className="font-mono text-[12px] text-[var(--fg-muted)]">₽</span>
+              </span>
+              <span className="mt-1 font-mono text-[11px] tabular text-[var(--fg-subtle)]">
+                {perMin.toFixed(2)} ₽ / минута
+              </span>
+              <span className="mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] group-hover:text-[var(--accent)] transition-colors">
+                {loading === pack.code ? "Перенаправление…" : "Пополнить"}
+                <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

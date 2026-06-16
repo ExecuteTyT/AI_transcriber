@@ -147,8 +147,13 @@ async def activate_subscription(
     plan: str,
     yookassa_id: str,
     db: AsyncSession,
+    amount_rub: int | None = None,
 ) -> Subscription:
-    """Активация подписки после успешной оплаты (идемпотентно)."""
+    """Активация подписки после успешной оплаты (идемпотентно).
+
+    amount_rub — фактически оплаченная сумма из YooKassa; если не передана,
+    берём из PLANS[plan] (цена тарифа) для аналитики выручки.
+    """
     # Идемпотентность: проверяем, не обработан ли уже этот платёж
     if yookassa_id:
         existing = await db.execute(
@@ -180,6 +185,7 @@ async def activate_subscription(
         status="active",
         current_period_start=now,
         current_period_end=now + timedelta(days=30),
+        amount_rub=amount_rub if amount_rub is not None else plan_config.price_rub,
     )
     db.add(subscription)
 
@@ -280,9 +286,13 @@ async def create_wallet_payment(user_id: uuid.UUID, pack: str, email: str | None
 
 
 async def credit_wallet(
-    user_id: uuid.UUID, pack: str, yookassa_id: str, db: AsyncSession
+    user_id: uuid.UUID, pack: str, yookassa_id: str, db: AsyncSession,
+    amount_rub: int | None = None,
 ) -> None:
-    """Начисление минут на кошелёк (идемпотентно по yookassa_id)."""
+    """Начисление минут на кошелёк (идемпотентно по yookassa_id).
+
+    amount_rub — фактически оплаченная сумма из YooKassa; по умолчанию цена пакета.
+    """
     if pack not in WALLET_PACKS:
         logger.error("credit_wallet: unknown pack=%s", pack)
         return
@@ -296,7 +306,10 @@ async def credit_wallet(
         return
 
     minutes = WALLET_PACKS[pack]["minutes"]
-    db.add(WalletTopup(user_id=user_id, yookassa_id=yookassa_id, minutes=minutes, pack=pack))
+    db.add(WalletTopup(
+        user_id=user_id, yookassa_id=yookassa_id, minutes=minutes, pack=pack,
+        amount_rub=amount_rub if amount_rub is not None else WALLET_PACKS[pack]["price_rub"],
+    ))
 
     user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if user:
