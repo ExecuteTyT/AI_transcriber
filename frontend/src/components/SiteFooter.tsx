@@ -46,7 +46,7 @@ export default function SiteFooter() {
             <Link to="/blog" className="hover:text-[var(--fg)] transition-colors">Блог</Link>
             <Link to="/privacy" className="hover:text-[var(--fg)] transition-colors">Конфиденциальность</Link>
             <Link to="/terms" className="hover:text-[var(--fg)] transition-colors">Оферта</Link>
-            <a href="mailto:support@dicto.pro" className="hover:text-[var(--fg)] transition-colors">support@dicto.pro</a>
+            <a href="mailto:dicto.pro@yandex.ru" className="hover:text-[var(--fg)] transition-colors">dicto.pro@yandex.ru</a>
           </div>
         </div>
       </div>
