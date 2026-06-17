@@ -63,13 +63,19 @@ async def handle_media(message: Message, bot: Bot, client: DictoClient) -> None:
         os.close(fd)
         await bot.download(media, destination=tmp_path)
 
+        size = os.path.getsize(tmp_path) if os.path.exists(tmp_path) else 0
+        logger.info("upload: file=%s type=%s size=%s", filename, content_type, size)
         resp = await client.upload_file(tg_id, filename, tmp_path, content_type=content_type)
         if resp.status_code == 402:
             await status_msg.delete()
             await send_paywall(message, detail_of(resp))
             return
         if resp.status_code not in (200, 201):
-            await status_msg.edit_text(texts.FAILED.format(error=f"код {resp.status_code}"))
+            detail = detail_of(resp)
+            logger.warning("upload failed %s: %s (file=%s type=%s size=%s)",
+                           resp.status_code, detail, filename, content_type, size)
+            reason = detail if isinstance(detail, str) else f"код {resp.status_code}"
+            await status_msg.edit_text(texts.FAILED.format(error=reason))
             return
         tid = resp.json()["id"]
     except Exception as e:
