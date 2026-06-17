@@ -294,10 +294,10 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
       <>
         Командные тарифы (общий биллинг, shared workspace, роли) — в разработке. Пока для команд напишите на{" "}
         <a
-          href="mailto:support@dicto.pro"
+          href="mailto:dicto.pro@yandex.ru"
           className="font-semibold text-[var(--accent)] underline underline-offset-2 decoration-[var(--accent)]/40 hover:decoration-[var(--accent)]"
         >
-          support@dicto.pro
+          dicto.pro@yandex.ru
         </a>{" "}
         — оформим несколько связанных аккаунтов с единым счётом и закрывающими документами.
       </>
@@ -525,7 +525,7 @@ export default function Pricing() {
             </h2>
           </div>
           <a
-            href="mailto:support@dicto.pro"
+            href="mailto:dicto.pro@yandex.ru"
             className="hidden md:inline font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)] hover:text-[var(--fg)] transition-colors"
           >
             Нужна помощь? →
@@ -1019,7 +1019,7 @@ function EnterpriseCard() {
           </p>
         </div>
         <a
-          href="mailto:support@dicto.pro?subject=Dicto%20%E2%80%94%20%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D0%B0"
+          href="mailto:dicto.pro@yandex.ru?subject=Dicto%20%E2%80%94%20%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D0%B0"
           className="btn-accent !py-3.5 !px-6 !text-[14px] whitespace-nowrap self-start md:self-auto"
         >
           Связаться <span aria-hidden>→</span>
