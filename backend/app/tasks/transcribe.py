@@ -50,8 +50,26 @@ SyncSession = sessionmaker(sync_engine)
 VIDEO_CONTENT_TYPES = {"video/mp4", "video/webm", "video/quicktime"}
 
 
+def _has_audio_stream(path: str) -> bool:
+    """Есть ли в файле звуковая дорожка (ffprobe). Видео без аудио — частый кейс
+    (рилсы/сторис без звука): извлекать нечего, FFmpeg падал бы с невнятным дампом."""
+    try:
+        probe = subprocess.run(
+            ["ffprobe", "-v", "error", "-select_streams", "a",
+             "-show_entries", "stream=index", "-of", "csv=p=0", path],
+            capture_output=True, text=True, timeout=60,
+        )
+        return bool(probe.stdout.strip())
+    except Exception as e:  # noqa: BLE001 — если ffprobe не отработал, не блокируем (пусть решает ffmpeg)
+        logger.warning("ffprobe audio-stream check failed for %s: %s", path, e)
+        return True
+
+
 def _extract_audio_from_video(video_path: str) -> str:
-    """Извлечение аудиодорожки из видео через FFmpeg."""
+    """Извлечение аудиодорожки из видео через FFmpeg. Пользователю отдаём короткое
+    понятное сообщение; полный stderr — только в лог."""
+    if not _has_audio_stream(video_path):
+        raise RuntimeError("В видео нет звуковой дорожки — расшифровывать нечего.")
     audio_path = video_path.rsplit(".", 1)[0] + ".wav"
     cmd = [
         "ffmpeg", "-i", video_path,
@@ -60,7 +78,8 @@ def _extract_audio_from_video(video_path: str) -> str:
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     if result.returncode != 0:
-        raise RuntimeError(f"FFmpeg error: {result.stderr}")
+        logger.error("FFmpeg extract failed (%s): %s", video_path, result.stderr[-2000:])
+        raise RuntimeError("Не удалось извлечь звук из видео. Возможно, файл повреждён или без аудио.")
     return audio_path
 
 
