@@ -5,7 +5,7 @@ from aiogram import Router
 from aiogram.filters import Command, CommandObject, CommandStart
 from aiogram.types import Message
 
-from app.bot import texts
+from app.bot import keyboards, texts
 from app.bot.client import DictoClient
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,8 @@ async def cmd_start(message: Message, command: CommandObject, client: DictoClien
         await message.answer("Сервис временно недоступен, попробуйте через минуту.")
         return
 
-    await message.answer(texts.WELCOME, disable_web_page_preview=True)
+    await message.answer(texts.WELCOME, disable_web_page_preview=True,
+                         reply_markup=keyboards.onboarding())
     if data.get("linked"):
         await message.answer(texts.LINKED)
 
@@ -33,6 +34,17 @@ async def cmd_start(message: Message, command: CommandObject, client: DictoClien
 @router.message(Command("help"))
 async def cmd_help(message: Message) -> None:
     await message.answer(texts.HELP, disable_web_page_preview=True)
+
+
+@router.message(Command("pricing"))
+async def cmd_pricing(message: Message) -> None:
+    await message.answer(texts.PRICING, disable_web_page_preview=True,
+                         reply_markup=keyboards.onboarding())
+
+
+@router.message(Command("support"))
+async def cmd_support(message: Message) -> None:
+    await message.answer(texts.ABOUT, disable_web_page_preview=True)
 
 
 @router.message(Command("balance"))

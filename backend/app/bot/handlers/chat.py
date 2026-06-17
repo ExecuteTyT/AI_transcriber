@@ -8,6 +8,7 @@ from aiogram.types import Message
 
 from app.bot import keyboards, texts
 from app.bot.client import DictoClient
+from app.bot.format import md_to_html
 from app.bot.handlers.common import detail_of, paywall_text
 
 logger = logging.getLogger(__name__)
@@ -43,4 +44,4 @@ async def chat_question(message: Message, state: FSMContext, client: DictoClient
         return
     body = resp.json()
     answer = body.get("content") or body.get("answer") or body.get("message") or "—"
-    await thinking.edit_text(answer, reply_markup=keyboards.chat_exit())
+    await thinking.edit_text(md_to_html(answer), reply_markup=keyboards.chat_exit())

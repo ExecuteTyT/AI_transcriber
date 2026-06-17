@@ -1,12 +1,13 @@
-"""Callback-кнопки: AI-разбор, вход/выход чата, оплата."""
+"""Callback-кнопки: AI-разбор, экспорт файлов, вход/выход чата, оплата."""
 import logging
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import BufferedInputFile, CallbackQuery
 
 from app.bot import keyboards, texts
 from app.bot.client import DictoClient
+from app.bot.format import md_to_html
 from app.bot.handlers.chat import ChatStates
 from app.bot.handlers.common import detail_of, paywall_text, send_long
 
@@ -14,6 +15,11 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 _ANALYSIS_TITLES = {"summary": "📝 Саммари", "key-points": "📌 Тезисы", "action-items": "✅ Задачи"}
+_EXPORT = {
+    "docx": ("dicto-transcript.docx", "DOCX"),
+    "txt": ("dicto-transcript.txt", "TXT"),
+    "srt": ("dicto-transcript.srt", "SRT"),
+}
 
 
 @router.callback_query(F.data.startswith("an:"))
@@ -29,9 +35,21 @@ async def on_analysis(call: CallbackQuery, client: DictoClient) -> None:
     if resp.status_code != 200:
         await note.edit_text("Не удалось сделать разбор, попробуйте позже.")
         return
-    content = (resp.json().get("content") or "").strip() or "—"
+    content = md_to_html((resp.json().get("content") or "").strip()) or "—"
     await note.delete()
     await send_long(call.message, f"<b>{_ANALYSIS_TITLES.get(kind, '')}</b>\n\n{content}")
+
+
+@router.callback_query(F.data.startswith("exp:"))
+async def on_export(call: CallbackQuery, client: DictoClient) -> None:
+    _, fmt, tid = call.data.split(":", 2)
+    filename, label = _EXPORT.get(fmt, (f"dicto-transcript.{fmt}", fmt.upper()))
+    await call.answer(f"Готовлю {label}…")
+    resp = await client.export(call.from_user.id, tid, fmt)
+    if resp.status_code != 200 or not resp.content:
+        await call.message.answer(texts.EXPORT_FAILED)
+        return
+    await call.message.answer_document(BufferedInputFile(resp.content, filename=filename))
 
 
 @router.callback_query(F.data.startswith("chat:"))
