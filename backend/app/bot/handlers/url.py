@@ -5,9 +5,9 @@ import logging
 from aiogram import F, Router
 from aiogram.types import Message
 
-from app.bot import keyboards, texts
+from app.bot import texts
 from app.bot.client import DictoClient
-from app.bot.handlers.common import detail_of, send_long, send_paywall
+from app.bot.handlers.common import detail_of, present_transcription, send_paywall
 from app.bot.handlers.media import POLL_INTERVAL_SEC, POLL_MAX_TRIES
 
 logger = logging.getLogger(__name__)
@@ -53,6 +53,4 @@ async def handle_url(message: Message, client: DictoClient) -> None:
     if tr.status_code != 200:
         await status_msg.edit_text(texts.FAILED.format(error="не удалось получить текст"))
         return
-    full_text = (tr.json().get("full_text") or "").strip() or "(пустая расшифровка)"
-    await status_msg.delete()
-    await send_long(message, full_text, reply_markup=keyboards.after_transcription(tid))
+    await present_transcription(message, status_msg, tr.json(), tid)

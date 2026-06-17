@@ -15,6 +15,15 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import BotCommand
+
+BOT_COMMANDS = [
+    BotCommand(command="start", description="О боте и как начать"),
+    BotCommand(command="help", description="Как пользоваться"),
+    BotCommand(command="balance", description="Остаток минут"),
+    BotCommand(command="pricing", description="Тарифы и пополнение"),
+    BotCommand(command="support", description="Поддержка"),
+]
 
 from app.bot.client import DictoClient
 from app.bot.handlers import setup_routers
@@ -49,6 +58,10 @@ async def run() -> None:
 
     # Сбрасываем возможный вебхук и накопленные апдейты, затем поллинг.
     await bot.delete_webhook(drop_pending_updates=True)
+    try:
+        await bot.set_my_commands(BOT_COMMANDS)
+    except Exception as e:  # noqa: BLE001 — меню команд не критично для работы
+        logger.warning("set_my_commands failed: %s", e)
     logger.info("Dicto bot started (polling, api=%s)", settings.TELEGRAM_BOT_API_URL or "cloud")
     try:
         await dp.start_polling(bot, client=client)

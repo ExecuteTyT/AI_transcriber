@@ -1,10 +1,23 @@
-"""Общие хелперы хендлеров: пейволл, безопасная отправка длинного текста."""
+"""Общие хелперы хендлеров: пейволл, отправка длинного текста, карточка результата."""
 import httpx
 from aiogram.types import Message
 
 from app.bot import keyboards, texts
+from app.bot.format import esc, format_transcript
 
 TG_TEXT_LIMIT = 4000  # с запасом под 4096
+
+_LANG = {
+    "ru": "Русский", "en": "English", "uk": "Українська", "de": "Deutsch",
+    "fr": "Français", "es": "Español", "it": "Italiano", "kk": "Қазақша",
+    "zh": "中文", "tr": "Türkçe", "auto": "авто",
+}
+
+
+def _lang_label(code: str | None) -> str:
+    if not code:
+        return "авто"
+    return _LANG.get(code, code)
 
 
 def paywall_text(detail: dict | str | None) -> str:
@@ -43,3 +56,17 @@ async def send_long(message: Message, text: str, **kwargs) -> None:
     for chunk in chunks[:-1]:
         await message.answer(chunk)
     await message.answer(chunks[-1], **kwargs)
+
+
+async def present_transcription(message: Message, status_msg: Message, data: dict, tid: str) -> None:
+    """Карточка готовности + читаемый текст + клавиатура действий/экспорта."""
+    title = data.get("title") or data.get("original_filename") or "Расшифровка"
+    dur = data.get("duration_sec") or 0
+    minutes = max(1, round(dur / 60)) if dur else "—"
+    body = format_transcript(data.get("segments"), data.get("full_text"))
+    header = texts.TRANSCRIPT_HEADER.format(
+        title=esc(str(title)), minutes=minutes, language=_lang_label(data.get("language"))
+    )
+    await status_msg.delete()
+    await message.answer(header)
+    await send_long(message, body, reply_markup=keyboards.after_transcription(tid))

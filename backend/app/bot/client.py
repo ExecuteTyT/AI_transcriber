@@ -89,6 +89,10 @@ class DictoClient:
     async def get_transcription(self, telegram_id: int, tid: str) -> httpx.Response:
         return await self._req(telegram_id, "GET", f"/api/transcriptions/{tid}")
 
+    async def export(self, telegram_id: int, tid: str, fmt: str) -> httpx.Response:
+        """Файл расшифровки в формате txt/srt/docx (bytes в .content)."""
+        return await self._req(telegram_id, "GET", f"/api/transcriptions/{tid}/export/{fmt}")
+
     async def get_analysis(self, telegram_id: int, tid: str, kind: str, length: str = "standard") -> httpx.Response:
         return await self._req(telegram_id, "GET", f"/api/transcriptions/{tid}/{kind}",
                                params={"length": length})

@@ -6,11 +6,11 @@ import os
 import tempfile
 
 from aiogram import Bot, F, Router
-from aiogram.types import FSInputFile, Message
+from aiogram.types import Message
 
-from app.bot import keyboards, texts
+from app.bot import texts
 from app.bot.client import DictoClient
-from app.bot.handlers.common import detail_of, send_long, send_paywall
+from app.bot.handlers.common import detail_of, present_transcription, send_paywall
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -112,6 +112,4 @@ async def handle_media(message: Message, bot: Bot, client: DictoClient) -> None:
     if tr.status_code != 200:
         await status_msg.edit_text(texts.FAILED.format(error="не удалось получить текст"))
         return
-    full_text = (tr.json().get("full_text") or "").strip() or "(пустая расшифровка)"
-    await status_msg.delete()
-    await send_long(message, full_text, reply_markup=keyboards.after_transcription(tid))
+    await present_transcription(message, status_msg, tr.json(), tid)
