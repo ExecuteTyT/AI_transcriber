@@ -1,6 +1,7 @@
 """Приём медиа (аудио/голос/видео/документ) → расшифровка → текст + кнопки."""
 import asyncio
 import logging
+import mimetypes
 import os
 import tempfile
 
@@ -33,6 +34,17 @@ def _pick_media(message: Message):
     return None, None
 
 
+def _content_type(media, filename: str) -> str:
+    """MIME для multipart-загрузки. Бэкенд валидирует тип, поэтому octet-stream
+    не годится. Берём mime_type от Telegram, иначе угадываем по расширению."""
+    mime = getattr(media, "mime_type", None)
+    if not mime or mime == "application/octet-stream":
+        mime = mimetypes.guess_type(filename)[0]
+    if not mime:
+        mime = "video/mp4" if filename.lower().endswith((".mp4", ".mov", ".webm")) else "audio/mpeg"
+    return mime
+
+
 @router.message(F.voice | F.audio | F.video | F.video_note | F.document)
 async def handle_media(message: Message, bot: Bot, client: DictoClient) -> None:
     media, filename = _pick_media(message)
@@ -41,6 +53,7 @@ async def handle_media(message: Message, bot: Bot, client: DictoClient) -> None:
         return
 
     tg_id = message.from_user.id
+    content_type = _content_type(media, filename)
     status_msg = await message.answer(texts.DOWNLOADING)
 
     tmp_path = None
@@ -50,7 +63,7 @@ async def handle_media(message: Message, bot: Bot, client: DictoClient) -> None:
         os.close(fd)
         await bot.download(media, destination=tmp_path)
 
-        resp = await client.upload_file(tg_id, filename, tmp_path)
+        resp = await client.upload_file(tg_id, filename, tmp_path, content_type=content_type)
         if resp.status_code == 402:
             await status_msg.delete()
             await send_paywall(message, detail_of(resp))
