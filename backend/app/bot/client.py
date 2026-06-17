@@ -70,10 +70,12 @@ class DictoClient:
 
     # ─── Transcription ───
 
-    async def upload_file(self, telegram_id: int, filename: str, file_path: str, language: str = "auto") -> httpx.Response:
+    async def upload_file(self, telegram_id: int, filename: str, file_path: str,
+                          content_type: str = "application/octet-stream", language: str = "auto") -> httpx.Response:
         # Стримим файл с диска (не грузим целиком в память — важно для больших файлов).
+        # content_type обязателен: бэкенд валидирует MIME (audio/ogg, audio/mpeg, video/mp4 …).
         with open(file_path, "rb") as fh:
-            files = {"file": (filename, fh, "application/octet-stream")}
+            files = {"file": (filename, fh, content_type)}
             return await self._req(telegram_id, "POST", "/api/transcriptions/upload",
                                    files=files, data={"language": language})
 
