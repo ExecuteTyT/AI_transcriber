@@ -104,8 +104,8 @@ export default function Terms() {
                 оплаты — без условий, при более длительном пользовании — только
                 пропорционально неиспользованным минутам текущего периода.
                 Обращение на{" "}
-                <a href="mailto:support@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
-                  support@dicto.pro
+                <a href="mailto:dicto.pro@yandex.ru" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
+                  dicto.pro@yandex.ru
                 </a>.
               </li>
             </ul>
@@ -142,8 +142,8 @@ export default function Terms() {
               ИНН: <span className="font-mono text-[13px] text-[var(--fg)]">165110340786</span><br />
               ОГРНИП: <span className="font-mono text-[13px] text-[var(--fg)]">326169000103722</span> (присвоен 27.04.2026)<br />
               Email:{" "}
-              <a href="mailto:support@dicto.pro" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
-                support@dicto.pro
+              <a href="mailto:dicto.pro@yandex.ru" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 decoration-[var(--accent)]/40">
+                dicto.pro@yandex.ru
               </a>
             </p>
           </section>

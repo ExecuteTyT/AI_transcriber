@@ -57,7 +57,7 @@ export default function SiteFooter() {
             >
               Telegram-бот
             </a>
-            <a href="mailto:support@dicto.pro" className="hover:text-[var(--fg)] transition-colors">support@dicto.pro</a>
+            <a href="mailto:dicto.pro@yandex.ru" className="hover:text-[var(--fg)] transition-colors">dicto.pro@yandex.ru</a>
           </div>
         </div>
       </div>
