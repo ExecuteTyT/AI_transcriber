@@ -130,13 +130,21 @@ async def stream_media(
     return StreamingResponse(iter_chunks(), status_code=status_code, headers=headers, media_type=content_type)
 
 # Допустимые форматы файлов
+# MIME-типы заявителя ненадёжны: один и тот же .ogg приходит как audio/ogg,
+# audio/vorbis, audio/opus или application/ogg в зависимости от клиента/кодека.
+# Держим список широким — ffmpeg в пайплайне всё равно перекодирует, а реальную
+# длительность/валидность проверяет ffprobe. Лучше принять и обработать, чем
+# отбить легитимный файл по «неугаданному» MIME.
 ALLOWED_AUDIO_TYPES = {
-    "audio/mpeg", "audio/wav", "audio/x-wav", "audio/flac",
-    "audio/ogg", "audio/mp4", "audio/x-m4a", "audio/aac",
-    "audio/webm",
+    "audio/mpeg", "audio/mp3",
+    "audio/wav", "audio/x-wav", "audio/wave",
+    "audio/flac", "audio/x-flac",
+    "audio/ogg", "audio/vorbis", "audio/x-vorbis", "audio/opus", "application/ogg",
+    "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/aac",
+    "audio/webm", "audio/3gpp", "audio/amr",
 }
 ALLOWED_VIDEO_TYPES = {
-    "video/mp4", "video/webm", "video/quicktime",
+    "video/mp4", "video/webm", "video/quicktime", "video/x-matroska", "video/3gpp",
 }
 ALLOWED_TYPES = ALLOWED_AUDIO_TYPES | ALLOWED_VIDEO_TYPES
 MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 МБ
