@@ -91,6 +91,43 @@ services:
     restart: unless-stopped
     logging: *default-logging
 
+  # Self-hosted Telegram Bot API server (--local) — файлы до 2000МБ.
+  telegram-bot-api:
+    image: aiogram/telegram-bot-api:latest
+    env_file: .env
+    environment:
+      TELEGRAM_API_ID: ${TELEGRAM_API_ID}
+      TELEGRAM_API_HASH: ${TELEGRAM_API_HASH}
+      TELEGRAM_LOCAL: "true"
+    volumes:
+      - tg-bot-api-data:/var/lib/telegram-bot-api
+    restart: unless-stopped
+    logging: *default-logging
+
+  # Telegram-бот (aiogram, тот же образ что api/celery). Long-polling.
+  telegram-bot:
+    build: ./backend
+    env_file: .env
+    environment:
+      - ENVIRONMENT=production
+      - AUDIT_LOG_PATH=/var/log/dicto/audit.log
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+      telegram-bot-api:
+        condition: service_started
+    volumes:
+      - uploads:/app/data/uploads
+      - audit_logs:/var/log/dicto
+      - tg-bot-api-data:/var/lib/telegram-bot-api
+    command: python -m app.bot.main
+    restart: unless-stopped
+    logging: *default-logging
+
   frontend:
     build:
       context: ./frontend
@@ -189,3 +226,5 @@ volumes:
   # 152-ФЗ: журнал учёта действий с ПДн. RotatingFileHandler 10MB×10 →
   # ~100MB истории. Volume даёт устойчивость к docker compose down/build.
   audit_logs:
+  # Файлы, скачанные self-hosted Telegram Bot API server (общий с telegram-bot).
+  tg-bot-api-data:

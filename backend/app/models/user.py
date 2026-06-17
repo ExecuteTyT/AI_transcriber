@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy import BigInteger, Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -68,6 +68,13 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Третье «ведёрко» минут: расходуется ПОСЛЕ bonus_minutes и monthly-лимита.
     # reset_monthly_limits его НЕ трогает (это предоплата, не подписочный лимит).
     wallet_minutes: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Telegram-бот: id чата привязанного Telegram-аккаунта. Один User ↔ один
+    # telegram_id. Заполняется при авто-создании аккаунта из бота или при
+    # привязке существующего веб-аккаунта (deep-link). NULL = не подключён.
+    telegram_id: Mapped[int | None] = mapped_column(
+        BigInteger, unique=True, index=True, nullable=True
+    )
 
     transcriptions = relationship("Transcription", back_populates="user", lazy="selectin")
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")

@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { SEO_CLUSTERS } from "@/config/seoLinks";
+import { TELEGRAM_BOT_URL } from "@/config/social";
+import { reachGoal } from "@/lib/metrika";
 
 /**
  * Общий футер всех публичных страниц (главная, SEO-лендинги, блог).
@@ -46,6 +48,15 @@ export default function SiteFooter() {
             <Link to="/blog" className="hover:text-[var(--fg)] transition-colors">Блог</Link>
             <Link to="/privacy" className="hover:text-[var(--fg)] transition-colors">Конфиденциальность</Link>
             <Link to="/terms" className="hover:text-[var(--fg)] transition-colors">Оферта</Link>
+            <a
+              href={TELEGRAM_BOT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => reachGoal("telegram_bot_click", { source: "footer" })}
+              className="hover:text-[var(--fg)] transition-colors"
+            >
+              Telegram-бот
+            </a>
             <a href="mailto:dicto.pro@yandex.ru" className="hover:text-[var(--fg)] transition-colors">dicto.pro@yandex.ru</a>
           </div>
         </div>

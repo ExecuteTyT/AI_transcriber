@@ -15,6 +15,7 @@ import { useSound } from "@/lib/sound";
 const HeroLiveDemo = lazy(() => import("@/components/HeroLiveDemo"));
 const MicDemoButton = lazy(() => import("@/components/MicDemoButton"));
 const LiveInsightsSection = lazy(() => import("@/components/landing/LiveInsightsSection"));
+const TelegramPromoSection = lazy(() => import("@/components/landing/TelegramPromoSection"));
 
 /* ─── useCountUp hook ─── */
 function useCountUp(target: number, duration = 1500) {
@@ -631,6 +632,11 @@ export default function Landing() {
         </div>
         </FadeInOnScroll>
       </section>
+
+      {/* ─── Telegram-бот ─── */}
+      <ClientOnly fallback={<div className="h-[420px]" aria-hidden />}>
+        <TelegramPromoSection />
+      </ClientOnly>
 
       <SiteFooter />
 
