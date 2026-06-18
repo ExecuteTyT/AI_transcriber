@@ -496,11 +496,11 @@ export default function Landing() {
                 <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--highlight-fg-muted)]">/pro</span>
               </div>
               <div className="mb-8">
-                <div className="font-display text-6xl leading-none mb-2">820&nbsp;₽</div>
-                <p className="text-[13px] text-[var(--highlight-fg-muted)]">для бизнеса и продакшена</p>
+                <div className="font-display text-6xl leading-none mb-2">990&nbsp;₽</div>
+                <p className="text-[13px] text-[var(--highlight-fg-muted)]">для журналистов и регулярной работы</p>
               </div>
               <ul className="space-y-3 text-[14px] text-[var(--highlight-fg-muted)] mb-8">
-                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-[var(--highlight-fg)]">✓</span>1 500 мин (25 часов)</li>
+                <li className="flex items-start gap-2.5"><span className="mt-0.5 text-[var(--highlight-fg)]">✓</span>1 800 мин (30 часов)</li>
                 <li className="flex items-start gap-2.5"><span className="mt-0.5 text-[var(--highlight-fg)]">✓</span>Спикеры без лимита</li>
                 <li className="flex items-start gap-2.5"><span className="mt-0.5 text-[var(--highlight-fg)]">✓</span>RAG-чат без лимита</li>
                 <li className="flex items-start gap-2.5"><span className="mt-0.5 text-[var(--highlight-fg)]">✓</span>Action items</li>
@@ -517,7 +517,7 @@ export default function Landing() {
 
           <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--fg-subtle)]">
-              + Бизнес 2 300&nbsp;₽ · Премиум 4 600&nbsp;₽ — для команд и студий
+              + Эксперт 1 990&nbsp;₽ · Премиум 3 490&nbsp;₽ — для больших объёмов
             </p>
             <Link
               to="/pricing"

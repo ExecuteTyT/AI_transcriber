@@ -173,8 +173,8 @@ export default function SeoLanding({
             </div>
             <div className="p-7 border-t md:border-t-0 md:border-l border-[var(--border)] bg-[var(--bg)]">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--fg-subtle)] mb-4">/pro</p>
-              <div className="font-display text-5xl text-[var(--fg)] leading-none mb-2">820&nbsp;₽<span className="font-mono text-[14px] text-[var(--fg-muted)] ml-1">/мес</span></div>
-              <p className="text-[12px] text-[var(--fg-muted)]">25 часов, RAG-чат</p>
+              <div className="font-display text-5xl text-[var(--fg)] leading-none mb-2">990&nbsp;₽<span className="font-mono text-[14px] text-[var(--fg-muted)] ml-1">/мес</span></div>
+              <p className="text-[12px] text-[var(--fg-muted)]">30 часов, RAG-чат</p>
             </div>
           </div>
           <Link to="/pricing" className="inline-flex items-center gap-2 mt-6 text-[13px] text-[var(--fg)] hover:text-[var(--accent)] transition-colors">
