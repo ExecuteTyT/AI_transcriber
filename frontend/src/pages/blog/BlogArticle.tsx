@@ -61,80 +61,122 @@ export default function BlogArticle() {
     return parts;
   };
 
-  // Markdown-light renderer with editorial typographic rhythm.
+  // Markdown-light renderer. Группируем подряд идущие строки в семантические
+  // <ul>/<ol>/<table> (важно для SEO/доступности и распознавания таблиц Google),
+  // а не плоские <div>.
   const renderContent = (content: string) => {
-    return content.split("\n").map((line, i) => {
-      if (line.startsWith("## ")) {
-        return (
-          <h2 key={i} className="font-display text-3xl md:text-4xl leading-[1.05] tracking-[-0.01em] text-[var(--fg)] mt-12 mb-5">
-            {line.replace("## ", "")}
-          </h2>
+    const lines = content.split("\n");
+    const blocks: React.ReactNode[] = [];
+    let i = 0;
+    let key = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      // Таблица: подряд идущие строки, начинающиеся с "|".
+      if (line.startsWith("|")) {
+        const raw: string[] = [];
+        while (i < lines.length && lines[i].startsWith("|")) { raw.push(lines[i]); i++; }
+        const rows = raw
+          .map((l) => l.split("|").filter((c) => c.trim()))
+          .filter((cells) => !cells.some((c) => c.includes("---")));
+        const [header, ...body] = rows;
+        blocks.push(
+          <div key={key++} className="my-6 overflow-x-auto">
+            <table className="w-full text-[13px] border-collapse">
+              {header && (
+                <thead>
+                  <tr>
+                    {header.map((c, j) => (
+                      <th key={j} className="text-left font-semibold text-[var(--fg)] border-b border-[var(--border)] py-2 pr-4 align-top">
+                        {renderInline(c.trim())}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+              )}
+              <tbody>
+                {body.map((r, ri) => (
+                  <tr key={ri}>
+                    {r.map((c, j) => (
+                      <td key={j} className="text-[var(--fg-muted)] border-b border-[var(--border)] py-2 pr-4 align-top">
+                        {renderInline(c.trim())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>,
         );
+        continue;
+      }
+
+      // Маркированный список: подряд идущие "- ".
+      if (line.startsWith("- ")) {
+        const items: string[] = [];
+        while (i < lines.length && lines[i].startsWith("- ")) { items.push(lines[i].slice(2)); i++; }
+        blocks.push(
+          <ul key={key++} className="my-4 space-y-2.5">
+            {items.map((it, j) => {
+              const bm = it.match(/^\*\*(.+?)\*\*\s*[—–-]\s*(.+)$/);
+              return (
+                <li key={j} className="flex items-start gap-2.5 text-[15px] leading-[1.55] text-[var(--fg-muted)]">
+                  <span className="text-[var(--accent)] mt-1.5 flex-shrink-0 text-[10px]" aria-hidden>●</span>
+                  <span>
+                    {bm ? (<><strong className="font-semibold text-[var(--fg)]">{bm[1]}</strong> — {renderInline(bm[2])}</>) : renderInline(it)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>,
+        );
+        continue;
+      }
+
+      // Нумерованный список: подряд идущие "N. ".
+      if (/^\d+\.\s/.test(line)) {
+        const items: string[] = [];
+        while (i < lines.length && /^\d+\.\s/.test(lines[i])) { items.push(lines[i].replace(/^\d+\.\s*/, "")); i++; }
+        blocks.push(
+          <ol key={key++} className="my-4 space-y-2 list-none">
+            {items.map((it, j) => (
+              <li key={j} className="flex items-start gap-3 text-[15px] leading-[1.55] text-[var(--fg-muted)]">
+                <span className="font-mono text-[12px] text-[var(--fg-subtle)] flex-shrink-0 mt-1">{j + 1}.</span>
+                <span>{renderInline(it)}</span>
+              </li>
+            ))}
+          </ol>,
+        );
+        continue;
+      }
+
+      if (line.startsWith("## ")) {
+        blocks.push(
+          <h2 key={key++} className="font-display text-3xl md:text-4xl leading-[1.05] tracking-[-0.01em] text-[var(--fg)] mt-12 mb-5">
+            {line.replace("## ", "")}
+          </h2>,
+        );
+        i++; continue;
       }
       if (line.startsWith("### ")) {
-        return (
-          <h3 key={i} className="font-display text-2xl text-[var(--fg)] mt-8 mb-3">
+        blocks.push(
+          <h3 key={key++} className="font-display text-2xl text-[var(--fg)] mt-8 mb-3">
             {line.replace("### ", "")}
-          </h3>
+          </h3>,
         );
+        i++; continue;
       }
-      if (line.startsWith("| ")) {
-        const cells = line.split("|").filter((c) => c.trim());
-        const isHeader = cells.some((c) => c.includes("---"));
-        if (isHeader) return null;
-        return (
-          <div
-            key={i}
-            className="grid gap-2 text-[13px] py-2 border-b border-[var(--border)] text-[var(--fg-muted)]"
-            style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}
-          >
-            {cells.map((cell, j) => (
-              <span key={j} className="font-sans">{cell.trim().replace(/\*\*/g, "")}</span>
-            ))}
-          </div>
-        );
-      }
-      if (line.startsWith("```")) return null;
-      if (line.startsWith("- **")) {
-        const match = line.match(/^- \*\*(.+?)\*\*\s*[—–-]\s*(.+)$/);
-        if (match) {
-          return (
-            <div key={i} className="flex items-start gap-2.5 mb-2.5">
-              <span className="text-[var(--accent)] mt-1.5 flex-shrink-0 text-[10px]">●</span>
-              <span className="text-[15px] leading-[1.55] text-[var(--fg-muted)]">
-                <strong className="font-semibold text-[var(--fg)]">{match[1]}</strong> — {renderInline(match[2])}
-              </span>
-            </div>
-          );
-        }
-      }
-      if (line.startsWith("- ")) {
-        return (
-          <div key={i} className="flex items-start gap-2.5 mb-2">
-            <span className="text-[var(--accent)] mt-1.5 flex-shrink-0 text-[10px]">●</span>
-            <span className="text-[15px] leading-[1.55] text-[var(--fg-muted)]">
-              {renderInline(line.slice(2))}
-            </span>
-          </div>
-        );
-      }
-      if (line.match(/^\d+\./)) {
-        return (
-          <div key={i} className="flex items-start gap-3 mb-2">
-            <span className="font-mono text-[12px] text-[var(--fg-subtle)] flex-shrink-0 mt-1">{line.match(/^\d+/)![0]}.</span>
-            <span className="text-[15px] leading-[1.55] text-[var(--fg-muted)]">
-              {renderInline(line.replace(/^\d+\.\s*/, ""))}
-            </span>
-          </div>
-        );
-      }
-      if (line.trim() === "") return <div key={i} className="h-4" />;
-      return (
-        <p key={i} className="text-[15px] leading-[1.65] text-[var(--fg-muted)] mb-2">
+      if (line.startsWith("```")) { i++; continue; }
+      if (line.trim() === "") { blocks.push(<div key={key++} className="h-4" />); i++; continue; }
+      blocks.push(
+        <p key={key++} className="text-[15px] leading-[1.65] text-[var(--fg-muted)] mb-2">
           {renderInline(line)}
-        </p>
+        </p>,
       );
-    });
+      i++;
+    }
+    return blocks;
   };
 
   return (

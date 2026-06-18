@@ -70,6 +70,9 @@ async function prerender() {
     "/nemeckij-yazyk",
     "/francuzskij-yazyk",
     "/blog",
+    "/privacy",
+    "/terms",
+    "/register",
   ];
 
   // Динамические роуты блога — собираем из articles.ts
