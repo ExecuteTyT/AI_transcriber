@@ -13,6 +13,11 @@ export interface Transcription {
   error_message: string | null;
   created_at: string;
   completed_at: string | null;
+  // Частичная расшифровка (превью): расшифрованы первые max_minutes из
+  // full_duration_sec. Показываем баннер-апселл.
+  is_truncated?: boolean;
+  max_minutes?: number | null;
+  full_duration_sec?: number | null;
   // 152-ФЗ: срок хранения аудиофайла.
   audio_retention_days?: number;
   audio_delete_at?: string | null;

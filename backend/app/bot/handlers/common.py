@@ -59,7 +59,8 @@ async def send_long(message: Message, text: str, **kwargs) -> None:
 
 
 async def present_transcription(message: Message, status_msg: Message, data: dict, tid: str) -> None:
-    """Карточка готовности + читаемый текст + клавиатура действий/экспорта."""
+    """Карточка готовности + читаемый текст + клавиатура. Для частичной
+    расшифровки (превью) — пометка «N из M мин» и кнопка пополнения."""
     title = data.get("title") or data.get("original_filename") or "Расшифровка"
     dur = data.get("duration_sec") or 0
     minutes = max(1, round(dur / 60)) if dur else "—"
@@ -67,6 +68,16 @@ async def present_transcription(message: Message, status_msg: Message, data: dic
     header = texts.TRANSCRIPT_HEADER.format(
         title=esc(str(title)), minutes=minutes, language=_lang_label(data.get("language"))
     )
+    truncated = data.get("is_truncated")
+    if truncated:
+        full_min = round((data.get("full_duration_sec") or 0) / 60)
+        done_min = data.get("max_minutes") or minutes
+        header += f"\n\n✂️ Это первые <b>{done_min}</b> из {full_min} мин — проба на вашем файле."
     await status_msg.delete()
     await message.answer(header)
     await send_long(message, body, reply_markup=keyboards.after_transcription(tid))
+    if truncated:
+        await message.answer(
+            "🔓 Расшифровать запись <b>целиком</b>? Пополните кошелёк или оформите Pro.",
+            reply_markup=keyboards.paywall("truncated"),
+        )

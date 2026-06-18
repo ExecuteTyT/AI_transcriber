@@ -26,6 +26,11 @@ class TranscriptionResponse(BaseModel):
     error_message: str | None
     created_at: datetime
     completed_at: datetime | None
+    # Частичная расшифровка (превью): расшифрованы первые max_minutes из
+    # full_duration_sec. UI показывает баннер-апселл «N из M мин».
+    is_truncated: bool = False
+    max_minutes: int | None = None
+    full_duration_sec: int | None = None
     # 152-ФЗ: метаданные срока хранения аудиофайла.
     audio_retention_days: int = 7
     audio_delete_at: datetime | None = None
