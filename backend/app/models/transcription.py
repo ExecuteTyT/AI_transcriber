@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, Uuid
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -21,6 +21,12 @@ class Transcription(Base, UUIDMixin, TimestampMixin):
     )  # queued/processing/completed/failed
     language: Mapped[str | None] = mapped_column(String(10), nullable=True)
     duration_sec: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Частичная расшифровка (превью): файл длиннее баланса → транскрибируем только
+    # первые max_minutes (через ffmpeg -t, до Voxtral — платим только за них).
+    # full_duration_sec — исходная длительность для апселла «N из M мин».
+    max_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_truncated: Mapped[bool] = mapped_column(Boolean, default=False)
+    full_duration_sec: Mapped[int | None] = mapped_column(Integer, nullable=True)
     file_key: Mapped[str] = mapped_column(String(500))  # S3 ключ
     original_filename: Mapped[str] = mapped_column(String(500), default="")
     content_type: Mapped[str] = mapped_column(String(100), default="")

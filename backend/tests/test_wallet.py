@@ -162,13 +162,16 @@ def test_custom_topup_price_and_validation():
     assert is_valid_custom_minutes(45) is False                     # не кратно шагу
 
 
-def test_gate_recommends_small_pack_for_short_shortfall():
-    """Мелкая нехватка → мелкий пакет w60 (а не крупный)."""
-    from app.services.plans import gate_by_duration
+def test_plan_truncate_recommends_small_pack():
+    """Файл длиннее баланса → truncate + мелкий пакет w60 для апселла."""
+    from app.services.plans import plan_by_duration
 
-    g = gate_by_duration(45 * 60, 30)   # файл 45 мин, баланс 30 → нехватка 15
-    assert g["topup"]["pack"] == "w60"
-    assert g["topup"]["price_rub"] == 119
+    d = plan_by_duration(45 * 60, 30)   # файл 45 мин, баланс 30 → обрезка до 30
+    assert d["action"] == "truncate"
+    assert d["max_minutes"] == 30
+    assert d["full_minutes"] == 45
+    assert d["paywall"]["topup"]["pack"] == "w60"
+    assert d["paywall"]["topup"]["price_rub"] == 119
 
 
 @pytest.mark.asyncio
@@ -260,29 +263,33 @@ async def test_webhook_wallet_custom_amount_mismatch_rejected(client: AsyncClien
     assert user.wallet_minutes == 0  # не начислили
 
 
-def test_gate_by_duration():
-    """gate_by_duration — общее решение duration-gate для upload и URL-ingest."""
-    from app.services.plans import gate_by_duration
+def test_plan_by_duration():
+    """plan_by_duration — решение по длительности: ok / truncate / block."""
+    from app.services.plans import plan_by_duration
 
-    # файл влезает в баланс → None (можно расшифровывать)
-    assert gate_by_duration(20 * 60, 30) is None
-    assert gate_by_duration(30 * 60, 30) is None  # ровно по балансу
+    # влезает в баланс → ok (целиком)
+    assert plan_by_duration(20 * 60, 30)["action"] == "ok"
+    assert plan_by_duration(30 * 60, 30)["action"] == "ok"  # ровно по балансу
 
-    # файл длиннее баланса → payload пейволла с topup
-    g = gate_by_duration(60 * 60, 30)  # 60 мин > 30
-    assert g["reason"] == "file_exceeds_balance"
-    assert g["file_minutes"] == 60
-    assert g["available_minutes"] == 30
-    assert g["topup"]["pack"] == "w60"   # нехватка 30 → мелкий пакет 60 мин
-    assert g["paths"] == ["wallet", "pro"]
+    # длиннее баланса, но баланс есть → truncate до баланса
+    d = plan_by_duration(60 * 60, 30)
+    assert d["action"] == "truncate"
+    assert d["max_minutes"] == 30 and d["full_minutes"] == 60
+    assert d["paywall"]["reason"] == "file_exceeds_balance"
+    assert d["paywall"]["paths"] == ["wallet", "pro"]
 
-    # длительность неизвестна → None (best-effort, не блокируем)
-    assert gate_by_duration(None, 30) is None
-    assert gate_by_duration(0, 30) is None
+    # длиннее, а баланс 0 → block (пейволл no_minutes)
+    b = plan_by_duration(60 * 60, 0)
+    assert b["action"] == "block"
+    assert b["paywall"]["reason"] == "no_minutes"
 
-    # админ / безлимит → None (без гейта)
-    assert gate_by_duration(999 * 60, 0, is_admin=True) is None
-    assert gate_by_duration(999 * 60, 0, is_unlimited=True) is None
+    # длительность неизвестна → ok (best-effort, не блокируем)
+    assert plan_by_duration(None, 30)["action"] == "ok"
+    assert plan_by_duration(0, 30)["action"] == "ok"
+
+    # админ / безлимит → ok (без гейта)
+    assert plan_by_duration(999 * 60, 0, is_admin=True)["action"] == "ok"
+    assert plan_by_duration(999 * 60, 0, is_unlimited=True)["action"] == "ok"
 
 
 def test_build_payment_description_includes_email():
@@ -397,9 +404,11 @@ async def test_upload_no_minutes_returns_402_paywall(client: AsyncClient, db_ses
 
 
 @pytest.mark.asyncio
-async def test_upload_long_file_returns_402_with_topup(client: AsyncClient, db_session: AsyncSession, monkeypatch):
-    """Файл длиннее баланса → 402 file_exceeds_balance + сколько докинуть."""
+async def test_upload_long_file_truncates_to_balance(client: AsyncClient, db_session: AsyncSession, monkeypatch):
+    """Файл длиннее баланса → 201 + частичная расшифровка (max_minutes=баланс),
+    а не пейволл. Целиком предложим за оплату через is_truncated в результате."""
     import app.api.transcriptions as tr_api
+    from app.models.transcription import Transcription
     _, email = await _register(client)
     token_resp = await client.post(
         "/api/auth/login", json={"email": email, "password": "password1"})
@@ -419,13 +428,39 @@ async def test_upload_long_file_returns_402_with_topup(client: AsyncClient, db_s
         "/api/transcriptions/upload", headers=_h(token),
         files={"file": ("big.mp3", b"fake-but-long", "audio/mpeg")},
     )
+    assert resp.status_code == 201
+    tid = resp.json()["id"]
+    await db_session.rollback()
+    tr = (await db_session.execute(
+        select(Transcription).where(Transcription.id == uuid.UUID(tid))
+    )).scalar_one()
+    assert tr.max_minutes == 30            # обрежем до баланса
+    assert tr.full_duration_sec == 3600    # исходная длина для апселла
+
+
+@pytest.mark.asyncio
+async def test_upload_zero_balance_still_blocks(client: AsyncClient, db_session: AsyncSession, monkeypatch):
+    """Длинный файл при НУЛЕВОМ балансе → 402 (превью не даём)."""
+    import app.api.transcriptions as tr_api
+    _, email = await _register(client)
+    token_resp = await client.post(
+        "/api/auth/login", json={"email": email, "password": "password1"})
+    token = token_resp.json()["access_token"]
+    user = (await db_session.execute(select(User).where(User.email == email))).scalar_one()
+    user.plan = "free"
+    user.minutes_limit = 0
+    user.minutes_used = 0
+    user.bonus_minutes = 0
+    user.wallet_minutes = 0
+    await db_session.commit()
+
+    monkeypatch.setattr(tr_api, "probe_duration_sec", lambda data: 3600)
+    resp = await client.post(
+        "/api/transcriptions/upload", headers=_h(token),
+        files={"file": ("big.mp3", b"fake-but-long", "audio/mpeg")},
+    )
     assert resp.status_code == 402
-    d = resp.json()["detail"]
-    assert d["reason"] == "file_exceeds_balance"
-    assert d["file_minutes"] == 60
-    assert d["available_minutes"] == 30
-    assert d["topup"]["pack"] == "w60"         # 30 мин нехватки → мелкий пакет 60 мин
-    assert d["topup"]["price_rub"] == 119
+    assert resp.json()["detail"]["paths"] == ["wallet", "pro"]
 
 
 @pytest.mark.asyncio

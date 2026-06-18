@@ -22,7 +22,7 @@ from app.schemas.transcription import (
     UrlIngestRequest,
 )
 from app.services.media import probe_duration_sec
-from app.services.plans import gate_by_duration, get_plan
+from app.services.plans import get_plan, plan_by_duration
 from app.services.storage import s3_service
 
 router = APIRouter(prefix="/api/transcriptions", tags=["transcriptions"])
@@ -203,14 +203,15 @@ async def upload_file(
             detail="Файл превышает максимальный размер 500 МБ",
         )
 
-    # Duration-gate: не запускаем платный Voxtral на файле длиннее, чем влезает
-    # в баланс (защита от абьюза «один большой файл бесплатно»). ffprobe
-    # best-effort: dur=None → gate_by_duration вернёт None (пропускаем), чтобы
-    # сбой ffprobe не ломал загрузку (остаток списания просто сгорит).
-    if not user.is_admin and not user.is_unlimited:
-        gate = gate_by_duration(probe_duration_sec(file_data), available_minutes)
-        if gate:
-            raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail=gate)
+    # Duration-decision: файл длиннее баланса → НЕ блокируем, а расшифруем первые
+    # `available` минут (превью на контенте юзера) и предложим целиком за оплату.
+    # Блокируем только при нулевом балансе. ffprobe best-effort: dur=None → "ok".
+    decision = plan_by_duration(
+        probe_duration_sec(file_data), available_minutes,
+        is_admin=user.is_admin, is_unlimited=user.is_unlimited,
+    )
+    if decision["action"] == "block":
+        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail=decision["paywall"])
 
     # Загрузка в S3
     if s3_service is None:
@@ -250,6 +251,8 @@ async def upload_file(
         audio_retention_days=audio_retention_days,
         audio_delete_at=audio_delete_at,
         language=normalized_lang if normalized_lang != "auto" else None,
+        max_minutes=decision["max_minutes"],
+        full_duration_sec=(decision["full_minutes"] * 60 if decision["full_minutes"] else None),
     )
     db.add(transcription)
     await db.commit()

@@ -713,6 +713,24 @@ export default function Transcription() {
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" className="space-y-5">
       <Seo title={`${transcription.title || "Транскрипция"} — Dicto`} noindex />
+
+      {/* Частичная расшифровка (превью): апселл «расшифровать целиком». */}
+      {transcription.is_truncated && (
+        <div className="rounded-2xl border border-[var(--accent)]/30 bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] p-5 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[13px] leading-[1.55] text-[var(--fg)]">
+            ✂️ Расшифрованы первые{" "}
+            <span className="font-semibold">{transcription.max_minutes ?? Math.round((transcription.duration_sec || 0) / 60)}</span> мин
+            {transcription.full_duration_sec
+              ? <> из <span className="font-semibold">{Math.round(transcription.full_duration_sec / 60)}</span></>
+              : null}{" "}
+            — проба на вашем файле. Чтобы расшифровать запись целиком, пополните баланс.
+          </p>
+          <Link to="/app/pricing" className="btn-accent !py-2.5 !px-5 !text-[13px] whitespace-nowrap">
+            Расшифровать целиком →
+          </Link>
+        </div>
+      )}
+
       {audioUrl && !audioUnavailable && (
         <AudioPlayerBar
           src={audioUrl}

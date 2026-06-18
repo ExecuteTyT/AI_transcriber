@@ -189,33 +189,58 @@ def recommend_topup(file_minutes: int, available_minutes: int) -> dict | None:
     }
 
 
-def gate_by_duration(
+def plan_by_duration(
     duration_sec: float | None,
     available_minutes: int,
     *,
     is_admin: bool = False,
     is_unlimited: bool = False,
-) -> dict | None:
-    """Решение duration-gate (общее для upload и URL-ingest).
+) -> dict:
+    """Решение по длительности (общее для upload и URL-ingest).
 
-    Возвращает payload пейволла (reason=file_exceeds_balance + topup), если файл
-    длиннее доступного баланса, иначе None (можно расшифровывать).
-    None также если: админ/безлимит, или длительность неизвестна (best-effort —
-    не блокируем из-за сбоя ffprobe/метаданных).
+    Вместо жёсткого пейволла на длинном файле — даём расшифровать ПЕРВЫЕ
+    `available_minutes` (превью на контенте пользователя), а целиком предлагаем
+    за пополнение. Это резко повышает конверсию: человек видит результат.
+
+    Возвращает dict:
+      action="ok"       — расшифровать целиком (влезает / админ / длина неизвестна);
+      action="truncate" — обрезать до max_minutes (файл длиннее баланса, но баланс>0);
+      action="block"    — баланс 0, показываем пейволл (paywall).
+    Плюс full_minutes (исходная длина) и paywall (для block / апселла).
     """
     if is_admin or is_unlimited or not duration_sec:
-        return None
+        return {"action": "ok", "max_minutes": None, "full_minutes": None, "paywall": None}
+
     file_min = math.ceil(duration_sec / 60)
     if file_min <= available_minutes:
-        return None
+        return {"action": "ok", "max_minutes": None, "full_minutes": file_min, "paywall": None}
+
+    if available_minutes <= 0:
+        return {
+            "action": "block",
+            "max_minutes": None,
+            "full_minutes": file_min,
+            "paywall": {
+                "reason": "no_minutes",
+                "message": "Минуты закончились. Пополните кошелёк или оформите Pro.",
+                "paths": ["wallet", "pro"],
+            },
+        }
+
+    # Файл длиннее баланса, но баланс есть → частичная расшифровка первых N минут.
     return {
-        "reason": "file_exceeds_balance",
-        "message": (
-            f"Файл ~{file_min} мин, доступно {available_minutes} мин. "
-            "Докиньте на кошелёк или оформите Pro — расшифруем целиком."
-        ),
-        "file_minutes": file_min,
-        "available_minutes": available_minutes,
-        "topup": recommend_topup(file_min, available_minutes),
-        "paths": ["wallet", "pro"],
+        "action": "truncate",
+        "max_minutes": available_minutes,
+        "full_minutes": file_min,
+        "paywall": {
+            "reason": "file_exceeds_balance",
+            "message": (
+                f"Расшифрую первые {available_minutes} мин из {file_min}. "
+                "Чтобы целиком — пополните кошелёк или оформите Pro."
+            ),
+            "file_minutes": file_min,
+            "available_minutes": available_minutes,
+            "topup": recommend_topup(file_min, available_minutes),
+            "paths": ["wallet", "pro"],
+        },
     }

@@ -65,22 +65,26 @@ def _has_audio_stream(path: str) -> bool:
         return True
 
 
-def _extract_audio_from_video(video_path: str) -> str:
-    """Извлечение аудиодорожки из видео через FFmpeg. Пользователю отдаём короткое
-    понятное сообщение; полный stderr — только в лог."""
-    if not _has_audio_stream(video_path):
+def _prepare_audio(src_path: str, content_type: str, max_sec: int | None) -> str:
+    """Готовит аудио для Voxtral: извлекает дорожку из видео и/или обрезает до
+    max_sec секунд (частичная расшифровка). Обрезка ДО Voxtral — платим только
+    за реально обрабатываемые минуты. Аудио без обрезки возвращаем как есть.
+    """
+    is_video = content_type in VIDEO_CONTENT_TYPES
+    if not is_video and not max_sec:
+        return src_path
+    if is_video and not _has_audio_stream(src_path):
         raise RuntimeError("В видео нет звуковой дорожки — расшифровывать нечего.")
-    audio_path = video_path.rsplit(".", 1)[0] + ".wav"
-    cmd = [
-        "ffmpeg", "-i", video_path,
-        "-vn", "-acodec", "pcm_s16le", "-ar", "16000", "-ac", "1",
-        "-y", audio_path,
-    ]
+    out_path = src_path.rsplit(".", 1)[0] + ".prepared.wav"
+    cmd = ["ffmpeg", "-i", src_path]
+    if max_sec:
+        cmd += ["-t", str(int(max_sec))]
+    cmd += ["-vn", "-acodec", "pcm_s16le", "-ar", "16000", "-ac", "1", "-y", out_path]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     if result.returncode != 0:
-        logger.error("FFmpeg extract failed (%s): %s", video_path, result.stderr[-2000:])
-        raise RuntimeError("Не удалось извлечь звук из видео. Возможно, файл повреждён или без аудио.")
-    return audio_path
+        logger.error("FFmpeg prepare failed (%s): %s", src_path, result.stderr[-2000:])
+        raise RuntimeError("Не удалось подготовить аудио. Возможно, файл повреждён или без звука.")
+    return out_path
 
 
 @celery_app.task(
@@ -116,10 +120,10 @@ def process_transcription(self, transcription_id: str):
                 tmp.write(file_data)
                 tmp_path = tmp.name
 
-            # 2. FFmpeg для видео
-            audio_path = tmp_path
-            if transcription.content_type in VIDEO_CONTENT_TYPES:
-                audio_path = _extract_audio_from_video(tmp_path)
+            # 2. FFmpeg: извлечь аудио (видео) и/или обрезать до max_minutes
+            # (частичная расшифровка — Voxtral обработает только первые N минут).
+            max_sec = (transcription.max_minutes or 0) * 60 or None
+            audio_path = _prepare_audio(tmp_path, transcription.content_type, max_sec)
 
             # 3. Транскрибация (передаём выбранный пользователем язык, если есть)
             from app.services.transcription import get_provider
@@ -134,6 +138,10 @@ def process_transcription(self, transcription_id: str):
             if result.language:
                 transcription.language = result.language
             transcription.duration_sec = result.duration_sec
+            # Частичная расшифровка: помечаем, если исходный файл длиннее обрезки.
+            if (transcription.max_minutes and transcription.full_duration_sec
+                    and transcription.full_duration_sec > transcription.max_minutes * 60):
+                transcription.is_truncated = True
             transcription.status = "completed"
             transcription.completed_at = datetime.now(timezone.utc)
 
