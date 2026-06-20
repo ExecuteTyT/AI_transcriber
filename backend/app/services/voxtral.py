@@ -47,7 +47,19 @@ class VoxtralProvider(TranscriptionProvider):
                 timeout=600,
             )
 
-        response.raise_for_status()
+        if response.status_code >= 400:
+            # Тело ответа Mistral содержит реальную причину (формат/длительность/
+            # размер) — без него в логах остаётся только generic «400». Логируем
+            # и пробрасываем читаемую ошибку вместо ссылки на MDN.
+            body = response.text[:1000]
+            logger.error(
+                "Voxtral %s for %s (%s): %s",
+                response.status_code, filename, mime_type, body,
+            )
+            raise RuntimeError(
+                f"Voxtral отклонил файл (HTTP {response.status_code}). "
+                f"Поддерживаются WAV/MP3/FLAC/OGG/WEBM до 60 мин. Детали: {body}"
+            )
         data = response.json()
 
         # Парсинг ответа

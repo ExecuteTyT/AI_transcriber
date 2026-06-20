@@ -49,6 +49,28 @@ SyncSession = sessionmaker(sync_engine)
 
 VIDEO_CONTENT_TYPES = {"video/mp4", "video/webm", "video/quicktime"}
 
+# Форматы, которые Voxtral принимает напрямую (Mistral known-limitations:
+# WAV, MP3, FLAC, OGG, WEBM). Всё остальное (m4a/aac/mp4-audio и пр.) Voxtral
+# отклоняет с 400 — такие файлы перекодируем в WAV через ffmpeg перед отправкой.
+VOXTRAL_NATIVE_TYPES = {
+    "audio/wav", "audio/x-wav", "audio/mpeg",
+    "audio/flac", "audio/ogg", "application/ogg", "audio/webm",
+}
+
+
+def _needs_voxtral_transcode(content_type: str, max_sec: int | None) -> bool:
+    """Нужно ли гнать файл через ffmpeg перед Voxtral.
+
+    True если: видео (извлечь дорожку), частичная расшифровка (обрезка до max_sec)
+    или формат не из тех, что Voxtral принимает напрямую (напр. m4a/aac). Аудио в
+    поддерживаемом формате без обрезки уходит в Voxtral как есть — быстрый путь.
+    """
+    if content_type in VIDEO_CONTENT_TYPES:
+        return True
+    if max_sec:
+        return True
+    return content_type not in VOXTRAL_NATIVE_TYPES
+
 
 def _has_audio_stream(path: str) -> bool:
     """Есть ли в файле звуковая дорожка (ffprobe). Видео без аудио — частый кейс
@@ -66,12 +88,13 @@ def _has_audio_stream(path: str) -> bool:
 
 
 def _prepare_audio(src_path: str, content_type: str, max_sec: int | None) -> str:
-    """Готовит аудио для Voxtral: извлекает дорожку из видео и/или обрезает до
-    max_sec секунд (частичная расшифровка). Обрезка ДО Voxtral — платим только
-    за реально обрабатываемые минуты. Аудио без обрезки возвращаем как есть.
+    """Готовит аудио для Voxtral: извлекает дорожку из видео, перекодирует
+    неподдерживаемые форматы (m4a/aac → WAV) и/или обрезает до max_sec секунд
+    (частичная расшифровка). Обрезка ДО Voxtral — платим только за реально
+    обрабатываемые минуты. Аудио в нативном формате без обрезки — как есть.
     """
     is_video = content_type in VIDEO_CONTENT_TYPES
-    if not is_video and not max_sec:
+    if not _needs_voxtral_transcode(content_type, max_sec):
         return src_path
     if is_video and not _has_audio_stream(src_path):
         raise RuntimeError("В видео нет звуковой дорожки — расшифровывать нечего.")
