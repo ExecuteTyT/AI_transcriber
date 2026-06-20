@@ -7,6 +7,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { mergeHead } from "../src/lib/prerenderHead";
 
 // Полифиллы для браузерных API, используемых в компонентах (Zustand localStorage и т.д.)
 const storage = new Map<string, string>();
@@ -99,19 +100,17 @@ async function prerender() {
       `<div id="root">${appHtml}</div>`
     );
 
-    // Обновляем мета-теги из Helmet
+    // Обновляем <head> из Helmet БЕЗ дублей: mergeHead вычищает из шаблона
+    // одноимённые дефолтные теги (description/og/twitter) перед вставкой
+    // уникальных helmet-меты. Иначе на странице два <meta name="description">
+    // и краулер берёт первый — дефолтный (причина «дублей meta» в Вебмастере).
     if (helmet) {
-      const titleStr = helmet.title?.toString() || "";
-      const metaStr = helmet.meta?.toString() || "";
-      const linkStr = helmet.link?.toString() || "";
+      page = mergeHead(page, {
+        title: helmet.title?.toString() || "",
+        meta: helmet.meta?.toString() || "",
+      });
 
-      if (titleStr) {
-        page = page.replace(/<title>.*?<\/title>/, titleStr);
-      }
-      if (metaStr) {
-        // Вставляем дополнительные meta-теги перед </head>
-        page = page.replace("</head>", `${metaStr}\n</head>`);
-      }
+      const linkStr = helmet.link?.toString() || "";
       if (linkStr) {
         // Обновляем canonical и добавляем link-теги
         page = page.replace(
