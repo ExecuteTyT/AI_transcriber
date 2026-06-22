@@ -175,13 +175,14 @@ def test_youtube_bot_block_message_is_friendly():
 
 def test_video_not_available_message_is_friendly():
     """«This video is not available» (реальная строка из прод-лога) → понятный текст,
-    а не generic «не удалось скачать»."""
+    а не generic «не удалось скачать». Не утверждаем «удалено» (видео часто живое —
+    это наша экстракция), но зовём в RU-источники / на загрузку файла."""
     from app.tasks.transcribe_url import _translate_ytdlp_error
 
     raw = "ERROR: [youtube] Bm7a4Xtpr8g: This video is not available"
     msg = _translate_ytdlp_error(raw)
     assert "не удалось скачать" not in msg.lower()  # не generic
-    assert "недоступно" in msg.lower()
+    assert "rutube" in msg.lower() or "vk" in msg.lower() or "дзен" in msg.lower()
 
 
 def test_permanent_errors_not_retried():
