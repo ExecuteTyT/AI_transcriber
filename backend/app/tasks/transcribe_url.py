@@ -202,11 +202,17 @@ def _translate_ytdlp_error(msg: str) -> str:
         return "Видео приватное или требует авторизации"
     if "age" in m and ("restrict" in m or "confirm" in m):
         return "Видео с возрастным ограничением — невозможно скачать"
-    # «Video unavailable» (одно слово) и «This video is not available» (с пробелом,
-    # для удалённых/регионально-заблокированных/недоступных с сервера) — разные
-    # формулировки yt-dlp, ловим обе.
+    # «Video unavailable» / «This video is not available» yt-dlp выдаёт И для
+    # реально удалённых видео, И когда не смог вытащить форматы доступного видео
+    # (устаревшая версия / PO-token / IP дата-центра — проверено oembed'ом 2026-06-22:
+    # видео живое, а yt-dlp пишет "not available"). Поэтому НЕ утверждаем «удалено»,
+    # а честно: ограничение со стороны YouTube ИЛИ видео недоступно — и зовём в RU.
     if "unavailable" in m or "not available" in m or "removed" in m:
-        return "Видео недоступно: удалено или заблокировано в вашем регионе"
+        return (
+            "Не удалось получить это видео с YouTube — возможно, YouTube ограничивает "
+            "загрузку с серверов либо видео недоступно. Попробуйте ссылку с RuTube, VK "
+            "или Дзена — либо скачайте файл и загрузите напрямую."
+        )
     if "live" in m:
         return "Нельзя распознать live-трансляцию"
     if "max_filesize" in m or "too large" in m:

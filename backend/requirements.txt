@@ -56,7 +56,7 @@ pgvector==0.3.6
 
 # URL ingest (YouTube / VK / Rutube / Дзен) — аудио-download для транскрибации.
 # Держим свежим: YouTube/VK часто ломают старые версии (экстракторы, PO-token).
-yt-dlp==2026.3.17
+yt-dlp==2026.6.9
 
 # Telegram-бот (отдельный сервис, тот же образ). aiogram 3.x — async, FSM,
 # поддержка self-hosted Bot API server (TelegramAPIServer.from_base, is_local).
