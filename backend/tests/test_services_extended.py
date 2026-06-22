@@ -54,7 +54,7 @@ def test_premium_plan_limits():
     assert plan.max_users == 1
     assert plan.price_rub == 3490
     assert plan.overage_rub_per_min == 0.7
-    assert plan.max_file_duration_sec == 6 * 60 * 60
+    assert plan.max_file_duration_sec == 3 * 60 * 60  # потолок Voxtral (3 ч)
 
 
 def test_unknown_plan_defaults_to_free():

@@ -69,14 +69,26 @@ async def present_transcription(message: Message, status_msg: Message, data: dic
         title=esc(str(title)), minutes=minutes, language=_lang_label(data.get("language"))
     )
     truncated = data.get("is_truncated")
+    # Причина обрезки: технический потолок Voxtral (3 ч, max_minutes==предел —
+    # пополнение НЕ поможет) ИЛИ нехватка баланса (поможет). См. plans.VOXTRAL_MAX_MINUTES.
+    from app.services.plans import VOXTRAL_MAX_MINUTES
+    capped_by_voxtral = truncated and data.get("max_minutes") == VOXTRAL_MAX_MINUTES
     if truncated:
         full_min = round((data.get("full_duration_sec") or 0) / 60)
         done_min = data.get("max_minutes") or minutes
-        header += f"\n\n✂️ Это первые <b>{done_min}</b> из {full_min} мин — проба на вашем файле."
+        if capped_by_voxtral:
+            header += (
+                f"\n\n✂️ Расшифровал первые <b>{done_min // 60} ч</b> из {full_min} мин — "
+                "это технический максимум на один файл. Запись длиннее разбейте на части."
+            )
+        else:
+            header += f"\n\n✂️ Это первые <b>{done_min}</b> из {full_min} мин — проба на вашем файле."
     await status_msg.delete()
     await message.answer(header)
     await send_long(message, body, reply_markup=keyboards.after_transcription(tid))
-    if truncated:
+    # Кнопку пополнения показываем только когда обрезка из-за баланса (для потолка
+    # Voxtral оплата ничего не даст).
+    if truncated and not capped_by_voxtral:
         await message.answer(
             "🔓 Расшифровать запись <b>целиком</b>? Пополните кошелёк или оформите Pro.",
             reply_markup=keyboards.paywall("truncated"),
