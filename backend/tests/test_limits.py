@@ -117,7 +117,7 @@ def test_plan_configs():
     assert premium.minutes_limit == 8400
     assert premium.price_rub == 3490
     assert premium.max_users == 1
-    assert premium.max_file_duration_sec == 6 * 60 * 60
+    assert premium.max_file_duration_sec == 3 * 60 * 60  # потолок Voxtral (3 ч)
 
     # Неизвестный план → free
     unknown = get_plan("unknown")

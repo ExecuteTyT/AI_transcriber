@@ -287,9 +287,29 @@ def test_plan_by_duration():
     assert plan_by_duration(None, 30)["action"] == "ok"
     assert plan_by_duration(0, 30)["action"] == "ok"
 
-    # админ / безлимит → ok (без гейта)
-    assert plan_by_duration(999 * 60, 0, is_admin=True)["action"] == "ok"
-    assert plan_by_duration(999 * 60, 0, is_unlimited=True)["action"] == "ok"
+    # админ / безлимит на коротком файле → ok (без гейта по балансу)
+    assert plan_by_duration(60 * 60, 0, is_admin=True)["action"] == "ok"
+    assert plan_by_duration(120 * 60, 0, is_unlimited=True)["action"] == "ok"
+
+    # потолок Voxtral (~3 ч): файл длиннее режется ВСЕГДА, даже у безлимита/админа
+    # и при достаточном балансе — это предел движка, не денег.
+    v = plan_by_duration(999 * 60, 0, is_admin=True)
+    assert v["action"] == "truncate" and v["max_minutes"] == 180
+    assert v["paywall"]["reason"] == "voxtral_max_duration"
+    v2 = plan_by_duration(4 * 60 * 60, 8400)  # 4 ч при большом балансе (premium)
+    assert v2["action"] == "truncate" and v2["max_minutes"] == 180
+    assert v2["paywall"]["reason"] == "voxtral_max_duration"
+    # граница: баланс ровно 180 (= потолку) + файл >3 ч → причина именно Voxtral,
+    # а не баланс (пополнение не поможет — упёрлись в предел модели).
+    v3 = plan_by_duration(240 * 60, 180)
+    assert v3["action"] == "truncate" and v3["max_minutes"] == 180
+    assert v3["paywall"]["reason"] == "voxtral_max_duration"
+    # баланс < потолка → обрезка по балансу (пополнение поможет)
+    v4 = plan_by_duration(240 * 60, 100)
+    assert v4["action"] == "truncate" and v4["max_minutes"] == 100
+    assert v4["paywall"]["reason"] == "file_exceeds_balance"
+    # ровно 3 ч при достатке баланса → ok (на границе не режем)
+    assert plan_by_duration(180 * 60, 8400)["action"] == "ok"
 
 
 def test_build_payment_description_includes_email():

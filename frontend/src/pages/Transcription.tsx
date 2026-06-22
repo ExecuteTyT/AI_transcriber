@@ -75,6 +75,11 @@ const TABS: { key: Tab; label: string; proOnly?: boolean }[] = [
   { key: "chat", label: "Чат" },
 ];
 
+// Технический потолок Voxtral на один файл (зеркало backend VOXTRAL_MAX_MINUTES
+// в services/plans.py — менять в обоих местах). Если max_minutes == ему, файл
+// обрезан НЕ из-за баланса, а из-за предела модели → пополнение не поможет.
+const VOXTRAL_MAX_MINUTES = 180;
+
 export default function Transcription() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -714,7 +719,8 @@ export default function Transcription() {
     <motion.div variants={fadeUp} initial="hidden" animate="visible" className="space-y-5">
       <Seo title={`${transcription.title || "Транскрипция"} — Dicto`} noindex />
 
-      {/* Частичная расшифровка (превью): апселл «расшифровать целиком». */}
+      {/* Частичная расшифровка (превью). Причина обрезки — баланс (пополнение
+          поможет) ИЛИ технический потолок Voxtral 3 ч (не поможет, max_minutes==180). */}
       {transcription.is_truncated && (
         <div className="rounded-2xl border border-[var(--accent)]/30 bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] p-5 flex flex-wrap items-center justify-between gap-3">
           <p className="text-[13px] leading-[1.55] text-[var(--fg)]">
@@ -723,11 +729,15 @@ export default function Transcription() {
             {transcription.full_duration_sec
               ? <> из <span className="font-semibold">{Math.round(transcription.full_duration_sec / 60)}</span></>
               : null}{" "}
-            — проба на вашем файле. Чтобы расшифровать запись целиком, пополните баланс.
+            {transcription.max_minutes === VOXTRAL_MAX_MINUTES
+              ? "— это технический максимум: 3 часа на один файл. Запись длиннее разбейте на части и загрузите по очереди."
+              : "— проба на вашем файле. Чтобы расшифровать запись целиком, пополните баланс."}
           </p>
-          <Link to="/app/pricing" className="btn-accent !py-2.5 !px-5 !text-[13px] whitespace-nowrap">
-            Расшифровать целиком →
-          </Link>
+          {transcription.max_minutes !== VOXTRAL_MAX_MINUTES && (
+            <Link to="/app/pricing" className="btn-accent !py-2.5 !px-5 !text-[13px] whitespace-nowrap">
+              Расшифровать целиком →
+            </Link>
+          )}
         </div>
       )}
 

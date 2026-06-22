@@ -383,7 +383,7 @@ export default function Landing() {
           </div>
           <div className="grid md:grid-cols-3 gap-10 md:gap-14">
             {[
-              { step: "01", title: "Загрузите", desc: "Аудио, видео или ссылка на YouTube / VK / Rutube. MP3, WAV, MP4 и ещё 8 форматов. До 500 МБ, до 6 часов." },
+              { step: "01", title: "Загрузите", desc: "Аудио, видео или ссылка на YouTube / VK / Rutube. MP3, WAV, MP4 и ещё 8 форматов. До 500 МБ, до 3 часов." },
               { step: "02", title: "Подождите ~2 мин", desc: "AI расшифрует речь, расставит пунктуацию, разметит спикеров. На час записи уходит в среднем 2 минуты." },
               { step: "03", title: "Получите инсайты", desc: "Текст с таймкодами, AI-саммари, ключевые тезисы и action items. Экспорт в TXT / SRT / DOCX. Чат с записью через RAG." },
             ].map((item) => (

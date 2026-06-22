@@ -82,7 +82,7 @@ PLANS: dict[str, PlanConfig] = {
         # Solo power-user: адвокаты, секретари, ежедневные митинги
         # руководителя. 70 ч/мес ≈ 3 часа аудио в день.
         minutes_limit=4200,                        # 70 ч/мес (было 4800/80ч)
-        max_file_duration_sec=4 * 60 * 60,         # 4 часа
+        max_file_duration_sec=3 * 60 * 60,         # 3 часа (потолок Voxtral, см. VOXTRAL_MAX_MINUTES)
         ai_summaries=-1,
         speakers=True,
         max_speakers=-1,
@@ -98,7 +98,7 @@ PLANS: dict[str, PlanConfig] = {
         # ежедневной практикой, секретари топ-менеджеров. 140 ч/мес =
         # 4-5 часов аудио в день. Дешевле Эксперта per-minute (0.42 vs 0.47).
         minutes_limit=8400,                        # 140 ч/мес
-        max_file_duration_sec=6 * 60 * 60,         # 6 часов
+        max_file_duration_sec=3 * 60 * 60,         # 3 часа (потолок Voxtral, см. VOXTRAL_MAX_MINUTES)
         ai_summaries=-1,
         speakers=True,
         max_speakers=-1,
@@ -114,6 +114,12 @@ PLANS: dict[str, PlanConfig] = {
     # уходят в Enterprise CTA (mailto:support@dicto.pro) до реализации фичи.
     # meet_solo удалён: 40-часовой сценарий покрыт Про (30ч) и Эксперт (70ч).
 }
+
+
+# Технический потолок Voxtral Mini Transcribe V2 — ~3 ч на один файл. Длиннее
+# модель отдаёт 400, поэтому plan_by_duration режет любой файл до этого предела
+# (даже у безлимита). Это НЕ тарифное ограничение, а предел движка транскрибации.
+VOXTRAL_MAX_MINUTES = 3 * 60  # 180 мин
 
 
 def get_plan(plan_name: str) -> PlanConfig:
@@ -208,14 +214,26 @@ def plan_by_duration(
       action="block"    — баланс 0, показываем пейволл (paywall).
     Плюс full_minutes (исходная длина) и paywall (для block / апселла).
     """
-    if is_admin or is_unlimited or not duration_sec:
+    if not duration_sec:
+        # Длину не определили (ffprobe не смог) — не режем заранее; если файл
+        # окажется длиннее потолка Voxtral, тот вернёт ошибку при обработке.
         return {"action": "ok", "max_minutes": None, "full_minutes": None, "paywall": None}
 
     file_min = math.ceil(duration_sec / 60)
-    if file_min <= available_minutes:
+    unlimited = is_admin or is_unlimited
+
+    # Бюджет минут: безлимит/админ балансом не ограничены.
+    budget = file_min if unlimited else max(0, available_minutes)
+    # Реально обработаем = min(бюджет, технический потолок Voxtral). Voxtral Mini
+    # Transcribe V2 тянет ~3 ч на файл; длиннее — отдаёт 400, поэтому режем ВСЕГДА,
+    # включая безлимит/админа (это не про деньги, а про предел модели).
+    cap = min(budget, VOXTRAL_MAX_MINUTES)
+
+    if file_min <= cap:
         return {"action": "ok", "max_minutes": None, "full_minutes": file_min, "paywall": None}
 
-    if available_minutes <= 0:
+    # Не влезает целиком. Денег нет вообще (и не безлимит) → пейволл.
+    if not unlimited and available_minutes <= 0:
         return {
             "action": "block",
             "max_minutes": None,
@@ -227,7 +245,26 @@ def plan_by_duration(
             },
         }
 
-    # Файл длиннее баланса, но баланс есть → частичная расшифровка первых N минут.
+    # Обрабатываем ровно потолок (cap==VOXTRAL_MAX) → уперлись в предел Voxtral,
+    # а не в деньги (пополнение НЕ поможет). Иначе — обрезка по балансу (помогает).
+    if cap >= VOXTRAL_MAX_MINUTES:
+        return {
+            "action": "truncate",
+            "max_minutes": VOXTRAL_MAX_MINUTES,
+            "full_minutes": file_min,
+            "paywall": {
+                "reason": "voxtral_max_duration",
+                "message": (
+                    f"Расшифрую первые {VOXTRAL_MAX_MINUTES // 60} ч — это технический "
+                    "максимум на один файл. Если запись длиннее, разбейте её на части."
+                ),
+                "file_minutes": file_min,
+                "available_minutes": VOXTRAL_MAX_MINUTES,
+                "paths": [],
+            },
+        }
+
+    # Иначе уперлись в баланс → частичная расшифровка первых N минут.
     return {
         "action": "truncate",
         "max_minutes": available_minutes,

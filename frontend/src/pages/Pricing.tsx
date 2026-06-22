@@ -218,7 +218,7 @@ const PLANS: Plan[] = [
         title: "Минуты",
         items: [
           { label: "8 400 минут (140 часов)", included: true },
-          { label: "Файлы до 6 часов", included: true },
+          { label: "Файлы до 3 часов", included: true },
           { label: "Приоритетная обработка", included: true },
         ],
       },
