@@ -185,6 +185,24 @@ def test_video_not_available_message_is_friendly():
     assert "rutube" in msg.lower() or "vk" in msg.lower() or "дзен" in msg.lower()
 
 
+def test_drm_message_is_honest():
+    """DRM-видео (реальная строка tv-клиента yt-dlp) → честно «защищено DRM,
+    невозможно», а не размытое «не удалось»/«ограничивает загрузку»."""
+    from app.tasks.transcribe_url import _translate_ytdlp_error
+
+    raw = "ERROR: [youtube] OFfUoVzcKgc: This video is DRM protected"
+    msg = _translate_ytdlp_error(raw)
+    assert "drm" in msg.lower()
+    assert "невозможно" in msg.lower()
+
+
+def test_drm_is_permanent():
+    """DRM нескачиваемо в принципе — не ретраить."""
+    from app.tasks.transcribe_url import _is_permanent_ytdlp_error
+
+    assert _is_permanent_ytdlp_error("This video is DRM protected") is True
+
+
 def test_permanent_errors_not_retried():
     """Бот-блок/приват/недоступно/неподдерж. — перманентны (не ретраим)."""
     from app.tasks.transcribe_url import _is_permanent_ytdlp_error
