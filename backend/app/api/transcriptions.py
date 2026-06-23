@@ -372,7 +372,9 @@ async def upload_by_url(
         user_id=user.id,
         title="Загружается по ссылке…",
         file_key="",  # заполнится в transcribe_url task
-        original_filename=host,
+        # Полный URL (а не только хост): при сбое extraction видно в админке, что
+        # именно падало — раньше было голое "youtu.be", диагностировать нечем.
+        original_filename=effective_url[:500],
         content_type="",
         status="queued",
         expires_at=expires_at,

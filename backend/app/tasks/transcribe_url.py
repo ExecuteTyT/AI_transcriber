@@ -68,6 +68,12 @@ def process_url_transcription(self, transcription_id: str, url: str):
                 "noplaylist": True,
                 "nocheckcertificate": False,
                 "socket_timeout": 60,
+                # YouTube-клиенты плеера: default (обычные видео качаются им,
+                # проверено 4/4 на проде) + tv. tv нужен, чтобы ОТЛИЧАТЬ DRM-видео:
+                # на default DRM-ролик отдаёт невнятное "not available", а tv —
+                # явное "This video is DRM protected" (проверено на OFfUoVzcKgc
+                # 2026-06-23), что триггерит честное сообщение в _translate_ytdlp_error.
+                "extractor_args": {"youtube": {"player_client": ["default", "tv"]}},
                 # SSRF-защита: whitelist конкретных extractor'ов. БЕЗ этого
                 # yt-dlp использует generic-extractor, который следует редиректам
                 # и парсит HTML на <video>/<source> — что превращает open-
