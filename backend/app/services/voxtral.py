@@ -48,17 +48,25 @@ class VoxtralProvider(TranscriptionProvider):
             )
 
         if response.status_code >= 400:
-            # Тело ответа Mistral содержит реальную причину (формат/длительность/
-            # размер) — без него в логах остаётся только generic «400». Логируем
-            # и пробрасываем читаемую ошибку вместо ссылки на MDN.
+            # Тело ответа Mistral содержит реальную причину — без него в логах
+            # остаётся только generic-код. Логируем всегда.
             body = response.text[:1000]
             logger.error(
                 "Voxtral %s for %s (%s): %s",
                 response.status_code, filename, mime_type, body,
             )
+            # 5xx/429 — сбой/перегрузка на стороне Mistral, НЕ проблема файла.
+            # Транзиентно: Celery заретраит (autoretry_for). Сообщение — честное,
+            # чтобы не валить вину на формат пользователя (как было до 2026-06-24).
+            if response.status_code == 429 or response.status_code >= 500:
+                raise RuntimeError(
+                    "Сервис транскрибации временно недоступен (сбой на стороне Voxtral). "
+                    "С файлом всё в порядке — запустите расшифровку повторно через несколько минут."
+                )
+            # 4xx — реальный отказ по файлу (формат/длительность/валидация).
             raise RuntimeError(
                 f"Voxtral отклонил файл (HTTP {response.status_code}). "
-                f"Поддерживаются WAV/MP3/FLAC/OGG/WEBM до 60 мин. Детали: {body}"
+                f"Поддерживаются WAV/MP3/FLAC/OGG/WEBM до 3 часов. Детали: {body}"
             )
         data = response.json()
 
